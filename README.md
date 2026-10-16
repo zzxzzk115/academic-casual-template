@@ -52,6 +52,20 @@ node scripts/verify.mjs ../my-homepage/dist ../my-homepage
 
 Content paths are relative to the directory where you run the command. `--port 4321` is available for dev/preview. The template checkout must be at the revision recorded by the content repository; the CLI does not switch Git revisions automatically.
 
+## Choose homepage content
+
+Use one field, `home`, on projects, local posts, news and papers. The default is false. For Markdown, `home: true` enables homepage collection and `home: false` excludes it from homepage collection. For per-mode order and the Casual opening project:
+
+```yaml
+home:
+  academic: { order: 1 }
+  casual: { order: 3, hero: true }
+```
+
+For BibTeX papers, use `home = {true}` or `home = {false}`. Empty project, news or publication selections automatically hide their homepage section and navigation links; full archives and bibliography remain available.
+
+See the [homepage curation guide](docs/content.md#homepage-curation) for mode defaults, sorting, hero constraints, publication examples and migration from earlier selectors.
+
 ## Structure
 
 ```text
@@ -66,8 +80,9 @@ scripts/                CLI, initialization and verification
 examples/einstein/       Standalone historical example content site
 ```
 
-Customize identity, mode sections, navigation, section titles, category labels, project selections and colors through site configuration. Update personal copy and tool preferences through content files. Template upgrades use an explicit commit pin; no npm package publication is needed.
+Customize identity, mode sections, navigation, section titles, category labels and colors through site configuration. Curate homepage entries, order and the Casual project hero through each record’s `home` metadata. Update personal copy and tool preferences through content files. Template upgrades use an explicit commit pin; no npm package publication is needed.
 
+- [Homepage curation rules](docs/content.md#homepage-curation)
 - [Content and configuration](docs/content.md)
 - [GitHub integration and deployment](docs/github.md)
 - [Migrating a Jekyll/al-folio site](docs/migration.md)

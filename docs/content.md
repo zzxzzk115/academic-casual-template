@@ -2,6 +2,8 @@
 
 The starter at `examples/einstein` is a sourced historical profile, with a real public-domain photograph and editorial reading notes. Use `pnpm site init --content <empty-directory>` to create an independent copy. Replace its historical content with your own; the template reads that separate directory at build time.
 
+Quick links: [Homepage curation](#homepage-curation) · [Current work and plans](#current-work-and-plans) · [Markdown records](#markdown-records) · [Publications](#publications)
+
 ## Site configuration
 
 `site.config.yaml` uses schema version 1. The complete contract lives in `src/lib/schema.ts`.
@@ -100,6 +102,97 @@ Each item needs a `description` and either a `title` or a valid `projectId`. Pro
 
 The optional `updated` date is an explicit editorial date (`YYYY-MM-DD`), never the build date. The groups display as **Working on**, **Exploring** and **Up next**. Empty groups are omitted. A missing file or a mode without any items produces no section or navigation link. Use mode-specific `sectionTitles.now`, for example **Current focus** and **On my workbench**, to change the section heading. These are brief public updates; tentative plans do not need deadlines.
 
+## Homepage curation
+
+Use **one per-record field, `home`**, for projects, local posts, news and publications. All four content types use the same defaults and mode settings. `site.config.yaml` controls which sections are enabled and their layout; record selection, ordering and the Casual project hero belong in the records themselves.
+
+### Include or exclude a record
+
+In Markdown frontmatter:
+
+```yaml
+home: true
+```
+
+| Setting | Homepage behavior |
+| --- | --- |
+| Omitted, or `home: false` | Excluded from automatic homepage lists |
+| `home: true` | Eligible in every mode supported by the record |
+| `home: { academic: true }` | Eligible only in Academic |
+| `home: { casual: true }` | Eligible only in Casual |
+| `home: { academic: false, casual: { order: 2 } }` | Excluded from Academic; eligible in Casual with order 2 |
+
+The default is **false everywhere**. In an object, an omitted mode is also excluded. Use real YAML booleans, not quoted strings such as `home: "true"`. A mode object (even `{}`) enables that mode with the placement defaults below.
+
+For a record to appear, the mode must enable its section and, for Markdown, be included in the record’s `modes` list. `home: true` does not enable a disabled section. An explicit home mode unsupported by `modes` fails validation rather than silently widening visibility.
+
+### Order and the Casual hero
+
+Put all homepage placement choices under `home`:
+
+```yaml
+# In content/projects/my-project.md frontmatter:
+modes: [academic, casual]
+order: 20
+home:
+  academic: { order: 1 }
+  casual: { order: 3, hero: true }
+```
+
+This project is first in Academic and third in Casual when other projects have orders 1 and 2. It also supplies the Casual opening preview. The top-level `order: 20` remains its catalog order.
+
+| Placement field | Default | Rule |
+| --- | --- | --- |
+| `home.<mode>.order` | `100` | Numeric values sort in ascending order |
+| `home.casual.hero` | `false` | Marks the project used in the Casual opening preview |
+
+Equal homepage orders retain the underlying content order: catalog order for projects, newest dates first for news/writing, and newest years first for publications. The Academic and Casual orders are independent. Homepage filtering happens before limits: news shows up to three items and writing shows up to four combined local/blog items. An eligible record can therefore be beyond the visible limit.
+
+Only projects can set `hero: true`, and only in Casual. At most one project may do so; conflicting heroes fail validation. Hero selection is independent of card order. Without an explicit hero, the first eligible project is used. A missing project cover uses the existing portrait/illustration fallback. The site-level `hero.enabled` setting controls the optional illustration; Academic retains its profile introduction and portrait.
+
+### Publications on homepages
+
+Write the same field on each record in `content/publications.bib`:
+
+```bibtex
+@article{my-paper,
+  home = {true},
+  title = {My paper},
+  author = {Author, Example},
+  year = {2026}
+}
+```
+
+Use `home = {false}` or omit the field to keep a paper out of homepage lists. BibTeX metadata belongs on each paper, not in a YAML header for the whole bibliography.
+
+The same mode-specific object is supported as JSON inside the BibTeX value:
+
+```bibtex
+home = {{"academic":{"order":1},"casual":false}},
+```
+
+This paper appears only in Academic, with order 1. `hero` remains restricted to project records. Copied citations omit `home` and other presentation fields; the full bibliography download retains the source records.
+
+### Sections, navigation and retained content
+
+Keep a section such as `publications` in `modes.<mode>.sections` when it should become visible automatically as eligible content is added. Its homepage block and desktop/mobile navigation links appear only when the eligible count is greater than zero. The same empty-section rule applies to projects and news; `now` hides when it has no items for that mode.
+
+`home` only changes automatic homepage collection. Detail pages, archive/catalog pages and search keep their records. Local posts remain in RSS, and `/publications/` plus `/publications.bib` retain every paper. A zero-paper homepage therefore does not delete the bibliography.
+
+Explicit editorial sections such as `content/now.yaml` keep their own content: a manually authored reference can still link to a project with `home: false`. Imported blog articles are controlled by the independent JSON Feed, not local Markdown `home` metadata.
+
+### Upgrade earlier content
+
+| Earlier setting | Replacement |
+| --- | --- |
+| `modes.<mode>.featuredProjects: [a, b]` | Set `home.<mode>.order: 1` on project a and `2` on b; omit that mode on projects not selected |
+| `modes.casual.heroProject: a` | Set `home.casual.hero: true` on project a |
+| Project frontmatter `featured: true` | Set `home: true`, or explicit mode placements |
+| BibTeX `selected = {true/false}` | Use `home = {true/false}` |
+| Markdown relying on the former default-on behavior | Add `home: true` to entries intended for the homepage |
+
+Remove the old settings after moving their values. Legacy selectors are rejected rather than treated as competing aliases. The bundled example and personal content site have already been migrated. For imported Jekyll/al-folio content, review homepage eligibility before building; see the [migration guide](migration.md).
+
 ## Markdown records
 
 ```yaml
@@ -127,23 +220,7 @@ links:
 
 Required fields are `id`, `title`, `description` and `legacyPath`. The path name retains migration terminology but is also the canonical route for new content. IDs are stable and unique across projects, posts and news. Public paths must end in `/` and remain unique. Optional fields also include `image`, `imageAlt`, `categories`, `date`, `comments` and `home`. Posts and news should include a quoted ISO timestamp.
 
-`home` is the shared homepage field for projects, local posts, news and publications. It defaults to **false** everywhere: omitted records remain available in their archives/detail pages, RSS and search, but are not collected onto homepages. `home: true` opts a record into every supported mode; `home: false` excludes it. Filtering happens before homepage limits.
-
-For a mode-specific selection, order or Casual hero, use the same field:
-
-```yaml
-home:
-  academic: { order: 1 }
-  casual: { order: 3, hero: true }
-```
-
-Each mode accepts `true`, `false` or an object with optional `order` (default 100) and `hero` (default false). An object enables display in that mode; an omitted mode is excluded. Lower `home.<mode>.order` values appear first. Equal values retain the original ordering: catalog order for projects, date order for news/writing and year order for publications. The top-level Markdown `order` remains the archive/catalog order. Explicit home modes must be supported by the record’s `modes` list.
-
-`home.casual.hero: true` chooses the Casual opening project independently of card order. Only project records can be heroes, at most one per Casual homepage. Without an explicit hero, the first eligible project is used; a project without an image uses the portrait/illustration fallback. Academic uses its profile introduction and portrait.
-
-When upgrading earlier content, move each `featuredProjects` list into the listed projects’ `home.<mode>.order`, and move `heroProject` to the chosen project’s `home.casual.hero`. Replace a project’s `featured` flag or a paper’s `selected` flag with `home`. Add `home: true` to local posts/news that should stay on the homepage. Legacy selectors are rejected so they cannot silently compete with `home`. The bundled example and personal site have been migrated.
-
-Imported blog articles remain controlled by the independent blog’s JSON Feed; these are not local Markdown records.
+Use the shared [`home` rules](#homepage-curation) for homepage visibility, mode-specific order and the Casual hero.
 
 Optional `overview: {purpose, contribution, outcome}` gives a project detail page a compact opening summary, labeled **Purpose**, **My contribution** and **Outcome**. Supply all three as plain text; use the Markdown body for evidence, images and technical detail. This replaces the repeated description under the page title; the description remains in cards, search and page metadata. Projects without an overview keep their existing layout.
 
@@ -163,20 +240,7 @@ Standard BibTeX fields include title, author, year, journal/booktitle, volume, n
 - `preview`: filename under `/assets/img/publication_preview/`.
 - `abstract`, `abbr`, `journal_url`, `date`, `cnki` and `gbt`: abstract, venue details, release date and original citation links/text.
 
-Publications use the same `home` field as Markdown records, written in BibTeX syntax:
-
-```bibtex
-@article{my-paper,
-  home = {true},
-  title = {My paper},
-  author = {Author, Example},
-  year = {2026}
-}
-```
-
-Use `home = {false}` or omit it to retain a paper only in the full bibliography. For mode-specific settings, the field accepts the same object encoded as JSON, for example `home = {{"academic":{"order":1},"casual":false}}`. `hero` applies only to projects. This is metadata on each record in `content/publications.bib`, rather than a YAML header for the whole file.
-
-A homepage’s Publications section and desktop/mobile navigation links appear only when its eligible count is greater than zero. Keep `publications` in the mode’s `sections` so newly enabled papers appear automatically. The standalone `/publications/` page, search and bibliography download retain every paper. Copied citations omit `home` and other presentation fields.
+Use the same `home` metadata as Markdown records to curate homepage papers; see [Publications on homepages](#publications-on-homepages) for boolean and mode-specific BibTeX examples. The complete bibliography remains available independently of homepage selection.
 
 Each citation key becomes an anchor on `/publications/`. The site provides a BibTeX copy button and `/publications.bib` download. Set `hero.enabled: false` to omit the sampling illustration; publication previews remain independent.
 
