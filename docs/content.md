@@ -129,6 +129,8 @@ Projects without an image render as text cards. Featured project IDs must exist 
 
 Markdown supports code highlighting, tables, Mermaid fences, raw HTML and custom anchors (`## Method {#method}`). Raw HTML is for trusted content authors. Major content remains readable without JavaScript; diagrams retain their source, and interactive filtering/search/copying progressively enhance the page.
 
+All Markdown headings (`#` through `######`) have a `#` permalink control in the left margin, revealed on hover or keyboard focus and always visible on touch devices. The heading is underlined on hover or focus. Click its text or the `#` control to copy the current page URL, including its deployment base, query parameters and heading fragment; existing links inside a heading retain their own destinations. Selecting heading text does not trigger copying. Existing authored `{#id}` anchors and English slugs are retained; repeated generated slugs receive numeric suffixes. Headings with no English slug use a Unicode slug or `section` fallback. Homepage section headings and detail-page titles also provide copy-link controls. Without JavaScript, controls act as ordinary fragment links; if clipboard access is unavailable, clicking navigates to the fragment so the address-bar URL can be copied.
+
 ## Publications
 
 Standard BibTeX fields include title, author, year, journal/booktitle, volume, number, pages, DOI and URL. Optional presentation fields include:

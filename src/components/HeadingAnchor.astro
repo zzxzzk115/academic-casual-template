@@ -1,0 +1,5 @@
+---
+interface Props {target:string;label:string;}
+const {target,label}=Astro.props;
+---
+<a class="heading-anchor" href={`#${encodeURIComponent(target)}`} data-copy-heading data-pagefind-ignore aria-label={`Copy link to ${label}`} title="Copy link"><span aria-hidden="true">#</span></a>
