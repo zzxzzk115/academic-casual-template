@@ -3,7 +3,7 @@
 Validated locally on Windows with Node 24.12.0 and pnpm 10.34.5, 16 October 2026. GitHub Actions repeats the automated checks on Linux.
 
 - `pnpm check`: Astro/TypeScript diagnostics.
-- `pnpm test`: fourteen tests covering configuration, navigation references, paths, dates, social visibility, project links, asset/reference/route failures, safe content initialization and subpath link classification.
+- `pnpm test`: sixteen tests covering configuration, navigation references, paths, dates, social visibility, project links, asset/reference/route failures, safe content initialization, Markdown table semantics/scroll regions and subpath link classification.
 - `pnpm check:examples`: independent historical sites at `/` and `/portfolio/`, generated links/anchors/resources, feeds, bibliography, search output and identity isolation.
 - `pnpm site init --content <empty-directory>`: starter-only scaffolding with a full template commit pin; existing content is not overwritten.
 - `pnpm demo:build --url <origin> --base <path>`: isolates the historical Einstein example, sets project-site metadata and checks the generated output before Pages upload.

@@ -4,6 +4,10 @@ import { href } from './content';
 const highlighter = await createHighlighter({ themes:['github-light','github-dark'], langs:['cpp','csharp','cmake','bash','json','lua','python','typescript','javascript','yaml','glsl','xml'] });
 const md = new MarkdownIt({ html:true, linkify:true, typographer:true });
 const escape = md.utils.escapeHtml;
+md.renderer.rules.table_open = (tokens,index,options,_env,self) =>
+  `<div class="table-scroll" role="region" aria-label="Scrollable table" tabindex="0">${self.renderToken(tokens,index,options)}`;
+md.renderer.rules.table_close = (tokens,index,options,_env,self) =>
+  `${self.renderToken(tokens,index,options)}</div>\n`;
 md.renderer.rules.fence = (tokens,index) => {
   const token=tokens[index], lang=token.info.trim().split(' ')[0];
   if(lang==='mermaid')return `<pre class="mermaid" data-pagefind-ignore>${escape(token.content)}</pre>`;

@@ -27,4 +27,12 @@ Academic and Casual both passed page-width checks at 320, 360, 390, 550, 551, 60
 
 All of the above interactions passed in this session. The full project listing also showed all 23 entries without page overflow at 390px.
 
-The same revision passed Astro/TypeScript checking, the 14 template tests, production content/link verification and independent root/subpath example builds. Repeat these interaction checks after changes to the header, navigation, typography or breakpoints.
+The navigation revision passed Astro/TypeScript checking, the then-current 14 template tests, production content/link verification and independent root/subpath example builds. Repeat these interaction checks after changes to the header, navigation, typography or breakpoints.
+
+## Table readability follow-up
+
+The original page-width check missed unreadable cell wrapping: at 393px, a branch identifier split across four lines despite the page fitting the viewport. Markdown tables now retain native table layout inside a separate keyboard-focusable overflow region. Cells wrap at word boundaries; headers and inline code identifiers stay intact. Tables that fit the viewport need no horizontal scrolling.
+
+Rechecked the external content site's branch/role table at 320, 360, 393, 550, 768, 1024 and 1280px. Each of its three branch identifiers occupies one line, the first column is at least 104px wide and the page has no horizontal overflow. The Casual detail context was also checked at 393px. A contributor/responsibility table passed width and word-wrapping checks at 320, 393 and 768px.
+
+Two renderer regression tests preserve semantic headers, links, code identifiers and independent scroll regions without swallowing following prose. The current suite has 16 tests. These remain browser geometry/interaction checks, with the same physical-device and screenshot limitations noted above.
