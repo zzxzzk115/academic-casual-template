@@ -1,0 +1,12 @@
+---
+import {config,href,type Mode} from '../lib/content';
+const {mode='academic'}=Astro.props as {mode:Mode};
+const banner=config.banner;
+const Tag=banner?.href?'a':'div';
+---
+{banner&&banner.modes.includes(mode)&&<Tag class="feature-banner" href={banner.href?href(banner.href,mode):undefined}>
+  <figure>
+    <img src={href(banner.image)} alt={banner.alt} width={banner.width} height={banner.height} fetchpriority="high"/>
+    {banner.caption&&<figcaption>{banner.caption}</figcaption>}
+  </figure>
+</Tag>}

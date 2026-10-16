@@ -1,8 +1,8 @@
 ---
 home: true
 id: sources
-title: Sources and photograph
-description: Historical references and the source of the 1921 portrait used in this example.
+title: Sources and images
+description: Historical references and credits for the portrait and paper illustration used in this example.
 legacyPath: /featured-posts/2026/sources/
 date: '2026-10-16T11:00:00Z'
 category: Sources
@@ -25,3 +25,7 @@ This is a historical profile used to demonstrate a reusable website template. It
 **Ferdinand Schmutzer, 1921.** [Wikimedia Commons source and public-domain status](https://commons.wikimedia.org/wiki/File:Einstein_1921_by_F_Schmutzer.jpg). The photograph was resized and JPEG-compressed for the web. It was not generated, redrawn or enhanced with AI.
 
 The template code is MIT-licensed. This historical photograph has its own public-domain status, documented at the source.
+
+## Paper illustration
+
+The Academic homepage banner introduces [Einstein’s 1911 paper on gravitation and light](https://doi.org/10.1002/andp.19113401005). Its diagram is [RWMA’s 2024 reproduction of Figure 1, released under CC0](https://commons.wikimedia.org/wiki/File:Einstein(1911)_001.png), rather than a scan of the original printing. The full figure is placed in a wide SVG teaser with a title and bibliographic label; it has not been cropped or retouched.

@@ -8,7 +8,8 @@ import Timeline from './Timeline.astro';
 import Toolkit from './Toolkit.astro';
 import Now from './Now.astro';
 import HeadingAnchor from './HeadingAnchor.astro';
-import {renderMarkdown} from '../lib/markdown';
+import ProfileLinks from './ProfileLinks.astro';
+import {renderMarkdown,renderInlineMarkdown} from '../lib/markdown';
 import {config,profile,biography,posts,news,href,dateLabel,loadBlog,sectionLabels,homeEntries,homeProjects,homeSections,homeHero,homePublications,homePlacement,type Mode} from '../lib/content';
 const {mode='academic'}=Astro.props as {mode:Mode};
 const isCasual=mode==='casual';
@@ -18,6 +19,8 @@ const modePhoto=config.modes[mode].photo;
 const usesPortraitLayout=!isCasual||!!modePhoto;
 const photo=modePhoto ?? config.identity.photo;
 const photoCredit=modePhoto ? config.modes[mode].photoCredit : config.identity.photoCredit;
+const hasSidebar=config.modes[mode].sidebar;
+const displayName=isCasual?(config.identity.handle||config.identity.name):config.identity.name;
 const showContactInIntro=!config.modes[mode].sections.includes('contact');
 const visibleSocials=config.socials.filter(s=>s.modes.includes(mode));
 const selected=homeProjects(mode);
@@ -29,14 +32,22 @@ const blog=await loadBlog();
 const writing=[...homeEntries(posts,mode).map(p=>({title:p.title,url:p.legacyPath,summary:p.description,date:p.date,source:'Note',order:homePlacement(p.home,mode)!.order})),...blog.map(p=>({title:p.title,url:p.url,summary:p.summary,date:p.date_published,source:'Blog',order:100}))].sort((a,b)=>a.order-b.order||(b.date||'').localeCompare(a.date||'')).slice(0,4);
 ---
 <Layout mode={mode} home>
+  <div class:list={['home-shell',{'has-profile-sidebar':hasSidebar}]}>
+    {hasSidebar&&<aside class="profile-sidebar" aria-label="Profile and contact information" data-pagefind-ignore>
+      {photo&&<figure class="sidebar-photo"><img class="portrait" src={href(photo)} width="192" height="192" alt={config.identity.name} fetchpriority="high"/>{photoCredit&&<figcaption><a href={photoCredit.href}>{photoCredit.label}</a></figcaption>}</figure>}
+      <p class="sidebar-name">{displayName}</p>
+      <ProfileLinks mode={mode} email={email} socials={visibleSocials} class="profile-links"/>
+      {(config.identity.contactNote||address)&&<div class="sidebar-contact-details">{config.identity.contactNote&&<p>{config.identity.contactNote}</p>}{address&&<p>{address}</p>}</div>}
+    </aside>}
+    <div class="home-content">
   <section class:list={['hero',{'hero-casual':isCasual,'hero-with-portrait':usesPortraitLayout}]}>
     <div class="hero-copy">
-      <h1>{isCasual?(config.identity.handle||config.identity.name):config.identity.name}</h1>
+      <h1>{hasSidebar?<><span class="hero-name">{displayName}</span><span class="hero-about">About me</span></>:displayName}</h1>
       <p class="hero-role">{isCasual?(profile.casualHeadline||'Projects and interests'):config.identity.role}</p>
       {!isCasual&&(config.identity.institution||config.identity.location)&&<p class="hero-affiliation">{[config.identity.institution,config.identity.location].filter(Boolean).join(' · ')}</p>}
       <p class="hero-summary">{isCasual?profile.casualSummary:profile.summary}</p>
-      {!isCasual&&academicBackground&&<p class="hero-background">{academicBackground}</p>}
-      <div class="hero-actions">{email&&<a href={`mailto:${email}`}><Icon name="envelope"/> {email}</a>}{config.identity.cv&&!isCasual&&<a href={href(config.identity.cv)}><Icon name="download"/> CV</a>}{visibleSocials.filter(s=>showContactInIntro||isCasual||s.primary||['GitHub','LinkedIn'].includes(s.label)).map(s=><a href={href(s.href)}><Icon name={s.icon||(s.label==='GitHub'?'github':s.label==='LinkedIn'?'linkedin':'link-45deg')}/> {s.label}</a>)}{isCasual&&config.blog&&<a href={href(config.blog.href)}><Icon name="journal-text"/> Blog</a>}</div>
+      {!isCasual&&academicBackground&&<p class="hero-background" set:html={renderInlineMarkdown(academicBackground)}/>}
+      <ProfileLinks mode={mode} email={email} socials={visibleSocials.filter(s=>showContactInIntro||isCasual||s.primary||['GitHub','LinkedIn'].includes(s.label))}/>
       {showContactInIntro&&(config.identity.contactNote||address)&&<div class="hero-contact-details">{config.identity.contactNote&&<p>{config.identity.contactNote}</p>}{address&&<p>{address}</p>}</div>}
       {isCasual&&<p class="casual-aside">Also {config.identity.name}, {config.identity.role}{config.identity.institution&&` at ${config.identity.institution}`}. <a href={href('/')} data-mode-fixed>Academic page <Icon name="arrow-up-right"/></a></p>}
     </div>
@@ -55,4 +66,6 @@ const writing=[...homeEntries(posts,mode).map(p=>({title:p.title,url:p.legacyPat
     {section==='about'&&<div class="about-block">{photo&&<img src={href(photo)} alt={config.identity.name} width="125" height="125" loading="lazy"/>}<div>{isCasual&&profile.casualAbout?<p>{profile.casualAbout}</p>:biography?<div class="prose" set:html={renderMarkdown(biography)}/>:<><p>{profile.summary}</p><p>{profile.background}</p></>}{!(isCasual&&profile.casualAbout)&&config.modes[mode].showToolkit&&profile.toolkit.length>0&&<div class="home-toolkit"><h3>Tools & platforms</h3><Toolkit/></div>}<a href={href('/')} data-mode-fixed>Academic page <Icon name="arrow-up-right"/></a></div></div>}
     {section==='contact'&&<div class="contact-body">{email&&<a class="contact-email" href={`mailto:${email}`}><Icon name="envelope"/> {email}</a>}{config.identity.contactNote&&<p>{config.identity.contactNote}</p>}{address&&<p>{address}</p>}<div>{visibleSocials.map(s=><a href={href(s.href)}><Icon name={s.icon||(s.label==='GitHub'?'github':s.label==='LinkedIn'?'linkedin':'link-45deg')}/> {s.label}</a>)}</div></div>}
   </section>)}
+    </div>
+  </div>
 </Layout>

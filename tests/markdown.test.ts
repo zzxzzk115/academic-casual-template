@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {renderMarkdown} from '../src/lib/markdown';
+import {renderMarkdown,renderInlineMarkdown} from '../src/lib/markdown';
 
 test('Markdown tables retain semantic headers, links and identifiers inside a keyboard-accessible scroll region',()=>{
   const output=renderMarkdown('| Branch | Role |\n| --- | --- |\n| [`dev-VRI`](https://example.org/dev-VRI) | Current graphics framework. |');
@@ -49,4 +49,11 @@ test('Mermaid fences retain escaped source in a keyboard-accessible diagram regi
   assert.ok(output.includes('Renderer &lt;core&gt;'));
   assert.ok(output.includes('A long node label'));
   assert.equal((output.match(/<pre/g)||[]).length,1);
+});
+
+test('inline biography Markdown renders links without nesting paragraphs',()=>{
+  const output=renderInlineMarkdown('Supervised by [Dr Example](https://example.org/mentor/) and **colleagues**.');
+  assert.match(output,/<a href="https:\/\/example.org\/mentor\/">Dr Example<\/a>/);
+  assert.match(output,/<strong>colleagues<\/strong>/);
+  assert.doesNotMatch(output,/<\/?p(?: |>|\/)/);
 });

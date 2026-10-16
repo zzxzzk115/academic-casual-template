@@ -14,8 +14,9 @@ Quick links: [Homepage curation](#homepage-curation) · [Current work and plans]
 | `identity` | Name, initials and role; optional handle, institution, location, email, address, contact note, photo, photo credit and CV path |
 | `socials` | Links with a label, URL, optional Font Awesome icon and optional mode visibility |
 | `theme` | Academic and Casual accent colors in six-digit hex form |
+| `banner` | Optional homepage feature image, caption, link and mode visibility |
 | `hero` | Enable the optional illustration, set its label and intensity |
-| `modes` | Ordered sections, optional desktop navigation, section headings and `showToolkit` for each mode |
+| `modes` | Ordered sections, optional desktop navigation, section headings, `showToolkit` and an optional responsive `sidebar` for each mode |
 | `sectionLabels` | Optional navigation labels, keyed by section ID |
 | `projectCategories` | Category IDs mapped to display names |
 | `blog` | Optional external blog integration: original URL, JSON Feed URL and content-relative snapshot file |
@@ -57,6 +58,43 @@ Free icons accept `brands:<name>` or `solid:<name>`. The fonts are bundled local
 
 When a separate Contact section is enabled, set `socials[].primary: true` to include an archive, portfolio or other link in the Academic introduction. If `contact` is omitted from a mode’s `sections`, the introduction automatically shows all of that mode’s social links, contact note and resolved address alongside its email, so a separate Contact block is optional. Remove `contact` from explicit navigation as well, if configured. GitHub and LinkedIn remain introductory links by default for existing content. Email, handle and blog are optional; omitted data creates no placeholder links. `modes.<mode>.email` overrides `identity.email` in that homepage's introductory and Contact links; without an override the identity address is used. Use `socials[].modes` to choose which modes show a social link. `modes.<mode>.address` overrides the homepage Contact address; set it to an empty string (`address: ""`) to hide the default office address in that mode. Omission inherits `identity.address`. The Casual title falls back to the person's name. The default portrait is `identity.photo`, with optional `identity.photoCredit: {label, href}`. Set `modes.academic.photo` or `modes.casual.photo` to override it for that mode, using an absolute site path or an HTTPS image URL (for example a GitHub avatar). An override applies to that mode’s introduction and About portrait. An explicit `modes.casual.photo` takes priority over any featured project in the opening visual and uses the same circular avatar layout, size and position as Academic at each breakpoint. If no override is set, the identity portrait and credit are used; an overridden photo uses only that mode’s optional `photoCredit`, so the default image’s credit is not attached to a different picture. Without an explicit mode photo, Casual uses a featured project cover when available, then the default portrait or illustration fallback. Academic and explicit Casual introduction avatars share the same right-hand anchor and circular crop (192 px on desktop, 160 px on tablets, 96 px on phones). About avatars also use circular crops; choose a photograph with the face near the centre and space around the head. The Casual introduction retains the full portrait. `site.footerText` can replace the default copyright line for a historical or curated example.
 
+## Optional homepage feature image
+
+Omit `banner` to show no image or empty space above the homepage. When a publication or project is ready, add a top-level block such as:
+
+```yaml
+banner:
+  image: /assets/img/paper-overview.webp
+  alt: Overview of the rendering method and its result
+  width: 1600
+  height: 400
+  caption: Paper title · Venue, year
+  href: /publications/#paper-key
+  modes: [academic]
+```
+
+`image`, `alt`, `width` and `height` are required; use the actual image dimensions to reserve the correct aspect ratio. `caption` and `href` are optional. The image is shown in full without cropping; a wide source image around 3:1 or 4:1 works well. A configured link makes the image and caption one keyboard-accessible link. Local paths receive the deployment base and current mode context. `modes` defaults to both modes. The banner appears below the persistent navigation and above the homepage columns; it does not appear on detail or archive pages. This presentation setting is independent of per-record `home` collection metadata.
+
+The bundled Einstein example enables an Academic-only paper teaser using a credited reproduction of Figure 1 from his 1911 paper. See `examples/einstein/ASSETS.md` for the image source and reuse terms.
+
+## Responsive profile sidebar
+
+Set `modes.<mode>.sidebar: true` to enable a left profile column on that homepage at viewport widths of **1280 CSS pixels and above**. It defaults to `false`. Enable it separately for Academic and Casual:
+
+```yaml
+modes:
+  academic:
+    sidebar: true
+    sections: [research, now, projects, cv, writing]
+  casual:
+    sidebar: true
+    sections: [now, projects, interests, writing]
+```
+
+The sidebar collects that mode’s portrait, email, CV link (Academic), social links, blog link (Casual), contact note and resolved address. Mode visibility and photo/email/address overrides work exactly as in the compact introduction. The name (or Casual handle) sits below the portrait, and the main introduction is headed “About me”. The main column retains the introduction and content sections. The top navigation remains visible while scrolling, and the sidebar stays below it. On screens tall enough for a persistent profile, the sidebar stays in view as the page scrolls.
+
+Below 1280px, the sidebar is hidden and the existing introduction, portrait and contact-link layout is retained, with the name or Casual handle as the main heading. Both modes keep matching portrait anchors and sizes. Omit a separate `contact` section when the introduction/sidebar already contains all your contact information. Sidebar behavior is limited to homepages; detail and archive pages retain their normal layout.
+
 ## Content files
 
 | Path | Contents |
@@ -72,7 +110,7 @@ When a separate Contact section is enabled, set `socials[].primary: true` to inc
 | `content/repositories.yaml` | Repository names in `owner/repository` form |
 | `public/` | Assets copied with their existing paths |
 
-The Academic hero uses `identity.role` and factual summaries. The Casual role line uses `profile.casualHeadline`, or “Projects and interests” when omitted. The legacy `headline` field is not displayed. Optional toolkit rows use `label` and an `items` list; they appear in Academic, Casual and CV views. Set a mode’s `showToolkit: false` to omit toolkit rows from that homepage while retaining them on the full CV. `profile.academicBackground` optionally replaces the longer `background` in the Academic introduction; an empty string hides that paragraph. Omission preserves the original background.
+The Academic hero uses `identity.role` and factual summaries. The Casual role line uses `profile.casualHeadline`, or “Projects and interests” when omitted. The legacy `headline` field is not displayed. Optional toolkit rows use `label` and an `items` list; they appear in Academic, Casual and CV views. Set a mode’s `showToolkit: false` to omit toolkit rows from that homepage while retaining them on the full CV. `profile.academicBackground` optionally replaces the longer `background` in the Academic introduction; an empty string hides that paragraph. Omission preserves the original background. This paragraph supports inline Markdown links and emphasis, for example `Supervised by [Dr Example](https://example.org/mentor/)`.
 
 Set `profile.casualAbout` to a short plain-text personal introduction to use it in the Casual About section instead of the complete biography and toolkit. The full biography and toolkit remain available on the CV page. Omitting it preserves the existing About layout. To keep the entire personal introduction at the top, consolidate it in `casualSummary` and omit `about` from that mode’s `sections` (and explicit `navigation`, if configured).
 

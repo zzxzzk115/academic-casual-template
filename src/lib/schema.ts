@@ -10,6 +10,7 @@ const modeConfig = z.object({
   navigation: sectionList.optional(),
   sectionTitles: z.partialRecord(z.enum(sectionIds), z.string().min(1)).default({}),
   showToolkit: z.boolean().default(true),
+  sidebar: z.boolean().default(false),
   email: z.email().optional(),
   address: z.string().optional(),
   photo: z.string().min(1).optional(),
@@ -26,6 +27,7 @@ export const configSchema = z.object({
   sectionLabels: z.partialRecord(z.enum(sectionIds), z.string().min(1)).default({}),
   projectCategories: z.record(z.string().regex(/^[a-z0-9_-]+$/), z.string().min(1)).default({work:'Research',library:'Libraries',fun:'Tools & apps',indie:'Games',retro:'Retro & emulation'}),
   blog: z.object({ href: localOrExternal, feedUrl: z.url().optional(), snapshot: z.string().optional() }).optional(),
+  banner: z.object({image:z.string().min(1),alt:z.string().min(1),width:z.number().int().positive(),height:z.number().int().positive(),caption:z.string().min(1).optional(),href:localOrExternal.optional(),modes:z.array(z.enum(modes)).min(1).default(['academic','casual'])}).optional(),
   comments: z.object({ repo: z.string(), repoId: z.string(), category: z.string(), categoryId: z.string(), mapping: z.literal('pathname') }).optional(),
 });
 const homePlacementSchema = z.union([z.boolean(), z.object({

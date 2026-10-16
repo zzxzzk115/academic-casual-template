@@ -34,6 +34,7 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
   const bibliography=readFileSync(bibFile,'utf8');
   writeFileSync(bibFile,name==='root'?bibliography.replace(/(einstein1905brownian,[\s\S]*?)home = \{true\}/, '$1home = {false}'):bibliography.replace(/  home = \{true\},\n/g,''));
   if (name === 'root') {
+    delete config.banner;
     config.identity.address = 'Fixture public address';
     config.identity.contactNote = 'Fixture contact note';
     config.modes.academic.sections = config.modes.academic.sections.filter(id=>id!=='contact');
@@ -48,6 +49,10 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
     cpSync(join(content,'public/assets/einstein-1921.jpg'),join(content,'public/assets/casual-portrait.jpg'));
     config.modes.casual.photo = '/assets/casual-portrait.jpg';
     config.modes.casual.email = 'casual-fixture@example.invalid';
+    config.modes.academic.sidebar = true;
+    config.modes.casual.sidebar = true;
+    writeFileSync(join(content,'public/assets/feature-banner.svg'),'<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="400" viewBox="0 0 1600 400"><rect width="1600" height="400" fill="#dde8ed"/><text x="80" y="220" font-size="56" fill="#17344a">Fixture feature image</text></svg>');
+    config.banner={image:'/assets/feature-banner.svg',alt:'Fixture publication overview',width:1600,height:400,caption:'Fixture featured paper',href:'/publications/#einstein1905relativity',modes:['academic']};
     config.identity.address = 'Fixture research office';
     config.modes.casual.address = '';
     writeFileSync(join(content, 'content/now.yaml'), stringify({
@@ -69,6 +74,7 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
     const profileFile = join(content, 'content/profile.yaml');
     const profile = parse(readFileSync(profileFile, 'utf8'));
     profile.casualAbout = 'A concise personal introduction.';
+    profile.academicBackground = 'Supervised by [Fixture mentor](https://example.org/mentor/).';
     writeFileSync(profileFile, stringify(profile));
   }
   writeFileSync(file, stringify(config));
@@ -87,12 +93,17 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
     } else if(home.includes('id="publications"')||home.includes('id="einstein1905relativity"')||home.includes('/#publications')) throw new Error('An empty publication selection produced a section or navigation link');
   }
   if (name === 'root') {
+    if(academic.includes('class="feature-banner"') || casual.includes('class="feature-banner"')) throw new Error('Unconfigured banner reserved a homepage element');
     const intro=academic.split('</section>')[0];
     for(const text of ['Fixture public address','Fixture contact note','Fixture secondary link']) if(!intro.includes(text)) throw new Error('Omitting Contact lost introductory contact details');
     if(academic.includes('id="contact"') || [...academic.matchAll(/data-nav-mode="academic"[^>]*>([\s\S]*?)<\/(?:nav|div)>/g)].some(match=>match[1].includes('/#contact'))) throw new Error('Removed Contact section or navigation was rendered');
     if (!casual.includes('class="casual-preview"') || !casual.includes('/assets/project-cover.jpg')) throw new Error('Project preview fallback was lost without a mode portrait');
     if (academic.includes('id="now"') || academic.includes('/#now') || casual.includes('id="now"')) throw new Error('Empty now content produced a section or navigation link');
   } else {
+    if(!academic.includes('class="feature-banner"') || !academic.includes('src="/portfolio/assets/feature-banner.svg"') || !academic.includes('Fixture featured paper') || !academic.includes('href="/portfolio/publications/#einstein1905relativity"') || casual.includes('class="feature-banner"')) throw new Error('Feature banner lost its base or mode scope');
+    if(readFileSync(join(out,'projects/special-relativity/index.html'),'utf8').includes('class="feature-banner"')) throw new Error('Homepage banner leaked into a detail page');
+    for(const home of [academic,casual]) if(!home.includes('class="profile-sidebar"') || !home.includes('home-with-sidebar')) throw new Error('Configured profile sidebar was not rendered');
+    if(!academic.includes('<a href="https://example.org/mentor/">Fixture mentor</a>')) throw new Error('Inline supervisor link was not rendered');
     if (!academic.includes('Fixture research office') || casual.includes('Fixture research office')) throw new Error('Mode-specific address hiding failed');
     if (!academic.includes('mailto:subpath@example.org') || academic.includes('mailto:casual-fixture@example.invalid')) throw new Error('Casual email override leaked into Academic');
     if (!casual.includes('mailto:casual-fixture@example.invalid') || casual.includes('mailto:subpath@example.org')) throw new Error('Casual email override was not applied');
