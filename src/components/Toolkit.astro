@@ -1,0 +1,4 @@
+---
+import {profile} from '../lib/content';
+---
+<dl class="toolkit">{profile.toolkit.map(fact=><div><dt>{fact.label}</dt><dd>{fact.items.join(' · ')}</dd></div>)}</dl>

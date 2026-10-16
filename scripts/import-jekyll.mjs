@@ -32,8 +32,12 @@ for(const [folder,kind] of [['_projects','projects'],['_posts','posts'],['_news'
 const raw=readFileSync(join(source,'assets/json/resume.json'),'utf8');
 const parsed=ts.parseConfigFileTextToJson('resume.json',raw);if(parsed.error)throw new Error('Invalid JSONC resume');
 const resume=parsed.config;
-const normalize=value=>value==='Present'?value:value.slice(0,7); // Legacy invalid day values are preserved at the known month precision.
-const cv={education:resume.education.map(r=>({title:`${r.studyType} — ${r.area}`,institution:r.institution,start:normalize(r.startDate),end:normalize(r.endDate),description:[r.score&&`Result: ${r.score}`,r.courses?.length&&`Courses: ${r.courses.join(', ')}`].filter(Boolean).join('. ')})),work:resume.work.map(r=>({title:r.position,institution:r.name,start:normalize(r.startDate),end:normalize(r.endDate),description:r.summary||''})),languages:resume.languages.map(r=>`${r.language} — ${r.fluency}`),skills:['C / C++ / C# / Java / Python / Lua','Vulkan / OpenXR','XMake / CMake / vcpkg','Windows / macOS / Linux']};
+const normalize=value=>value==='Present'?value:/^\d{4}-\d{2}-\d{2}$/.test(value)&&new Date(value+'T00:00:00Z').toISOString().slice(0,10)===value?value:value.slice(0,7);
+const about=matter(readFileSync(join(source,'_pages/about.md'),'utf8'));
+const profileFacts=[...(about.data.profile?.more_info||'').matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/g)].map(m=>summary(m[1]));
+write('content/about.md',about.content.trim()+'\n');
+const details=r=>({...(r.url?{url:r.url}:{}),...(r.location?{location:r.location}:{})});
+const cv={education:resume.education.map(r=>({title:`${r.studyType} — ${r.area}`,institution:r.institution,start:normalize(r.startDate),end:normalize(r.endDate),description:[r.score&&`Result: ${r.score}`,r.courses?.length&&`Courses: ${r.courses.join(', ')}`].filter(Boolean).join('. '),...details(r)})),work:resume.work.map(r=>({title:r.position,institution:r.name,start:normalize(r.startDate),end:normalize(r.endDate),description:r.summary||'',...details(r)})),languages:resume.languages.map(r=>`${r.language} — ${r.fluency}`),skills:profileFacts,basics:{label:resume.basics.label,summary:resume.basics.summary,phone:resume.basics.phone,url:resume.basics.url,address:Object.values(resume.basics.location||{}).join(', ')}};
 write('content/cv.yaml',stringify(cv));
 write('content/publications.bib',readFileSync(join(source,'_bibliography/papers.bib'),'utf8').replace(/^---\s*\n---\s*\n/,''));
 const repositories=parse(readFileSync(join(source,'_data/repositories.yml'),'utf8')).github_repos;

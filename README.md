@@ -21,9 +21,9 @@ Without `--content`, commands use `examples/minimal`. `--out` is resolved agains
 ## Content contract (schema version 1)
 
 - `site.config.yaml`: identity, absolute site URL, leading/trailing-slash base path, language, social links, accents, mode section order, featured project IDs, hero settings, blog source, and optional Giscus configuration. See the complete example.
-- `content/profile.yaml`: headlines, summaries, research topics, and interests. `content/about.md` optionally preserves a longer biography.
-- `content/cv.yaml`: education/work timelines, languages, and skills. Dates are strings at their known precision (`2024`, `2024-09`, or `Present`). Quote dates in YAML.
-- `content/projects/*.md`, `content/posts/*.md`, `content/news/*.md`: Markdown with YAML frontmatter. Required: `id`, `title`, `description`, `legacyPath`. Optional: `image`, `category`, `categories`, `tags`, `modes`, `order`, `date`, `comments`, `featured`. Project dates are optional; give posts/news a timestamp. Explicit paths preserve old slugs.
+- `content/profile.yaml`: headlines, summaries, research topics, interests, and optional `toolkit` rows (`label`, `items`). Toolkit facts appear on Academic, Casual and CV pages. `content/about.md` preserves the complete biography on Casual and CV pages.
+- `content/cv.yaml`: education/work timelines, languages, skills, optional institution `url`/`location`, and optional `basics` contact information. Dates retain known precision; full CV timelines display months. Quote dates in YAML. Use `identity.contactNote` in site configuration for a short contact preference.
+- `content/projects/*.md`, `content/posts/*.md`, `content/news/*.md`: Markdown with YAML frontmatter. Required: `id`, `title`, `description`, `legacyPath`. Optional: `image`, `category`, `categories`, `tags`, `modes`, `order`, `date`, `comments`, `featured`, `status`, and action `links` (`label`, `href`, optional `icon`). Projects without screenshots use text cards. Explicit paths preserve old slugs.
 - `content/publications.bib`: the sole publication source. Standard fields plus optional `pdf` and `preview` are rendered; local PDFs use `/assets/pdf/`, previews `/assets/img/publication_preview/`. BibTeX is downloadable and copyable.
 - `content/repositories.yaml`: a list of `owner/repository` strings.
 - `public/`: copied without changing resource URLs. Local image paths must begin with `/` and are checked at build time.
@@ -56,6 +56,8 @@ Set `hero.enabled: false` to remove the optional sampling illustration entirely,
 
 Interface icons use Font Awesome Free's Brands and Classic Solid fonts, bundled locally through the pinned dependency. Social links can specify `icon: brands:github`, `icon: brands:linkedin`, or another free icon using `brands:` / `solid:`. `Icon.astro` keeps decorative glyphs hidden from assistive technology; controls retain text or accessible labels. Font Awesome retains its own font and code licenses.
 
+Social links accept optional `modes: [casual]` or `[academic]`; omitted modes show in both. This supports game-platform links alongside the Casual profile. Project category buttons retain anchors and initialize their filter from a matching URL fragment.
+
 When enabled, the Vue sampling field hydrates when visible. It renders only on resize/pointer interaction, pauses offscreen/in hidden tabs, caps pixel density, and leaves a static SVG visible when reduced motion is requested or WebGL is unavailable. All content, navigation, project details, bibliography, and CV remain readable without JavaScript. Search, filtering, and copying progressively enhance them.
 
 ## Blog integration
@@ -78,5 +80,7 @@ pnpm verify
 Validation catches invalid configuration, missing featured IDs, duplicate content IDs/routes, malformed publication entries, and missing primary assets. The output verifier checks generated destinations, anchors, migration counts, feed, sitemap, bibliography, and search assets. Test both modes, keyboard search, mobile navigation, filtering, dark mode, and WebGL/reduced-motion fallbacks in a browser.
 
 For one-time Jekyll/al-folio migration, `node scripts/import-jekyll.mjs <source> <destination> [vuepress-blog-source]` imports content without modifying the source. It preserves filenames as public slugs, parses JSONC resumes, normalizes invalid legacy days to their known month, and copies assets. Supply personal configuration separately and review the migration manifest. Preserve an old Git tag before replacing the legacy sources.
+
+`node scripts/audit-migration.mjs <content-repository>` compares migrated records, the biography, resume fields, bibliography and assets against `migration-manifest.json`'s source Git commit, then writes `migration-audit.json`. The original commit must be available locally. The manifest can record reviewed content refreshes and text replacements; unexplained differences fail the audit. `legacyPaths` and `contentChecks` in the manifest also protect old paths, anchors and visible information during normal output verification.
 
 MIT licensed. Third-party dependencies retain their respective licenses.

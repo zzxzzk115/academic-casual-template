@@ -24,6 +24,18 @@ test('YAML timestamp objects normalize without losing the instant',()=>{
   const entry={id:'note',title:'A note',description:'A real timestamp',legacyPath:'/notes/a/',date:new Date('2025-04-11T01:35:00Z')};
   assert.equal(entrySchema.parse(entry).date,'2025-04-11T01:35:00.000Z');
 });
+test('social links default to both modes and can be scoped to one mode',()=>{
+  const original=parse(readFileSync('examples/minimal/site.config.yaml','utf8'));
+  assert.deepEqual(configSchema.parse(original).socials[0].modes,['academic','casual']);
+  const scoped={...original,socials:[{label:'Games',href:'https://example.com/games',icon:'brands:itch-io',modes:['casual']}]};
+  assert.deepEqual(configSchema.parse(scoped).socials[0].modes,['casual']);
+  assert.throws(()=>configSchema.parse({...scoped,socials:[{...scoped.socials[0],modes:['private']}]}));
+});
+test('project action links reject executable URLs',()=>{
+  const entry={id:'demo',title:'Demo',description:'A browser project',legacyPath:'/projects/demo/',links:[{label:'Play',href:'javascript:alert(1)'}]};
+  assert.throws(()=>entrySchema.parse(entry));
+  assert.equal(entrySchema.parse({...entry,links:[{label:'Play',href:'https://example.com/demo/'}]}).links.length,1);
+});
 for(const scenario of ['missing asset','unknown featured project','duplicate path'])test(`build validation catches ${scenario}`,()=>{
   const fixture=mkdtempSync(join(tmpdir(),'academic-casual-'));
   try{

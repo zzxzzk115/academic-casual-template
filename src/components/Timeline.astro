@@ -1,7 +1,8 @@
 ---
-import {cv} from '../lib/content';
+import {cv,profile} from '../lib/content';
+import Toolkit from './Toolkit.astro';
 const {full=false}=Astro.props;
 const rows=[...cv.education,...cv.work].sort((a,b)=>b.start.localeCompare(a.start));
 ---
-<div class="timeline">{(full?rows:rows.slice(0,4)).map(r=><article><div class="timeline-date">{r.start.slice(0,4)} — {r.end==='Present'?'Present':r.end.slice(0,4)}</div><div><h3>{r.title}</h3><p>{r.institution}</p>{full&&r.description&&<p class="muted">{r.description}</p>}</div></article>)}</div>
-{full&&<div class="cv-extra"><div><h2>Languages</h2><p>{cv.languages.join(' · ')}</p></div><div><h2>Tools & technologies</h2><p>{cv.skills.join(' · ')}</p></div></div>}
+<div class="timeline">{(full?rows:rows.slice(0,4)).map(r=><article><div class="timeline-date">{r.start.slice(0,full?7:4)} — {r.end==='Present'?'Present':r.end.slice(0,full?7:4)}</div><div><h3>{r.title}</h3><p>{full&&r.url?<a href={r.url}>{r.institution}</a>:r.institution}</p>{full&&r.location&&<p>{r.location}</p>}{full&&r.description&&<p class="muted">{r.description}</p>}</div></article>)}</div>
+{full&&<div class="cv-extra"><div><h2>Languages</h2><p>{cv.languages.join(' · ')}</p></div><div><h2>Tools & technologies</h2>{profile.toolkit.length?<Toolkit/>:<p>{cv.skills.join(' · ')}</p>}</div></div>}
