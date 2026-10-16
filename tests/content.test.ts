@@ -5,7 +5,13 @@ import {tmpdir} from 'node:os';
 import {resolve,join,sep} from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {parse,stringify} from 'yaml';
-import {safeFile,configSchema,entrySchema,nowSchema,homeEntries,nowGroups,homeProjects,heroProject} from '../src/lib/content';
+import matter from 'gray-matter';
+import {safeFile,configSchema,entrySchema,nowSchema,homeEntries,nowGroups,homeProjects,homeHero} from '../src/lib/content';
+
+function editRecord(file:string,patch:Record<string,unknown>){
+  const parsed=matter(readFileSync(file,'utf8'));
+  writeFileSync(file,matter.stringify(parsed.content,{...parsed.data,...patch}));
+}
 
 test('content paths reject traversal and absolute escapes',()=>{
   const root=resolve('examples/einstein');
@@ -54,16 +60,20 @@ test('project action links reject executable URLs',()=>{
   assert.throws(()=>entrySchema.parse(entry));
   assert.equal(entrySchema.parse({...entry,links:[{label:'Play',href:'https://example.com/demo/'}]}).links.length,1);
 });
-test('home eligibility defaults on and respects both visibility and presentation mode',()=>{
+test('home is an explicit shared opt-in with mode-specific ordering',()=>{
   const entry={id:'note',title:'Note',description:'A note',legacyPath:'/notes/note/'};
   const records=[
-    {...entrySchema.parse(entry),body:'',kind:'post'},
+    {...entrySchema.parse({...entry,home:true}),body:'',kind:'post'},
+    {...entrySchema.parse({...entry,id:'unmarked'}),body:'',kind:'post'},
+    {...entrySchema.parse({...entry,id:'ordered',home:{academic:{order:1},casual:false}}),body:'',kind:'post'},
     {...entrySchema.parse({...entry,id:'hidden',home:false}),body:'',kind:'post'},
-    {...entrySchema.parse({...entry,id:'casual',modes:['casual']}),body:'',kind:'post'},
+    {...entrySchema.parse({...entry,id:'casual',modes:['casual'],home:true}),body:'',kind:'post'},
   ];
-  assert.deepEqual(homeEntries(records,'academic').map(entry=>entry.id),['note']);
+  assert.deepEqual(homeEntries(records,'academic').map(entry=>entry.id),['ordered','note']);
   assert.deepEqual(homeEntries(records,'casual').map(entry=>entry.id),['note','casual']);
   assert.throws(()=>entrySchema.parse({...entry,home:'false'}));
+  assert.throws(()=>entrySchema.parse({...entry,home:{casul:true}}));
+  assert.throws(()=>entrySchema.parse({...entry,home:{casual:{order:'1'}}}));
 });
 test('optional now content validates dates, links and item identity',()=>{
   assert.deepEqual(nowGroups('academic'),[]);
@@ -74,71 +84,71 @@ test('optional now content validates dates, links and item identity',()=>{
   const parsed=nowSchema.parse({updated:'2026-10-16',upNext:[{projectId:'special-relativity',description:'An experiment',modes:['academic']}]});
   assert.equal(parsed.upNext[0].projectId,'special-relativity');
 });
-test('hero selection defaults to the first featured project',()=>{
-  assert.equal(heroProject('casual')?.id,homeProjects('casual')[0]?.id);
+test('hero selection falls back to the first home project',()=>{
+  assert.equal(homeHero('casual')?.id,homeProjects('casual')[0]?.id);
 });
-test('explicit hero selection is independent of the featured list',()=>{
+test('home hero selection is independent of homepage ordering',()=>{
   const fixture=mkdtempSync(join(tmpdir(),'academic-casual-'));
   try{
     cpSync('examples/einstein',fixture,{recursive:true});
-    const file=join(fixture,'site.config.yaml'),config=parse(readFileSync(file,'utf8'));
-    config.modes.casual.featuredProjects=['special-relativity'];
-    config.modes.casual.heroProject='light-quanta';
-    writeFileSync(file,stringify(config));
-    const result=spawnSync(process.execPath,['--import','tsx','-e',"import('./src/lib/content.ts').then(m=>{if(m.heroProject('casual')?.id!=='light-quanta'||m.homeProjects('casual')[0]?.id!=='special-relativity')process.exit(1)})"],{env:{...process.env,SITE_CONTENT_ROOT:fixture},encoding:'utf8'});
+    editRecord(join(fixture,'content/projects/special-relativity.md'),{home:{casual:{order:1}}});
+    editRecord(join(fixture,'content/projects/light-quanta.md'),{home:{casual:{order:3,hero:true}}});
+    editRecord(join(fixture,'content/projects/brownian-motion.md'),{home:false});
+    const result=spawnSync(process.execPath,['--import','tsx','-e',"import('./src/lib/content.ts').then(m=>{if(m.homeHero('casual')?.id!=='light-quanta'||m.homeProjects('casual')[0]?.id!=='special-relativity')process.exit(1)})"],{env:{...process.env,SITE_CONTENT_ROOT:fixture},encoding:'utf8'});
     assert.equal(result.status,0,result.stderr);
   }finally{rmSync(fixture,{recursive:true,force:true});}
 });
-for(const scenario of ['unknown hero project','hidden hero project','unavailable hero project','missing asset','unknown featured project','unknown now project','unavailable now project','duplicate path'])test(`build validation catches ${scenario}`,()=>{
+for(const scenario of ['duplicate home heroes','unavailable home mode','non-project hero','academic hero','obsolete project selector','obsolete featured flag','obsolete paper flag','missing asset','unknown now project','unavailable now project','duplicate path'])test(`build validation catches ${scenario}`,()=>{
   const fixture=mkdtempSync(join(tmpdir(),'academic-casual-'));
   try{
     cpSync('examples/einstein',fixture,{recursive:true});
-    if(scenario.includes('hero project')){
-      const file=join(fixture,'site.config.yaml'),config=parse(readFileSync(file,'utf8'));
-      config.modes.casual.heroProject=scenario==='unknown hero project'?'missing':'light-quanta';
-      if(scenario!=='unknown hero project'){
-        const projectFile=join(fixture,'content/projects/light-quanta.md');
-        writeFileSync(projectFile,readFileSync(projectFile,'utf8').replace(/^---\n/,scenario==='hidden hero project'?'---\nhome: false\n':'---\nmodes: [academic]\n'));
-        config.modes.casual.featuredProjects=config.modes.casual.featuredProjects.filter((id:string)=>id!=='light-quanta');
-      }
-      writeFileSync(file,stringify(config));
+    if(scenario==='duplicate home heroes'){
+      for(const name of ['special-relativity','light-quanta']) editRecord(join(fixture,`content/projects/${name}.md`),{home:{casual:{hero:true}}});
+    }else if(scenario==='unavailable home mode'){
+      editRecord(join(fixture,'content/projects/light-quanta.md'),{modes:['academic'],home:{casual:true}});
+    }else if(scenario==='non-project hero'){
+      editRecord(join(fixture,'content/posts/reading-einstein.md'),{home:{casual:{hero:true}}});
+    }else if(scenario==='academic hero'){
+      editRecord(join(fixture,'content/projects/light-quanta.md'),{home:{academic:{hero:true}}});
+    }else if(scenario==='obsolete project selector'){
+      const file=join(fixture,'site.config.yaml'),config=parse(readFileSync(file,'utf8'));config.modes.casual.heroProject='light-quanta';writeFileSync(file,stringify(config));
+    }else if(scenario==='obsolete featured flag'){
+      editRecord(join(fixture,'content/projects/light-quanta.md'),{featured:true});
+    }else if(scenario==='obsolete paper flag'){
+      writeFileSync(join(fixture,'content/publications.bib'),'@article{old,title={Old},author={Author},year={2020},selected={true}}');
     }else if(scenario==='missing asset'){
       const file=join(fixture,'site.config.yaml'),config=parse(readFileSync(file,'utf8'));config.identity.photo='/assets/missing.jpg';writeFileSync(file,stringify(config));
-    }else if(scenario==='unknown featured project'){
-      const file=join(fixture,'site.config.yaml'),config=parse(readFileSync(file,'utf8'));config.modes.academic.featuredProjects=['missing'];writeFileSync(file,stringify(config));
     }else if(scenario==='unknown now project'){
       writeFileSync(join(fixture,'content/now.yaml'),stringify({workingOn:[{projectId:'missing',description:'A missing project'}]}));
     }else if(scenario==='unavailable now project'){
-      const file=join(fixture,'content/projects/light-quanta.md');
-      writeFileSync(file,readFileSync(file,'utf8').replace(/^---\n/,'---\nmodes: [academic]\n'));
-      const configFile=join(fixture,'site.config.yaml'),config=parse(readFileSync(configFile,'utf8'));
-      config.modes.casual.featuredProjects=config.modes.casual.featuredProjects.filter((id:string)=>id!=='light-quanta');
-      writeFileSync(configFile,stringify(config));
+      editRecord(join(fixture,'content/projects/light-quanta.md'),{modes:['academic'],home:{academic:true}});
       writeFileSync(join(fixture,'content/now.yaml'),stringify({exploring:[{projectId:'light-quanta',description:'A scoped project',modes:['casual']}]}));
     }else{
-      const file=join(fixture,'content/projects/light-quanta.md');writeFileSync(file,readFileSync(file,'utf8').replace('/projects/light-quanta/','/projects/special-relativity/'));
+      editRecord(join(fixture,'content/projects/light-quanta.md'),{legacyPath:'/projects/special-relativity/'});
     }
     const result=spawnSync(process.execPath,['--import','tsx','-e',"import('./src/lib/content.ts')"],{env:{...process.env,SITE_CONTENT_ROOT:fixture},encoding:'utf8'});
     assert.notEqual(result.status,0);
-    assert.match(result.stderr,/Unknown hero project|Hero project .* unavailable|Missing resource|Unknown featured|Unknown now project|Now project .* unavailable|Duplicate route/);
+    assert.match(result.stderr,/Multiple home heroes|Home metadata .* unavailable|Only projects|only supported in casual|Unrecognized key|Replace featured|Replace selected|Missing resource|Unknown now project|Now project .* unavailable|Duplicate route/);
   }finally{assert.ok(resolve(fixture).startsWith(resolve(tmpdir())+sep+'academic-casual-'));rmSync(fixture,{recursive:true,force:true});}
 });
 
-test('selected publications appear on homepages and every paper remains in the archive',()=>{
+test('publications use the shared home metadata and retain every archive record',()=>{
   const fixture=mkdtempSync(join(tmpdir(),'academic-casual-'));
   try{
     cpSync('examples/einstein',fixture,{recursive:true});
     writeFileSync(join(fixture,'content/publications.bib'),[
-      '@article{chosen,title={Chosen},author={Author},year={2026},selected={true}}',
-      '@article{unselected,title={Unselected},author={Author},year={2025},selected={false}}',
+      '@article{chosen,title={Chosen},author={Author},year={2026},home={true}}',
+      '@article{unselected,title={Unselected},author={Author},year={2025},home={false}}',
       '@article{unmarked,title={Unmarked},author={Author},year={2023}}',
+      '@article{scoped,title={Scoped},author={Author},year={2027},home={{"academic":{"order":1},"casual":false}}}',
     ].join('\n'));
-    const script="import('./src/lib/content.ts').then(m=>process.stdout.write(JSON.stringify({all:m.publications.map(p=>p.id),home:m.homePublications().map(p=>p.id),copy:m.publications[0].bibtex})))";
+    const script="import('./src/lib/content.ts').then(m=>process.stdout.write(JSON.stringify({all:m.publications.map(p=>p.id),home:m.homePublications('academic').map(p=>p.id),casual:m.homePublications('casual').map(p=>p.id),copy:m.publications[0].bibtex})))";
     const result=spawnSync(process.execPath,['--import','tsx','-e',script],{env:{...process.env,SITE_CONTENT_ROOT:fixture},encoding:'utf8'});
     assert.equal(result.status,0,result.stderr);
     const parsed=JSON.parse(result.stdout);
-    assert.deepEqual(parsed.all,['chosen','unselected','unmarked']);
-    assert.deepEqual(parsed.home,['chosen']);
-    assert.doesNotMatch(parsed.copy,/selected\s*=/);
+    assert.deepEqual(parsed.all,['scoped','chosen','unselected','unmarked']);
+    assert.deepEqual(parsed.home,['scoped','chosen']);
+    assert.deepEqual(parsed.casual,['chosen']);
+    assert.doesNotMatch(parsed.copy,/home\s*=/);
   }finally{rmSync(fixture,{recursive:true,force:true});}
 });

@@ -9,10 +9,8 @@ const modeConfig = z.object({
   sections: sectionList,
   navigation: sectionList.optional(),
   sectionTitles: z.partialRecord(z.enum(sectionIds), z.string().min(1)).default({}),
-  featuredProjects: z.array(z.string()).default([]),
-  heroProject: z.string().min(1).optional(),
   showToolkit: z.boolean().default(true),
-}).refine(mode => !mode.navigation || mode.navigation.every(id => mode.sections.includes(id)), 'Navigation must refer to enabled sections');
+}).strict().refine(mode => !mode.navigation || mode.navigation.every(id => mode.sections.includes(id)), 'Navigation must refer to enabled sections');
 export const configSchema = z.object({
   schemaVersion: z.literal(1),
   site: z.object({ title: z.string().min(1), description: z.string().min(1), url: z.url(), base: z.string().default('/'), language: z.string().default('en'), availableLanguages: z.array(z.string()).default(['en']), copyrightStartYear: z.number().int().min(1900).max(new Date().getUTCFullYear()).optional(), footerText: z.string().optional() }),
@@ -26,18 +24,27 @@ export const configSchema = z.object({
   blog: z.object({ href: localOrExternal, feedUrl: z.url().optional(), snapshot: z.string().optional() }).optional(),
   comments: z.object({ repo: z.string(), repoId: z.string(), category: z.string(), categoryId: z.string(), mapping: z.literal('pathname') }).optional(),
 });
+const homePlacementSchema = z.union([z.boolean(), z.object({
+  order: z.number().default(100),
+  hero: z.boolean().default(false),
+}).strict()]);
+export const homeSchema = z.union([z.boolean(), z.object({
+  academic: homePlacementSchema.optional(),
+  casual: homePlacementSchema.optional(),
+}).strict()]).default(false);
+export type Home = z.infer<typeof homeSchema>;
 export const entrySchema = z.object({
   id: z.string().regex(/^[a-z0-9_-]+$/), title: z.string().min(1), description: z.string().min(1),
   legacyPath: z.string().regex(/^\/[\w/-]+\/$/),
   image: z.string().optional(), imageAlt: z.string().optional(), category: z.string().default('work'), categories: z.array(z.string()).default([]), tags: z.array(z.string()).default([]),
   modes: z.array(z.enum(modes)).default(['academic', 'casual']), order: z.number().default(100),
-  date: z.preprocess(v=>v instanceof Date?v.toISOString():v,z.string().optional()), comments: z.boolean().default(false), featured: z.boolean().default(false),
-  home: z.boolean().default(true),
+  date: z.preprocess(v=>v instanceof Date?v.toISOString():v,z.string().optional()), comments: z.boolean().default(false),
+  home: homeSchema,
   overview: z.object({ purpose: z.string().min(1), contribution: z.string().min(1), outcome: z.string().min(1) }).optional(),
   status: z.string().optional(), links: z.array(z.object({label:z.string(),href:localOrExternal,icon:z.string().regex(/^(brands|solid):[a-z0-9-]+$/).optional()})).default([]),
 });
 export type Entry = z.infer<typeof entrySchema> & { body: string; kind: string };
-export type Publication = { selected: boolean; id: string; title: string; author: string; year: string; venue: string; abstract: string; doi?: string; pdf?: string; preview?: string; bibtex: string; volume?:string; number?:string; pages?:string; url?:string; cnki?:string; gbt?:string; date?:string; venueUrl?:string; abbr?:string };
+export type Publication = { home: Home; id: string; title: string; author: string; year: string; venue: string; abstract: string; doi?: string; pdf?: string; preview?: string; bibtex: string; volume?:string; number?:string; pages?:string; url?:string; cnki?:string; gbt?:string; date?:string; venueUrl?:string; abbr?:string };
 export type Route = { path: string; title: string; kind: string; entry?: Entry; entries?: Entry[]; description?: string };
 export const profileSchema = z.object({
   headline: z.string().optional(), casualHeadline: z.string().optional(), summary: z.string(), casualSummary: z.string(), background: z.string().default(''),

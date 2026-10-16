@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { parse, stringify } from 'yaml';
+import matter from 'gray-matter';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const cache = join(root, '.cache');
@@ -27,7 +28,7 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
   }
   const bibFile=join(content,'content/publications.bib');
   const bibliography=readFileSync(bibFile,'utf8');
-  writeFileSync(bibFile,name==='root'?bibliography.replace(/(einstein1905brownian,[\s\S]*?)selected = \{true\}/, '$1selected = {false}'):bibliography.replace(/  selected = \{true\},\n/g,''));
+  writeFileSync(bibFile,name==='root'?bibliography.replace(/(einstein1905brownian,[\s\S]*?)home = \{true\}/, '$1home = {false}'):bibliography.replace(/  home = \{true\},\n/g,''));
   if (name === 'subpath') {
     config.identity.name = 'Taylor Quinn';
     config.identity.handle = 'TQ Notebook';
@@ -40,7 +41,8 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
     }));
     for (const path of ['projects/light-quanta.md', 'posts/reading-einstein.md']) {
       const file = join(content, 'content', path);
-      writeFileSync(file, readFileSync(file, 'utf8').replace(/^---\n/, '---\nhome: false\n'));
+      const parsed=matter(readFileSync(file,'utf8'));
+      writeFileSync(file,matter.stringify(parsed.content,{...parsed.data,home:false}));
     }
     mkdirSync(join(content, 'content/news'), {recursive:true});
     for (const mode of ['academic', 'casual']) config.modes[mode].sections.push('news');

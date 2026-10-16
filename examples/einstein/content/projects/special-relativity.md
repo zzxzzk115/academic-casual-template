@@ -1,4 +1,9 @@
 ---
+home:
+  academic:
+    order: 1
+  casual:
+    order: 1
 id: special-relativity
 title: Special relativity
 description: The 1905 account of space and time built on the relativity principle and the constancy of the speed of light.

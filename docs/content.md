@@ -13,7 +13,7 @@ The starter at `examples/einstein` is a sourced historical profile, with a real 
 | `socials` | Links with a label, URL, optional Font Awesome icon and optional mode visibility |
 | `theme` | Academic and Casual accent colors in six-digit hex form |
 | `hero` | Enable the optional illustration, set its label and intensity |
-| `modes` | Ordered sections, optional desktop navigation, section headings featured project IDs, optional `heroProject` and `showToolkit` for each mode |
+| `modes` | Ordered sections, optional desktop navigation, section headings and `showToolkit` for each mode |
 | `sectionLabels` | Optional navigation labels, keyed by section ID |
 | `projectCategories` | Category IDs mapped to display names |
 | `blog` | Optional external blog integration: original URL, JSON Feed URL and content-relative snapshot file |
@@ -31,16 +31,13 @@ modes:
   academic:
     sections: [research, publications, projects, cv, writing, contact]
     navigation: [research, projects, contact]
-    featuredProjects: [my-project]
   casual:
     sections: [projects, interests, writing, about, contact]
-    heroProject: my-project
     sectionTitles:
       projects: Selected work
-    featuredProjects: [my-project]
 ```
 
-Casual uses `modes.casual.heroProject` to choose its opening project independently of `featuredProjects`. Omit it to retain the first featured project fallback. The referenced project must exist, support Casual and allow homepage display (`home: true`). A project without an image uses the existing portrait/illustration fallback. `hero.enabled` controls the optional illustration, not the project preview.
+Homepage content is chosen in each record’s `home` metadata. Site configuration controls the section layout and navigation; it contains no project selection or hero IDs. `hero.enabled` controls the optional sampling illustration.
 
 Available sections are `research`, `now`, `news`, `publications`, `projects`, `cv`, `writing`, `interests`, `about` and `contact`. Sections and navigation entries must be unique; desktop navigation can only point to enabled sections. Omitting `navigation` uses the standard desktop subset, including `now` when present. Mobile navigation lists all enabled sections. Empty `now`, `news`, `publications` and `projects` sections and their navigation links are hidden.
 
@@ -128,15 +125,31 @@ links:
 ---
 ```
 
-Required fields are `id`, `title`, `description` and `legacyPath`. The path name retains migration terminology but is also the canonical route for new content. IDs are stable and unique across projects, posts and news. Public paths must end in `/` and remain unique. Optional fields also include `image`, `imageAlt`, `categories`, `date`, `comments`, `featured` and `home`. Posts and news should include a quoted ISO timestamp.
+Required fields are `id`, `title`, `description` and `legacyPath`. The path name retains migration terminology but is also the canonical route for new content. IDs are stable and unique across projects, posts and news. Public paths must end in `/` and remain unique. Optional fields also include `image`, `imageAlt`, `categories`, `date`, `comments` and `home`. Posts and news should include a quoted ISO timestamp.
 
-`home` is a YAML boolean: `home: false` excludes a record from both homepages, while `home: true` (the default when omitted) makes it eligible in its configured `modes`. Filtering happens before homepage item limits. Projects still follow the mode's `featuredProjects` list, or the existing `featured`/all-projects fallback; `home: false` overrides either selection. Eligibility does not force an item into a limited or curated selection. Detail pages, archives, RSS and search remain available. This field applies to local Markdown records; articles imported from an independent blog remain controlled by its JSON Feed.
+`home` is the shared homepage field for projects, local posts, news and publications. It defaults to **false** everywhere: omitted records remain available in their archives/detail pages, RSS and search, but are not collected onto homepages. `home: true` opts a record into every supported mode; `home: false` excludes it. Filtering happens before homepage limits.
+
+For a mode-specific selection, order or Casual hero, use the same field:
+
+```yaml
+home:
+  academic: { order: 1 }
+  casual: { order: 3, hero: true }
+```
+
+Each mode accepts `true`, `false` or an object with optional `order` (default 100) and `hero` (default false). An object enables display in that mode; an omitted mode is excluded. Lower `home.<mode>.order` values appear first. Equal values retain the original ordering: catalog order for projects, date order for news/writing and year order for publications. The top-level Markdown `order` remains the archive/catalog order. Explicit home modes must be supported by the record’s `modes` list.
+
+`home.casual.hero: true` chooses the Casual opening project independently of card order. Only project records can be heroes, at most one per Casual homepage. Without an explicit hero, the first eligible project is used; a project without an image uses the portrait/illustration fallback. Academic uses its profile introduction and portrait.
+
+When upgrading earlier content, move each `featuredProjects` list into the listed projects’ `home.<mode>.order`, and move `heroProject` to the chosen project’s `home.casual.hero`. Replace a project’s `featured` flag or a paper’s `selected` flag with `home`. Add `home: true` to local posts/news that should stay on the homepage. Legacy selectors are rejected so they cannot silently compete with `home`. The bundled example and personal site have been migrated.
+
+Imported blog articles remain controlled by the independent blog’s JSON Feed; these are not local Markdown records.
 
 Optional `overview: {purpose, contribution, outcome}` gives a project detail page a compact opening summary, labeled **Purpose**, **My contribution** and **Outcome**. Supply all three as plain text; use the Markdown body for evidence, images and technical detail. This replaces the repeated description under the page title; the description remains in cards, search and page metadata. Projects without an overview keep their existing layout.
 
 Homepage writing defaults to **Selected writing**; override `sectionTitles.writing` or `sectionLabels.writing` to suit your editorial selection. Use `sectionTitles.news: Milestones` for infrequent announcements without changing existing URLs or section IDs.
 
-Projects without an image render as text cards at their natural height. Featured project IDs must exist and support the selected mode. The all-projects page remains a shared catalog. Category fragments such as `/projects/#work` initialize the filter.
+Projects without an image render as text cards at their natural height. The all-projects page remains a shared catalog. Category fragments such as `/projects/#work` initialize the filter.
 
 Markdown supports code highlighting, tables, Mermaid fences, raw HTML and custom anchors (`## Method {#method}`). Raw HTML is for trusted content authors. Major content remains readable without JavaScript; diagrams retain their source, and interactive filtering/search/copying progressively enhance the page.
 
@@ -150,18 +163,20 @@ Standard BibTeX fields include title, author, year, journal/booktitle, volume, n
 - `preview`: filename under `/assets/img/publication_preview/`.
 - `abstract`, `abbr`, `journal_url`, `date`, `cnki` and `gbt`: abstract, venue details, release date and original citation links/text.
 
-Use the existing per-paper `selected` field to choose homepage publications:
+Publications use the same `home` field as Markdown records, written in BibTeX syntax:
 
 ```bibtex
 @article{my-paper,
-  selected = {true},
+  home = {true},
   title = {My paper},
   author = {Author, Example},
   year = {2026}
 }
 ```
 
-Only `selected = {true}` publications appear on homepages. False or omitted values keep papers in the full bibliography. When the selected count is zero, the homepage section and its desktop/mobile navigation links are hidden automatically. Keep `publications` in the mode’s `sections` so future selected papers appear there. This is per-record metadata in `content/publications.bib`, rather than a YAML header for the entire file. The standalone `/publications/` page, search and bibliography download retain every paper. Copied citations omit presentation fields such as `selected`. The Markdown `home` flag does not apply to BibTeX records.
+Use `home = {false}` or omit it to retain a paper only in the full bibliography. For mode-specific settings, the field accepts the same object encoded as JSON, for example `home = {{"academic":{"order":1},"casual":false}}`. `hero` applies only to projects. This is metadata on each record in `content/publications.bib`, rather than a YAML header for the whole file.
+
+A homepage’s Publications section and desktop/mobile navigation links appear only when its eligible count is greater than zero. Keep `publications` in the mode’s `sections` so newly enabled papers appear automatically. The standalone `/publications/` page, search and bibliography download retain every paper. Copied citations omit `home` and other presentation fields.
 
 Each citation key becomes an anchor on `/publications/`. The site provides a BibTeX copy button and `/publications.bib` download. Set `hero.enabled: false` to omit the sampling illustration; publication previews remain independent.
 

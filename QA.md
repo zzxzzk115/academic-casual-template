@@ -3,7 +3,7 @@
 Validated locally on Windows with Node 24.12.0 and pnpm 10.34.5, 16 October 2026. GitHub Actions repeats the automated checks on Linux.
 
 - `pnpm check`: Astro/TypeScript diagnostics.
-- `pnpm test`: 30 tests covering configuration, navigation references, paths, dates, social visibility, project links, independent hero selection and homepage eligibility, asset/reference/route failures, safe content initialization, Markdown table semantics/scroll regions and subpath link classification.
+- `pnpm test`: 33 tests covering configuration, navigation references, paths, dates, social visibility, project links, shared home metadata, mode-specific order, independent hero selection and homepage eligibility, asset/reference/route failures, safe content initialization, Markdown table semantics/scroll regions and subpath link classification.
 - `pnpm check:examples`: independent historical sites at `/` and `/portfolio/`, generated links/anchors/resources, feeds, bibliography, search output and identity isolation.
 - `pnpm site init --content <empty-directory>`: starter-only scaffolding with a full template commit pin; existing content is not overwritten.
 - `pnpm demo:build --url <origin> --base <path>`: isolates the historical Einstein example, sets project-site metadata and checks the generated output before Pages upload.
@@ -19,6 +19,8 @@ Migration tooling preserves original slugs and comments mapping, handles JSONC r
 
 Local Lighthouse reports and screenshots belong in ignored `reports/` directories. Performance depends on the site's selected images, content and optional integrations; a template check is not a field measurement of a deployed site.
 
-The latest homepage refinements were checked on Linux with Node 24.19.0: Astro diagnostics reported no errors or warnings, 30 tests passed, both example deployments built, and the personal content build passed 1,655 internal destination/resource checks. Desktop browser inspection confirmed natural-height text cards and the Casual two-column feature card. At 390px, project overview rows and cards use a single column without page overflow. Full CV tool content is retained when omitted from the homepage.
+The latest homepage refinements were checked on Linux with Node 24.19.0: Astro diagnostics reported no errors or warnings, 33 tests passed, both example deployments built, and the personal content build passed 1,655 internal destination/resource checks. Desktop browser inspection confirmed natural-height text cards and the Casual two-column feature card. At 390px, project overview rows and cards use a single column without page overflow. Full CV tool content is retained when omitted from the homepage.
 
-Publication curation is checked with true, false and omitted per-record `selected` metadata. Root/subpath fixtures verify homepage selection and automatic empty-section/navigation hiding, while full publication pages and BibTeX downloads retain all records.
+Publication curation is checked with true, false and omitted per-record `home` metadata. Root/subpath fixtures verify homepage selection and automatic empty-section/navigation hiding, while full publication pages and BibTeX downloads retain all records.
+
+The unified `home` contract is also checked for mode restrictions, conflicting heroes and obsolete selectors. Existing example and personal-site selections are migrated into records; archive order, routes and bibliography data are retained.

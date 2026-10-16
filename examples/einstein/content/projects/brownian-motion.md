@@ -1,4 +1,9 @@
 ---
+home:
+  academic:
+    order: 3
+  casual:
+    order: 3
 id: brownian-motion
 title: Brownian motion
 description: A statistical explanation of the irregular motion of small particles suspended in a fluid.

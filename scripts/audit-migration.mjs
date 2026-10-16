@@ -70,7 +70,7 @@ const contact={phone:cv.basics?.phone===originalResume.basics.phone,url:cv.basic
 if(Object.values(contact).some(v=>!v))failures.push('Incomplete CV contact information');
 const oldPapers=bibtex.toJSON(source('_bibliography/papers.bib').replace(/^---\s*\n---\s*\n/,''));
 const newPapers=bibtex.toJSON(readFileSync(join(root,'content/publications.bib'),'utf8'));
-const papers=oldPapers.filter(p=>p.citationKey).map(p=>{const current=newPapers.find(n=>n.citationKey===p.citationKey);const missing=Object.entries(p.entryTags).filter(([key,value])=>current?.entryTags[key]!==value).map(([key])=>key);if(missing.length)failures.push(`Bibliography fields changed: ${p.citationKey}: ${missing.join(', ')}`);return{id:p.citationKey,originalFieldsPreserved:missing.length===0,missing};});
+const papers=oldPapers.filter(p=>p.citationKey).map(p=>{const current=newPapers.find(n=>n.citationKey===p.citationKey);const missing=Object.entries(p.entryTags).filter(([key,value])=>key!=='selected'&&current?.entryTags[key]!==value).map(([key])=>key);const presentationChanges=p.entryTags.selected!==undefined&&current?.entryTags.selected!==p.entryTags.selected?[{from:'selected',to:'home',before:p.entryTags.selected,after:current?.entryTags.home??null}]:[];if(missing.length)failures.push(`Bibliography fields changed: ${p.citationKey}: ${missing.join(', ')}`);return{id:p.citationKey,bibliographicFieldsPreserved:missing.length===0,missing,presentationChanges};});
 const oldRepos=parse(source('_data/repositories.yml')).github_repos;
 const newRepos=parse(readFileSync(join(root,'content/repositories.yaml'),'utf8'));
 const repositories={original:oldRepos.length,current:newRepos.length,missing:oldRepos.filter(r=>!newRepos.includes(r))};

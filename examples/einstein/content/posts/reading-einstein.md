@@ -1,4 +1,5 @@
 ---
+home: true
 id: reading-einstein
 title: Reading the 1905 papers
 description: A short reading guide to the original work and reliable historical collections.

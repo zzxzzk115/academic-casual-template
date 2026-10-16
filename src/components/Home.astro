@@ -9,17 +9,17 @@ import Toolkit from './Toolkit.astro';
 import Now from './Now.astro';
 import HeadingAnchor from './HeadingAnchor.astro';
 import {renderMarkdown} from '../lib/markdown';
-import {config,profile,biography,posts,news,href,dateLabel,loadBlog,sectionLabels,homeEntries,homeProjects,homeSections,heroProject,homePublications,type Mode} from '../lib/content';
+import {config,profile,biography,posts,news,href,dateLabel,loadBlog,sectionLabels,homeEntries,homeProjects,homeSections,homeHero,homePublications,homePlacement,type Mode} from '../lib/content';
 const {mode='academic'}=Astro.props as {mode:Mode};
 const isCasual=mode==='casual';
 const visibleSocials=config.socials.filter(s=>s.modes.includes(mode));
 const selected=homeProjects(mode);
-const featured=heroProject(mode);
+const featured=homeHero(mode);
 const academicBackground=profile.academicBackground ?? profile.background;
 const defaultTitles:Record<string,string>={projects:isCasual?'Projects':'Selected projects',research:'Research interests',writing:'Selected writing'};
 const sectionTitle=(section:(typeof config.modes.academic.sections)[number])=>config.modes[mode].sectionTitles[section]||config.sectionLabels[section]||defaultTitles[section]||sectionLabels[section];
 const blog=await loadBlog();
-const writing=[...homeEntries(posts,mode).map(p=>({title:p.title,url:p.legacyPath,summary:p.description,date:p.date,source:'Note'})),...blog.map(p=>({title:p.title,url:p.url,summary:p.summary,date:p.date_published,source:'Blog'}))].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,4);
+const writing=[...homeEntries(posts,mode).map(p=>({title:p.title,url:p.legacyPath,summary:p.description,date:p.date,source:'Note',order:homePlacement(p.home,mode)!.order})),...blog.map(p=>({title:p.title,url:p.url,summary:p.summary,date:p.date_published,source:'Blog',order:100}))].sort((a,b)=>a.order-b.order||(b.date||'').localeCompare(a.date||'')).slice(0,4);
 ---
 <Layout mode={mode} home>
   <section class:list={['hero',{'hero-casual':isCasual}]}>
@@ -39,7 +39,7 @@ const writing=[...homeEntries(posts,mode).map(p=>({title:p.title,url:p.legacyPat
     {section==='research'&&<><div class="research-grid">{profile.research.map(r=><article><h3>{r.title}</h3><p>{r.description}</p></article>)}</div>{config.modes[mode].showToolkit&&profile.toolkit.length>0&&<div class="home-toolkit"><h3>Tools & platforms</h3><Toolkit/></div>}</>}
     {section==='now'&&<Now mode={mode}/>}
     {section==='projects'&&<ProjectGrid entries={selected} mode={mode} filters={isCasual}/>}
-    {section==='publications'&&<Publications entries={homePublications()}/>}
+    {section==='publications'&&<Publications entries={homePublications(mode)}/>}
     {section==='news'&&<div class="news-list">{homeEntries(news,mode).slice(0,3).map(n=><article><time datetime={n.date}>{dateLabel(n.date)}</time><div><a href={href(n.legacyPath,mode)}>{n.title}</a><p>{n.description}</p></div></article>)}</div>}
     {section==='cv'&&<Timeline/>}
     {section==='writing'&&<div class="writing-list">{writing.map(w=><article><div class="writing-meta"><time datetime={w.date}>{dateLabel(w.date)}</time><span>{w.source}</span></div><h3><a href={href(w.url,mode)}>{w.title}</a></h3>{w.summary&&<p>{w.summary}</p>}</article>)}</div>}
