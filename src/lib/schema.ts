@@ -60,6 +60,7 @@ const nowItemSchema = z.object({
   description: z.string().min(1),
   href: localOrExternal.optional(),
   links: z.array(z.object({label:z.string().min(1),href:localOrExternal})).default([]),
+  workItems: z.array(z.object({title:z.string().min(1),description:z.string().min(1)})).default([]),
   modes: z.array(z.enum(modes)).min(1).default(['academic', 'casual']),
 }).refine(item => !!item.title || !!item.projectId, 'A now item needs a title or projectId');
 export const nowSchema = z.object({

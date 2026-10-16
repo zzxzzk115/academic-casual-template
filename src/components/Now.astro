@@ -6,12 +6,16 @@ const groups=nowGroups(mode);
 ---
 {groups.length>0&&<div class="now-block">
   {now.updated&&<p class="now-updated">Updated <time datetime={now.updated}>{dateLabel(now.updated)}</time></p>}
-  <div class="now-grid">
-    {groups.map(group=><div class="now-group">
+  <div class:list={['now-grid', {'now-grid-with-plans':groups.some(group=>group.items.some(item=>item.workItems.length>0))}]}>
+    {groups.map(group=><div class:list={['now-group', {'now-group-plan':group.items.some(item=>item.workItems.length>0)}]}>
       <h3>{group.label}</h3>
       <ul>{group.items.map(item=><li>
         <h4>{item.href?<a href={href(item.href,mode)}>{item.title} <Icon name="arrow-up-right"/></a>:item.title}</h4>
         <p>{item.description}</p>
+        {item.workItems.length>0&&<>
+          <h5 class="now-work-heading">Planned work items</h5>
+          <ul class="now-work-items">{item.workItems.map(work=><li><strong>{work.title}</strong><p>{work.description}</p></li>)}</ul>
+        </>}
         {item.links.length>0&&<div class="now-links">{item.links.map(link=><a href={href(link.href,mode)}>{link.label} <Icon name="arrow-up-right"/></a>)}</div>}
       </li>)}</ul>
     </div>)}

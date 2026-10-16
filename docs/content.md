@@ -95,10 +95,17 @@ exploring:
 upNext:
   - title: A playable prototype
     description: Try turning the latest experiment into a browser demo.
+    workItems:
+      - title: A small playable scene
+        description: Test the core interaction with a few placeholder assets.
+      - title: Browser build
+        description: Package the scene so it can be shared with a link.
     modes: [casual]
 ```
 
 Each item needs a `description` and either a `title` or a valid `projectId`. Project references reuse the project's title and detail-page URL; an explicit `title` or `href` overrides either. Items default to both modes. A referenced project must support every mode listed on the item. Ordinary title links use `href`; an optional `links` list of `{label, href}` adds multiple resources, such as course assignments. Both use the same site-base and Casual context handling as other content links.
+
+An optional `workItems` list of `{title, description}` adds a visible **Planned work items** list beneath an item. Both fields must be non-empty. Groups containing these lists span the section width; work items use two columns on larger screens and one on phones. Omit the list for a brief update.
 
 The optional `updated` date is an explicit editorial date (`YYYY-MM-DD`), never the build date. The groups display as **Working on**, **Exploring** and **Up next**. Empty groups are omitted. A missing file or a mode without any items produces no section or navigation link. Use mode-specific `sectionTitles.now`, for example **Current focus** and **On my workbench**, to change the section heading. These are brief public updates; tentative plans do not need deadlines.
 

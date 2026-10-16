@@ -83,6 +83,11 @@ test('optional now content validates dates, links and item identity',()=>{
   assert.throws(()=>nowSchema.parse({exploring:[{title:'Unsafe',description:'A topic',href:'javascript:alert(1)'}]}));
   const parsed=nowSchema.parse({updated:'2026-10-16',upNext:[{projectId:'special-relativity',description:'An experiment',modes:['academic']}]});
   assert.equal(parsed.upNext[0].projectId,'special-relativity');
+  assert.deepEqual(parsed.upNext[0].workItems,[]);
+  const plan={title:'Rendering studies',description:'Small demos',workItems:[{title:'Visibility',description:'Test GPU culling'}]};
+  assert.equal(nowSchema.parse({upNext:[plan]}).upNext[0].workItems[0].title,'Visibility');
+  assert.throws(()=>nowSchema.parse({upNext:[{...plan,workItems:[{title:'',description:'No title'}]}]}));
+  assert.throws(()=>nowSchema.parse({upNext:[{...plan,workItems:[{title:'Visibility',description:''}]}]}));
 });
 test('hero selection falls back to the first home project',()=>{
   assert.equal(homeHero('casual')?.id,homeProjects('casual')[0]?.id);
