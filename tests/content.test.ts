@@ -5,7 +5,7 @@ import {tmpdir} from 'node:os';
 import {resolve,join,sep} from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {parse,stringify} from 'yaml';
-import {safeFile,configSchema,entrySchema,nowSchema,homeEntries,nowGroups} from '../src/lib/content';
+import {safeFile,configSchema,entrySchema,nowSchema,homeEntries,nowGroups,homeProjects,heroProject} from '../src/lib/content';
 
 test('content paths reject traversal and absolute escapes',()=>{
   const root=resolve('examples/einstein');
@@ -74,11 +74,35 @@ test('optional now content validates dates, links and item identity',()=>{
   const parsed=nowSchema.parse({updated:'2026-10-16',upNext:[{projectId:'special-relativity',description:'An experiment',modes:['academic']}]});
   assert.equal(parsed.upNext[0].projectId,'special-relativity');
 });
-for(const scenario of ['missing asset','unknown featured project','unknown now project','unavailable now project','duplicate path'])test(`build validation catches ${scenario}`,()=>{
+test('hero selection defaults to the first featured project',()=>{
+  assert.equal(heroProject('casual')?.id,homeProjects('casual')[0]?.id);
+});
+test('explicit hero selection is independent of the featured list',()=>{
   const fixture=mkdtempSync(join(tmpdir(),'academic-casual-'));
   try{
     cpSync('examples/einstein',fixture,{recursive:true});
-    if(scenario==='missing asset'){
+    const file=join(fixture,'site.config.yaml'),config=parse(readFileSync(file,'utf8'));
+    config.modes.casual.featuredProjects=['special-relativity'];
+    config.modes.casual.heroProject='light-quanta';
+    writeFileSync(file,stringify(config));
+    const result=spawnSync(process.execPath,['--import','tsx','-e',"import('./src/lib/content.ts').then(m=>{if(m.heroProject('casual')?.id!=='light-quanta'||m.homeProjects('casual')[0]?.id!=='special-relativity')process.exit(1)})"],{env:{...process.env,SITE_CONTENT_ROOT:fixture},encoding:'utf8'});
+    assert.equal(result.status,0,result.stderr);
+  }finally{rmSync(fixture,{recursive:true,force:true});}
+});
+for(const scenario of ['unknown hero project','hidden hero project','unavailable hero project','missing asset','unknown featured project','unknown now project','unavailable now project','duplicate path'])test(`build validation catches ${scenario}`,()=>{
+  const fixture=mkdtempSync(join(tmpdir(),'academic-casual-'));
+  try{
+    cpSync('examples/einstein',fixture,{recursive:true});
+    if(scenario.includes('hero project')){
+      const file=join(fixture,'site.config.yaml'),config=parse(readFileSync(file,'utf8'));
+      config.modes.casual.heroProject=scenario==='unknown hero project'?'missing':'light-quanta';
+      if(scenario!=='unknown hero project'){
+        const projectFile=join(fixture,'content/projects/light-quanta.md');
+        writeFileSync(projectFile,readFileSync(projectFile,'utf8').replace(/^---\n/,scenario==='hidden hero project'?'---\nhome: false\n':'---\nmodes: [academic]\n'));
+        config.modes.casual.featuredProjects=config.modes.casual.featuredProjects.filter((id:string)=>id!=='light-quanta');
+      }
+      writeFileSync(file,stringify(config));
+    }else if(scenario==='missing asset'){
       const file=join(fixture,'site.config.yaml'),config=parse(readFileSync(file,'utf8'));config.identity.photo='/assets/missing.jpg';writeFileSync(file,stringify(config));
     }else if(scenario==='unknown featured project'){
       const file=join(fixture,'site.config.yaml'),config=parse(readFileSync(file,'utf8'));config.modes.academic.featuredProjects=['missing'];writeFileSync(file,stringify(config));
@@ -96,6 +120,6 @@ for(const scenario of ['missing asset','unknown featured project','unknown now p
     }
     const result=spawnSync(process.execPath,['--import','tsx','-e',"import('./src/lib/content.ts')"],{env:{...process.env,SITE_CONTENT_ROOT:fixture},encoding:'utf8'});
     assert.notEqual(result.status,0);
-    assert.match(result.stderr,/Missing resource|Unknown featured|Unknown now project|Now project .* unavailable|Duplicate route/);
+    assert.match(result.stderr,/Unknown hero project|Hero project .* unavailable|Missing resource|Unknown featured|Unknown now project|Now project .* unavailable|Duplicate route/);
   }finally{assert.ok(resolve(fixture).startsWith(resolve(tmpdir())+sep+'academic-casual-'));rmSync(fixture,{recursive:true,force:true});}
 });

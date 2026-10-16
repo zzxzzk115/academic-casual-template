@@ -13,7 +13,7 @@ The starter at `examples/einstein` is a sourced historical profile, with a real 
 | `socials` | Links with a label, URL, optional Font Awesome icon and optional mode visibility |
 | `theme` | Academic and Casual accent colors in six-digit hex form |
 | `hero` | Enable the optional illustration, set its label and intensity |
-| `modes` | Ordered sections, optional desktop navigation, section headings and featured project IDs for each mode |
+| `modes` | Ordered sections, optional desktop navigation, section headings featured project IDs, optional `heroProject` and `showToolkit` for each mode |
 | `sectionLabels` | Optional navigation labels, keyed by section ID |
 | `projectCategories` | Category IDs mapped to display names |
 | `blog` | Optional external blog integration: original URL, JSON Feed URL and content-relative snapshot file |
@@ -34,10 +34,13 @@ modes:
     featuredProjects: [my-project]
   casual:
     sections: [projects, interests, writing, about, contact]
+    heroProject: my-project
     sectionTitles:
       projects: Selected work
     featuredProjects: [my-project]
 ```
+
+Casual uses `modes.casual.heroProject` to choose its opening project independently of `featuredProjects`. Omit it to retain the first featured project fallback. The referenced project must exist, support Casual and allow homepage display (`home: true`). A project without an image uses the existing portrait/illustration fallback. `hero.enabled` controls the optional illustration, not the project preview.
 
 Available sections are `research`, `now`, `news`, `publications`, `projects`, `cv`, `writing`, `interests`, `about` and `contact`. Sections and navigation entries must be unique; desktop navigation can only point to enabled sections. Omitting `navigation` uses the standard desktop subset, including `now` when present. Mobile navigation lists all enabled sections. Empty `now`, `news` and `projects` sections and their navigation links are hidden.
 
@@ -59,7 +62,7 @@ Set `socials[].primary: true` to include an archive, portfolio or other link in 
 
 | Path | Contents |
 | --- | --- |
-| `content/profile.yaml` | Academic/Casual summaries, background, optional `casualHeadline` and `casualAbout`, research topics, interests and toolkit rows |
+| `content/profile.yaml` | Academic/Casual summaries, background, optional `academicBackground`, `casualHeadline` and `casualAbout`, research topics, interests and toolkit rows |
 | `content/now.yaml` | Optional current work, learning topics and tentative next steps |
 | `content/about.md` | Complete biography for CV and the default Casual About section |
 | `content/cv.yaml` | Education/work timelines, languages, skills and optional basics/contact fields |
@@ -70,7 +73,7 @@ Set `socials[].primary: true` to include an archive, portfolio or other link in 
 | `content/repositories.yaml` | Repository names in `owner/repository` form |
 | `public/` | Assets copied with their existing paths |
 
-The Academic hero uses `identity.role` and factual summaries. The Casual role line uses `profile.casualHeadline`, or “Projects and interests” when omitted. The legacy `headline` field is not displayed. Optional toolkit rows use `label` and an `items` list; they appear in Academic, Casual and CV views.
+The Academic hero uses `identity.role` and factual summaries. The Casual role line uses `profile.casualHeadline`, or “Projects and interests” when omitted. The legacy `headline` field is not displayed. Optional toolkit rows use `label` and an `items` list; they appear in Academic, Casual and CV views. Set a mode’s `showToolkit: false` to omit toolkit rows from that homepage while retaining them on the full CV. `profile.academicBackground` optionally replaces the longer `background` in the Academic introduction; an empty string hides that paragraph. Omission preserves the original background.
 
 Set `profile.casualAbout` to a short plain-text personal introduction to use it in the Casual About section instead of the complete biography and toolkit. The full biography and toolkit remain available on the CV page. Omitting it preserves the existing About layout.
 
@@ -114,6 +117,10 @@ modes: [academic, casual]
 order: 1
 home: true
 status: In development
+overview:
+  purpose: The problem this project addresses.
+  contribution: What I implemented or contributed.
+  outcome: What works today, with any relevant limits.
 links:
   - label: Source
     href: https://github.com
@@ -125,7 +132,11 @@ Required fields are `id`, `title`, `description` and `legacyPath`. The path name
 
 `home` is a YAML boolean: `home: false` excludes a record from both homepages, while `home: true` (the default when omitted) makes it eligible in its configured `modes`. Filtering happens before homepage item limits. Projects still follow the mode's `featuredProjects` list, or the existing `featured`/all-projects fallback; `home: false` overrides either selection. Eligibility does not force an item into a limited or curated selection. Detail pages, archives, RSS and search remain available. This field applies to local Markdown records; articles imported from an independent blog remain controlled by its JSON Feed.
 
-Projects without an image render as text cards. Featured project IDs must exist and support the selected mode. The all-projects page remains a shared catalog. Category fragments such as `/projects/#work` initialize the filter.
+Optional `overview: {purpose, contribution, outcome}` gives a project detail page a compact opening summary, labeled **Purpose**, **My contribution** and **Outcome**. Supply all three as plain text; use the Markdown body for evidence, images and technical detail. This replaces the repeated description under the page title; the description remains in cards, search and page metadata. Projects without an overview keep their existing layout.
+
+Homepage writing defaults to **Selected writing**; override `sectionTitles.writing` or `sectionLabels.writing` to suit your editorial selection. Use `sectionTitles.news: Milestones` for infrequent announcements without changing existing URLs or section IDs.
+
+Projects without an image render as text cards at their natural height. Featured project IDs must exist and support the selected mode. The all-projects page remains a shared catalog. Category fragments such as `/projects/#work` initialize the filter.
 
 Markdown supports code highlighting, tables, Mermaid fences, raw HTML and custom anchors (`## Method {#method}`). Raw HTML is for trusted content authors. Major content remains readable without JavaScript; diagrams retain their source, and interactive filtering/search/copying progressively enhance the page.
 

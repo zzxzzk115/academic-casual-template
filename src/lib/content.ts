@@ -44,6 +44,10 @@ export function homeProjects(mode: Mode) {
   if (configured.length) return configured.flatMap(id => available.filter(project => project.id === id));
   return available.some(project => project.featured) ? available.filter(project => project.featured) : available;
 }
+export function heroProject(mode: Mode) {
+  const id = config.modes[mode].heroProject;
+  return id ? homeEntries(projects, mode).find(project => project.id === id) : homeProjects(mode)[0];
+}
 export function nowGroups(mode: Mode) {
   return (Object.keys(nowGroupLabels) as (keyof typeof nowGroupLabels)[]).map(key => ({
     key, label: nowGroupLabels[key], items: now[key].filter(item => item.modes.includes(mode)).map(item => {
@@ -102,6 +106,13 @@ export function validateContent() {
     const project=projects.find(p=>p.id===id);
     if(!project)throw new Error(`Unknown featured project: ${id}`);
     if(!project.modes.includes(mode))throw new Error(`Featured project ${id} is unavailable in ${mode}`);
+  }
+  for (const mode of modes) {
+    const id = config.modes[mode].heroProject;
+    if (!id) continue;
+    const project = projects.find(project => project.id === id);
+    if (!project) throw new Error(`Unknown hero project: ${id}`);
+    if (!project.home || !project.modes.includes(mode)) throw new Error(`Hero project ${id} is unavailable on the ${mode} homepage`);
   }
   for (const key of Object.keys(nowGroupLabels) as (keyof typeof nowGroupLabels)[]) for (const item of now[key]) {
     if (!item.projectId) continue;
