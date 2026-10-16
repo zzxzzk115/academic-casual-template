@@ -1,0 +1,18 @@
+education:
+  - title: Diploma in mathematics and physics teaching
+    institution: Swiss Federal Polytechnic, Zurich
+    start: '1896'
+    end: '1900'
+    description: Completed his studies in July 1900.
+    url: https://library.ethz.ch/en/collections-and-archives/platforms/einstein-online/studium-am-polytechnikum-in-zuerich-1896-1900.html
+    location: Zurich, Switzerland
+work:
+  - title: Faculty member
+    institution: Institute for Advanced Study
+    start: '1933'
+    end: '1955'
+    description: Worked in Princeton for the remainder of his life.
+    url: https://www.ias.edu/arts-at-ias
+    location: Princeton, New Jersey
+languages: []
+skills: []

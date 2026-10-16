@@ -13,21 +13,21 @@ const modeConfig = z.object({
 }).refine(mode => !mode.navigation || mode.navigation.every(id => mode.sections.includes(id)), 'Navigation must refer to enabled sections');
 export const configSchema = z.object({
   schemaVersion: z.literal(1),
-  site: z.object({ title: z.string().min(1), description: z.string().min(1), url: z.url(), base: z.string().default('/'), language: z.string().default('en'), availableLanguages: z.array(z.string()).default(['en']), copyrightStartYear: z.number().int().min(1900).max(new Date().getUTCFullYear()).optional() }),
-  identity: z.object({ name: z.string().min(1), handle: z.string().min(1), initials: z.string().min(1), role: z.string().min(1), institution: z.string().min(1), location: z.string(), address: z.string().optional(), contactNote: z.string().optional(), email: z.email(), photo: z.string().optional(), cv: z.string().optional() }),
-  socials: z.array(z.object({ label: z.string(), href: localOrExternal, icon: z.string().regex(/^(brands|solid):[a-z0-9-]+$/).optional(), modes: z.array(z.enum(modes)).default(['academic','casual']) })),
+  site: z.object({ title: z.string().min(1), description: z.string().min(1), url: z.url(), base: z.string().default('/'), language: z.string().default('en'), availableLanguages: z.array(z.string()).default(['en']), copyrightStartYear: z.number().int().min(1900).max(new Date().getUTCFullYear()).optional(), footerText: z.string().optional() }),
+  identity: z.object({ name: z.string().min(1), handle: z.string().min(1).optional(), initials: z.string().min(1), role: z.string().min(1), institution: z.string().default(''), location: z.string().default(''), address: z.string().optional(), contactNote: z.string().optional(), email: z.email().optional(), photo: z.string().optional(), photoCredit: z.object({label:z.string(),href:localOrExternal}).optional(), cv: z.string().optional() }),
+  socials: z.array(z.object({ label: z.string(), href: localOrExternal, icon: z.string().regex(/^(brands|solid):[a-z0-9-]+$/).optional(), primary:z.boolean().default(false), modes: z.array(z.enum(modes)).default(['academic','casual']) })),
   theme: z.object({ academic: z.string().regex(/^#[0-9a-f]{6}$/i), casual: z.string().regex(/^#[0-9a-f]{6}$/i) }),
   hero: z.object({ enabled: z.boolean().default(true), label: z.string(), intensity: z.number().min(0).max(2).default(1) }),
   modes: z.object({ academic: modeConfig, casual: modeConfig }),
   sectionLabels: z.partialRecord(z.enum(sectionIds), z.string().min(1)).default({}),
   projectCategories: z.record(z.string().regex(/^[a-z0-9_-]+$/), z.string().min(1)).default({work:'Research',library:'Libraries',fun:'Tools & apps',indie:'Games',retro:'Retro & emulation'}),
-  blog: z.object({ href: localOrExternal, feedUrl: z.url().optional(), snapshot: z.string().optional() }),
+  blog: z.object({ href: localOrExternal, feedUrl: z.url().optional(), snapshot: z.string().optional() }).optional(),
   comments: z.object({ repo: z.string(), repoId: z.string(), category: z.string(), categoryId: z.string(), mapping: z.literal('pathname') }).optional(),
 });
 export const entrySchema = z.object({
   id: z.string().regex(/^[a-z0-9_-]+$/), title: z.string().min(1), description: z.string().min(1),
   legacyPath: z.string().regex(/^\/[\w/-]+\/$/),
-  image: z.string().optional(), category: z.string().default('work'), categories: z.array(z.string()).default([]), tags: z.array(z.string()).default([]),
+  image: z.string().optional(), imageAlt: z.string().optional(), category: z.string().default('work'), categories: z.array(z.string()).default([]), tags: z.array(z.string()).default([]),
   modes: z.array(z.enum(modes)).default(['academic', 'casual']), order: z.number().default(100),
   date: z.preprocess(v=>v instanceof Date?v.toISOString():v,z.string().optional()), comments: z.boolean().default(false), featured: z.boolean().default(false),
   status: z.string().optional(), links: z.array(z.object({label:z.string(),href:localOrExternal,icon:z.string().regex(/^(brands|solid):[a-z0-9-]+$/).optional()})).default([]),

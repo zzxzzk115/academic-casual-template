@@ -13,9 +13,9 @@ const run = args => {
   if (result.status !== 0) throw new Error(`Example validation failed: ${args.join(' ')}`);
 };
 const outputs = [];
-for (const [name, base, email] of [['root', '/', 'hello@example.com'], ['subpath', '/portfolio/', 'subpath@example.org']]) {
+for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid'], ['subpath', '/portfolio/', 'subpath@example.org']]) {
   const content = join(runRoot, name, 'content'), out = join(runRoot, name, 'dist');
-  cpSync(join(root, 'examples/minimal'), content, { recursive: true });
+  cpSync(join(root, 'examples/einstein'), content, { recursive: true });
   const file = join(content, 'site.config.yaml'), config = parse(readFileSync(file, 'utf8'));
   config.site.base = base;
   config.identity.email = email;
@@ -32,5 +32,5 @@ for (const [name, base, email] of [['root', '/', 'hello@example.com'], ['subpath
   if (!pages.includes(email)) throw new Error(`Missing configured identity in ${name}`);
   outputs.push(pages);
 }
-if (outputs[0].includes('subpath@example.org') || outputs[1].includes('hello@example.com')) throw new Error('Content leaked between independent builds');
+if (outputs[0].includes('subpath@example.org') || outputs[1].includes('root-fixture@example.invalid')) throw new Error('Content leaked between independent builds');
 console.log(`Root/subpath and content isolation checks passed. Output: ${runRoot}`);

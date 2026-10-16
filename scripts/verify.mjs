@@ -1,7 +1,7 @@
 import {readFileSync,readdirSync,statSync,existsSync} from 'node:fs';
 import {resolve,join,extname,relative} from 'node:path';
 import {parse} from 'yaml';
-const [outArg='dist',contentArg='examples/minimal']=process.argv.slice(2);
+const [outArg='dist',contentArg='examples/einstein']=process.argv.slice(2);
 const out=resolve(outArg),content=resolve(contentArg);
 const config=parse(readFileSync(join(content,'site.config.yaml'),'utf8'));
 const base=config.site.base.replace(/\/$/,'');
@@ -23,8 +23,8 @@ for(const file of html){
     if(!raw||/^(data:|mailto:|tel:|javascript:)/.test(raw))continue;
     const url=new URL(raw,current);
     if(url.origin!==origin){external.add(url.href);continue;}
-    if(/^https?:/.test(config.blog.href)&&url.href.startsWith(config.blog.href)){external.add(url.href);continue;}
-    if(config.blog.href.startsWith('/')&&url.pathname.startsWith(`${base}${config.blog.href}`)){external.add(url.href);continue;}
+    if(config.blog&&/^https?:/.test(config.blog.href)&&url.href.startsWith(config.blog.href)){external.add(url.href);continue;}
+    if(config.blog?.href.startsWith('/')&&url.pathname.startsWith(`${base}${config.blog.href}`)){external.add(url.href);continue;}
     if(!url.pathname.startsWith(base+'/')){
       // An explicit URL may point to another site/project on the same host.
       // Unprefixed root-relative paths remain errors for subpath deployments.

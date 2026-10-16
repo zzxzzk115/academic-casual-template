@@ -1,0 +1,65 @@
+schemaVersion: 1
+site:
+  title: Albert Einstein — Historical example
+  description: A historical example of an academic and personal website, with research, selected papers, biography and interests.
+  url: https://example.com
+  base: /
+  language: en
+  availableLanguages: [en]
+  footerText: Historical example · Albert Einstein (1879–1955)
+identity:
+  name: Albert Einstein
+  initials: AE
+  role: Theoretical physicist
+  institution: Institute for Advanced Study, 1933–1955
+  location: Princeton, New Jersey
+  photo: /assets/einstein-1921.jpg
+  photoCredit:
+    label: Ferdinand Schmutzer, 1921 · Public domain
+    href: https://commons.wikimedia.org/wiki/File:Einstein_1921_by_F_Schmutzer.jpg
+  contactNote: A historical profile for this template. References and image credits are collected in the source notes.
+socials:
+  - label: Nobel Prize
+    href: https://www.nobelprize.org/prizes/physics/1921/einstein/facts/
+    icon: solid:medal
+    primary: true
+  - label: Sources & photograph
+    href: /featured-posts/2026/sources/
+    icon: solid:book-open
+    primary: true
+sectionLabels:
+  projects: Research topics
+  cv: Biography
+  writing: Reading
+  contact: Sources
+projectCategories:
+  relativity: Relativity
+  quantum: Quantum theory
+  statistical: Statistical physics
+theme:
+  academic: '#2455cf'
+  casual: '#087763'
+hero:
+  enabled: false
+  label: ''
+  intensity: 1
+modes:
+  academic:
+    sections: [research, publications, projects, cv, writing, contact]
+    navigation: [research, publications, cv, contact]
+    sectionTitles:
+      research: Research
+      projects: Selected work
+      cv: Biography
+      writing: Reading notes
+      contact: Sources
+    featuredProjects: [special-relativity, light-quanta, brownian-motion]
+  casual:
+    sections: [interests, about, projects, writing, contact]
+    navigation: [interests, about, writing, contact]
+    sectionTitles:
+      interests: Beyond physics
+      projects: Selected work
+      writing: Reading notes
+      contact: Sources
+    featuredProjects: [special-relativity, light-quanta, brownian-motion]

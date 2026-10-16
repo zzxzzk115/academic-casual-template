@@ -14,9 +14,9 @@ The template's initializer writes a real repository name and current commit SHA.
 
 The workflow in [examples/validate-content.yml](examples/validate-content.yml) checks out the pinned template, builds the content and uploads a preview artifact. Copy it into a content repository's `.github/workflows/` directory. It has read-only repository permissions and does not publish a site. The referenced template must be accessible; cross-repository private checkouts require separately configured access.
 
-The template's own Actions workflow checks types, tests, root/subpath output and independent content fixtures. On the upstream template repository's `main` branch, successful checks also build and deploy the bundled fictional example to [GitHub Pages](https://zzxzzk115.github.io/academic-casual-template/). Pull requests and other repositories only run validation. No custom secrets are needed.
+The template's own Actions workflow checks types, tests, root/subpath output and independent content fixtures. On the upstream template repository's `main` branch, successful checks also build and deploy the bundled historical Einstein example to [GitHub Pages](https://zzxzzk115.github.io/academic-casual-template/). Pull requests and other repositories only run validation. No custom secrets are needed.
 
-The demo builder always copies `examples/minimal` into an isolated staging directory. It takes the Pages origin/base path from `actions/configure-pages` and never reads a separate personal content repository. To reproduce that production output locally:
+The demo builder always copies `examples/einstein` into an isolated staging directory. It takes the Pages origin/base path from `actions/configure-pages` and never reads a separate personal content repository. To reproduce that production output locally:
 
 ```sh
 pnpm demo:build --url https://zzxzzk115.github.io --base /academic-casual-template/

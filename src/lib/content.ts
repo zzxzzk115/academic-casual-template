@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { modes, configSchema, entrySchema, profileSchema, cvSchema, type Mode, type Entry, type Publication, type Route } from './schema';
 export * from './schema';
 
-export const contentRoot = resolve(process.env.SITE_CONTENT_ROOT || './examples/minimal');
+export const contentRoot = resolve(process.env.SITE_CONTENT_ROOT || './examples/einstein');
 
 export function safeFile(root: string, file: string) {
   const target = resolve(root, file);
@@ -52,7 +52,7 @@ export const yearLabel = (date: string) => new Date(date).getUTCFullYear().toStr
 export const sectionLabels: Record<string,string> = { research:'Research', news:'News', publications:'Publications', projects:'Projects', cv:'Experience', writing:'Writing', interests:'Interests', about:'About', contact:'Contact', ...config.sectionLabels };
 
 export const routes: Route[] = [
-  { path:'/projects/', title:'Projects', kind:'projects', description:'Research projects, tools, and creative work.' },
+  { path:'/projects/', title:config.sectionLabels.projects||'Projects', kind:'projects', description:'Selected work and research.' },
   { path:'/publications/', title:'Publications', kind:'publications' },
   { path:'/cv/', title:'Curriculum vitae', kind:'cv' },
   { path:'/news/', title:'News & milestones', kind:'list', entries:news },
@@ -85,6 +85,7 @@ validateContent();
 
 export type FeedItem = { id:string; url:string; title:string; summary?:string; date_published?:string };
 export async function loadBlog(): Promise<FeedItem[]> {
+  if(!config.blog) return [];
   const feedSchema = z.object({ items:z.array(z.object({ id:z.string(),url:z.url(),title:z.string(),summary:z.string().optional(),date_published:z.string().optional() })) });
   if(config.blog.feedUrl && !process.env.SITE_OFFLINE) {
     try { const response=await fetch(config.blog.feedUrl,{signal:AbortSignal.timeout(5000)}); if(!response.ok)throw new Error(String(response.status));return feedSchema.parse(await response.json()).items; }

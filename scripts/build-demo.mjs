@@ -17,11 +17,11 @@ if (!['https:', 'http:'].includes(url.protocol) || url.pathname !== '/' || url.s
 const base = options.base === '' || options.base === '/' ? '/' : options.base.replace(/\/?$/, '/');
 if (!/^\/(?:[\w-]+\/)*$/.test(base)) throw new Error('--base must be an absolute site path');
 
-// Deliberately fixed to the bundled fictional example, never an external content root.
+// Deliberately fixed to the bundled historical Einstein example, never an external content root.
 const cache = join(root, '.cache');
 mkdirSync(cache, { recursive: true });
 const content = mkdtempSync(join(cache, 'demo-content-'));
-cpSync(join(root, 'examples/minimal'), content, { recursive: true });
+cpSync(join(root, 'examples/einstein'), content, { recursive: true });
 const file = join(content, 'site.config.yaml'), config = parse(readFileSync(file, 'utf8'));
 config.site.url = url.origin;
 config.site.base = base;
@@ -34,5 +34,5 @@ for (const command of [
   const result = spawnSync(process.execPath, command, { cwd: root, env: { ...process.env, SITE_OFFLINE: '1' }, stdio: 'inherit' });
   if (result.status !== 0) process.exit(result.status || 1);
 }
-console.log(`Fictional demo built for ${url.origin}${base}`);
+console.log(`Historical Einstein demo built for ${url.origin}${base}`);
 console.log(`Content: ${content}\nOutput: ${out}`);

@@ -7,11 +7,11 @@ const categories=[...new Set(entries.map(p=>p.category))];
 const labels=config.projectCategories;
 ---
 <div class="project-gallery" data-gallery>
-  {filters && <div class="filters" role="group" aria-label="Filter projects"><button class="active" data-filter="all" aria-pressed="true">All projects <span>{entries.length.toString().padStart(2,'0')}</span></button>{categories.map(c=><button id={c} data-filter={c} aria-pressed="false">{labels[c]||c} <span>{entries.filter(p=>p.category===c).length}</span></button>)}</div>}
+  {filters && <div class="filters" role="group" aria-label="Filter projects"><button class="active" data-filter="all" aria-pressed="true">All {(config.sectionLabels.projects||'Projects').toLowerCase()} <span>{entries.length.toString().padStart(2,'0')}</span></button>{categories.map(c=><button id={c} data-filter={c} aria-pressed="false">{labels[c]||c} <span>{entries.filter(p=>p.category===c).length}</span></button>)}</div>}
   <div class="project-grid">
     {entries.map((p,i)=><article class:list={['project', { 'project-wide':i===0 && entries.length>2&&!!p.image,'project-text':!p.image }]} data-category={p.category}>
       {p.image&&<a class="project-image" href={href(p.legacyPath,mode)} aria-label={`Explore ${p.title}`}>
-        <img src={href(p.image)} alt={`${p.title} screenshot`} loading="lazy" decoding="async" width="960" height="600" />
+        <img src={href(p.image)} alt={p.imageAlt||p.title} loading="lazy" decoding="async" width="960" height="600" />
         <span class="project-arrow" aria-hidden="true" data-pagefind-ignore><Icon name="arrow-up-right"/></span>
       </a>}
       <div class="project-meta">{p.tags.slice(0,2).join(' / ') || p.category}</div>

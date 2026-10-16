@@ -20,7 +20,7 @@ if (command === 'init') {
   console.log(`Created content site: ${initContent(options.content, { templateRoot: root, repository, revision })}`);
   process.exit(0);
 }
-const env = { ...process.env, SITE_CONTENT_ROOT: resolve(options.content || join(root, 'examples/minimal')), SITE_OUTPUT_ROOT: resolve(options.out || join(root, 'dist')) };
+const env = { ...process.env, SITE_CONTENT_ROOT: resolve(options.content || join(root, 'examples/einstein')), SITE_OUTPUT_ROOT: resolve(options.out || join(root, 'dist')) };
 const astroRoot = join(root, 'node_modules/astro');
 const astroPackage = JSON.parse(readFileSync(join(astroRoot, 'package.json'), 'utf8'));
 const cli = join(astroRoot, typeof astroPackage.bin === 'string' ? astroPackage.bin : astroPackage.bin.astro);

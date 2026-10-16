@@ -8,7 +8,7 @@ import Icon from './Icon.astro';
     <div><p class="eyebrow">{p.venueUrl?<a href={p.venueUrl}>{p.venue}{p.abbr&&` (${p.abbr})`}</a>:p.venue}</p><h3>{p.title}</h3><p class="pub-authors">{p.author}</p>
       <p class="pub-metadata">{[p.volume&&`Vol. ${p.volume}`,p.number&&`No. ${p.number}`,p.pages&&`p. ${p.pages}`,p.date&&dateLabel(p.date)].filter(Boolean).join(' · ')}</p>
       <div class="pub-links">{p.pdf&&<a href={href(p.pdf)}><Icon name="file-earmark-pdf"/> Read paper</a>}{p.doi&&<a href={`https://doi.org/${p.doi}`}>DOI <Icon name="arrow-up-right"/></a>}{p.url&&<a href={p.url}>Publisher <Icon name="arrow-up-right"/></a>}{p.cnki&&<a href={p.cnki}>CNKI <Icon name="arrow-up-right"/></a>}<button data-copy={p.bibtex}><Icon name="clipboard"/> Copy BibTeX</button><a href={href('/publications.bib')}><Icon name="download"/> Download .bib</a></div>
-      <details><summary>Abstract</summary><p>{p.abstract}</p></details>
+      {p.abstract&&<details><summary>Abstract</summary><p>{p.abstract}</p></details>}
       {p.gbt&&<details><summary>Original citation</summary><p lang="zh">{p.gbt}</p></details>}
     </div>
     {p.preview&&<img src={href(p.preview)} alt="Publication preview" width="200" height="140" loading="lazy" />}

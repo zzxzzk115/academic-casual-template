@@ -6,21 +6,21 @@ An MIT-licensed Astro + Vue + TypeScript template for a research homepage and a 
 - `/casual/`: projects, interests and personal writing.
 - Shared detail pages with stable paths and optional `?mode=casual` context.
 - Static HTML, local search, project filters, bibliography export, dark mode and optional Giscus.
-- An optional Vue/WebGL sampling illustration with a static SVG fallback.
+- Optional photos, portfolios and integrations; no developer accounts or blog required.
 
-All bundled identities, CV records, articles and projects are fictional. This repository contains the framework and starter examples. A site's personal information belongs in its content repository.
+The bundled example is a sourced historical profile of **Albert Einstein**: research, publications, biography, music and correspondence. It uses a real public-domain photograph by Ferdinand Schmutzer (1921), with [source and image credits](examples/einstein/ASSETS.md). A site's own content belongs in a separate repository.
 
 ## Live demo
 
 [Academic preview](https://zzxzzk115.github.io/academic-casual-template/) · [Casual preview](https://zzxzzk115.github.io/academic-casual-template/casual/)
 
-The demo uses only the bundled fictional example. Switch presentation mode and color theme independently; try the project filters, detail pages and local search.
+The demo presents Einstein’s research, selected papers, biography and interests. The 1921 portrait is a historical photograph, not generated artwork. Switch presentation mode and color theme independently, or try the research filters and local search.
 
 | Academic · light | Casual · dark |
 | --- | --- |
 | [![Academic demo in the light theme](docs/images/demo-academic.jpg)](https://zzxzzk115.github.io/academic-casual-template/) | [![Casual demo in the dark theme](docs/images/demo-casual.jpg)](https://zzxzzk115.github.io/academic-casual-template/casual/) |
 
-Screenshots are captured from the live fictional demo. Presentation mode and color theme are independent settings.
+Screenshots are captured from the live Einstein demo. Presentation mode and color theme are independent settings.
 
 ## Quick start
 
@@ -33,7 +33,7 @@ pnpm install --frozen-lockfile
 pnpm site dev
 ```
 
-The default content is `examples/minimal`. Production builds include the Pagefind search index:
+The default content is `examples/einstein`. Production builds include the Pagefind search index:
 
 ```sh
 pnpm site build
@@ -49,7 +49,7 @@ pnpm site build --content ../my-homepage --out ../my-homepage/dist
 node scripts/verify.mjs ../my-homepage/dist ../my-homepage
 ```
 
-`init` requires a new or empty directory. It copies the fictional starter, adds a content README and `.gitignore`, and writes `template.lock.json` with the current template commit. It does not create a Git repository or deploy anything. Replace the fictional records, initialize your own content repository, and commit its configuration and assets.
+`init` requires a new or empty directory. It copies the Einstein starter, adds a content README and `.gitignore`, and writes `template.lock.json` with the current template commit. It does not create a Git repository or deploy anything. Replace the historical example records, initialize your own content repository, and commit its configuration and assets.
 
 Content paths are relative to the directory where you run the command. `--port 4321` is available for dev/preview. The template checkout must be at the revision recorded by the content repository; the CLI does not switch Git revisions automatically.
 
@@ -64,7 +64,7 @@ src/components/         Homepage sections and optional Vue graphics
 src/pages/              Static routes, feeds and metadata
 src/scripts/            Progressive client-side interactions
 scripts/                CLI, initialization and verification
-examples/minimal/       Standalone fictional content site
+examples/einstein/       Standalone historical example content site
 ```
 
 Customize identity, mode sections, navigation, section titles, category labels, project selections and colors through site configuration. Update personal copy and tool preferences through content files. Template upgrades use an explicit commit pin; no npm package publication is needed.
@@ -82,6 +82,6 @@ pnpm test
 pnpm check:examples
 ```
 
-The last command builds two independent fixtures at `/` and `/portfolio/`, checks links/resources, and checks that configured identities do not leak between builds. GitHub Actions runs these checks for pushes and pull requests. Successful runs on this upstream repository's `main` branch also deploy the fictional Pages demo. Other repositories and pull requests only run validation.
+The last command builds two independent fixtures at `/` and `/portfolio/`, checks links/resources, and checks that configured identities do not leak between builds. GitHub Actions runs these checks for pushes and pull requests. Successful runs on this upstream repository's `main` branch also deploy the Einstein Pages demo. Other repositories and pull requests only run validation.
 
 English UI is provided. `site.language` sets the document language; it does not translate interface copy. Markdown HTML is trusted build input. Third-party fonts and libraries retain their own licenses; Font Awesome Free assets and license are bundled locally.

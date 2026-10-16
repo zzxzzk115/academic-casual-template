@@ -1,0 +1,21 @@
+summary: Albert Einstein (1879–1955) worked on relativity, quantum theory and statistical physics. He received the 1921 Nobel Prize in Physics, awarded in 1922, for his work on theoretical physics and the photoelectric effect.
+background: He studied at the Swiss Federal Polytechnic in Zurich from 1896 to 1900 and later joined the Institute for Advanced Study in Princeton. This historical profile is an example of the template, with sources linked below.
+casualHeadline: Beyond physics
+casualSummary: Einstein played the violin and enjoyed music. His correspondence also records friendships, family life and sailing, alongside his scientific work.
+research:
+  - title: Relativity
+    description: Space, time, motion and gravitation, from special relativity in 1905 to general relativity in 1915.
+  - title: Quantum theory
+    description: Light quanta, the photoelectric effect and questions about the interpretation of quantum mechanics.
+  - title: Statistical physics
+    description: Brownian motion and the relationship between observable behaviour and molecular structure.
+interests:
+  - title: Music
+    description: Einstein played the violin. Mozart and Bach were among the composers he admired, and he held musical gatherings at his Princeton home.
+    href: https://www.ias.edu/arts-at-ias
+  - title: Correspondence
+    description: Letters preserve the conversations and friendships around his scientific and personal life. They are collected in the Einstein Papers Project.
+    href: https://assets.press.princeton.edu/books/einstein11/c_index.pdf
+  - title: Sailing
+    description: Sailing appears alongside music and family life in the records of his correspondence.
+    href: https://assets.press.princeton.edu/books/einstein11/c_index.pdf

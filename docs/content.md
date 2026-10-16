@@ -1,6 +1,6 @@
 # Content and configuration
 
-The starter at `examples/minimal` is a complete, fictional content directory. Use `pnpm site init --content <empty-directory>` to create an independent copy. All normal edits belong in that directory; the template reads it at build time.
+The starter at `examples/einstein` is a sourced historical profile, with a real public-domain photograph and editorial reading notes. Use `pnpm site init --content <empty-directory>` to create an independent copy. Replace its historical content with your own; the template reads that separate directory at build time.
 
 ## Site configuration
 
@@ -9,14 +9,14 @@ The starter at `examples/minimal` is a complete, fictional content directory. Us
 | Field | Purpose |
 | --- | --- |
 | `site` | Title, description, origin URL, base path, language and optional copyright start year |
-| `identity` | Name, handle, initials, role, institution, location and email; optional address, contact note, photo and CV path |
+| `identity` | Name, initials and role; optional handle, institution, location, email, address, contact note, photo, photo credit and CV path |
 | `socials` | Links with a label, URL, optional Font Awesome icon and optional mode visibility |
 | `theme` | Academic and Casual accent colors in six-digit hex form |
 | `hero` | Enable the optional illustration, set its label and intensity |
 | `modes` | Ordered sections, optional desktop navigation, section headings and featured project IDs for each mode |
 | `sectionLabels` | Optional navigation labels, keyed by section ID |
 | `projectCategories` | Category IDs mapped to display names |
-| `blog` | Original blog URL, optional JSON Feed URL and content-relative snapshot file |
+| `blog` | Optional external blog integration: original URL, JSON Feed URL and content-relative snapshot file |
 | `comments` | Optional Giscus repository/category IDs, with pathname mapping |
 
 `site.url` is the origin URL, such as `https://example.github.io`. Set `site.base` to `/` for a root site, or `/portfolio/` for a project site. It must start and end with `/`. Templates prefix local paths automatically. Do not include the base in content paths.
@@ -52,6 +52,8 @@ socials:
 ```
 
 Free icons accept `brands:<name>` or `solid:<name>`. The fonts are bundled locally; a hosted icon kit is not required.
+
+Set `socials[].primary: true` to include an archive, portfolio or other link in the Academic introduction. GitHub and LinkedIn remain introductory links by default for existing content. Email, handle and blog are optional; omitted data creates no placeholder links. The Casual title falls back to the person's name. A portrait can include `photoCredit: {label, href}`, and is used in Casual when no featured project image is configured. `site.footerText` can replace the default copyright line for a historical or curated example.
 
 ## Content files
 
@@ -91,7 +93,7 @@ links:
 ---
 ```
 
-Required fields are `id`, `title`, `description` and `legacyPath`. The path name retains migration terminology but is also the canonical route for new content. IDs are stable and unique across projects, posts and news. Public paths must end in `/` and remain unique. Optional fields also include `image`, `categories`, `date`, `comments` and `featured`. Posts and news should include a quoted ISO timestamp.
+Required fields are `id`, `title`, `description` and `legacyPath`. The path name retains migration terminology but is also the canonical route for new content. IDs are stable and unique across projects, posts and news. Public paths must end in `/` and remain unique. Optional fields also include `image`, `imageAlt`, `categories`, `date`, `comments` and `featured`. Posts and news should include a quoted ISO timestamp.
 
 Projects without an image render as text cards. Featured project IDs must exist and support the selected mode. The all-projects page remains a shared catalog. Category fragments such as `/projects/#work` initialize the filter.
 
@@ -109,7 +111,7 @@ Each citation key becomes an anchor on `/publications/`. The site provides a Bib
 
 ## External blog
 
-The homepage reads JSON Feed items with `id`, `url`, `title` and optional `summary`/`date_published`. It links to original articles without copying their bodies. A failed fetch uses `blog.snapshot`; if that snapshot is configured it must be a valid local file. `SITE_OFFLINE=1` forces it for repeatable builds. The starter demonstrates a snapshot without a live source.
+The homepage reads JSON Feed items with `id`, `url`, `title` and optional `summary`/`date_published`. It links to original articles without copying their bodies. A failed fetch uses `blog.snapshot`; if that snapshot is configured it must be a valid local file. `SITE_OFFLINE=1` forces it for repeatable builds. The historical example omits blog integration; sites can add it independently.
 
 ## Validation
 

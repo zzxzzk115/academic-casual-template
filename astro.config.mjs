@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { readFileSync } from 'node:fs';
 import { parse } from 'yaml';
 
-const contentRoot = resolve(process.env.SITE_CONTENT_ROOT || './examples/minimal');
+const contentRoot = resolve(process.env.SITE_CONTENT_ROOT || './examples/einstein');
 const config = parse(readFileSync(resolve(contentRoot, 'site.config.yaml'), 'utf8'));
 export default defineConfig({
   site: config.site.url,

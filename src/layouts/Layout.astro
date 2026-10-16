@@ -4,7 +4,7 @@ import '@fontsource-variable/newsreader';
 import '../styles/icons.css';
 import '../styles/global.css';
 import Icon from '../components/Icon.astro';
-import {config,href,sectionLabels,type Mode} from '../lib/content';
+import {config,repositories,href,sectionLabels,type Mode} from '../lib/content';
 interface Props {title?:string;description?:string;mode?:Mode;home?:boolean;image?:string;}
 const {title,description=config.site.description,mode='academic',home=false,image}=Astro.props;
 const canonical=new URL(Astro.url.pathname,config.site.url).toString();
@@ -31,7 +31,7 @@ const copyrightYears=config.site.copyrightStartYear&&config.site.copyrightStartY
   <body data-mode={mode} data-base={config.site.base}>
     <a class="skip" href="#main">Skip to content</a>
     <header class="site-header">
-      <a class="brand" href={href(mode==='casual'?'/casual/':'/')}><span class="monogram">{config.identity.initials}<i></i></span><span class="brand-name">{config.identity.name}<small>{config.identity.handle}</small></span></a>
+      <a class="brand" href={href(mode==='casual'?'/casual/':'/')}><span class="monogram">{config.identity.initials}<i></i></span><span class="brand-name">{config.identity.name}{config.identity.handle&&config.identity.handle!==config.identity.name&&<small>{config.identity.handle}</small>}</span></a>
       {(['academic','casual'] as const).map(navMode=><nav class="desktop-nav" aria-label="Main navigation" data-nav-mode={navMode} hidden={navMode!==mode}>{(config.modes[navMode].navigation??config.modes[navMode].sections.filter(s=>['research','publications','projects','writing','contact'].includes(s))).map(s=><a href={`${href(navMode==='casual'?'/casual/':'/')}#${s}`} data-section-link={s}>{sectionLabels[s]}</a>)}</nav>)}
       <div class="header-actions">
         <div class="mode-switch" aria-label="Presentation mode"><a href={academicTarget} data-mode-link="academic" aria-current={mode==='academic'?'page':undefined}>Academic</a><a href={casualTarget} data-mode-link="casual" aria-current={mode==='casual'?'page':undefined}>Casual</a></div>
@@ -42,7 +42,7 @@ const copyrightYears=config.site.copyrightStartYear&&config.site.copyrightStartY
     </header>
     <nav class="mobile-nav" aria-label="Mobile navigation" hidden>{(['academic','casual'] as const).map(navMode=><div data-nav-mode={navMode} hidden={navMode!==mode}>{config.modes[navMode].sections.map(s=><a href={`${href(navMode==='casual'?'/casual/':'/')}#${s}`}>{sectionLabels[s]}</a>)}</div>)}</nav>
     <main id="main" data-pagefind-body><slot/></main>
-    <footer class="site-footer"><span>© {copyrightYears} {config.identity.name}</span><div><a href={href('/feed.xml')}><Icon name="rss"/> RSS</a><a href={href(config.blog.href)}><Icon name="journal-text"/> Blog</a><a href={href('/repositories/')}><Icon name="github"/> Repositories</a></div></footer>
+    <footer class="site-footer"><span>{config.site.footerText||`© ${copyrightYears} ${config.identity.name}`}</span><div><a href={href('/feed.xml')}><Icon name="rss"/> RSS</a>{config.blog&&<a href={href(config.blog.href)}><Icon name="journal-text"/> Blog</a>}{repositories.length>0&&<a href={href('/repositories/')}><Icon name="github"/> Repositories</a>}</div></footer>
     <dialog id="search-dialog" aria-label="Search website"><div class="search-heading"><strong>Find something</strong><button class="icon-button" data-search-close aria-label="Close search"><Icon name="x-lg"/></button></div><div id="search-results"></div><p class="muted">Search projects, research, and writing. <kbd>Esc</kbd> to close.</p></dialog>
     <div class="toast" role="status" aria-live="polite"></div>
     <script>import '../scripts/client';</script>

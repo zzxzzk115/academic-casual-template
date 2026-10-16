@@ -37,7 +37,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - uses: actions/configure-pages@v5
         id: pages
-      - name: Build and verify the fictional demo
+      - name: Build and verify the Einstein demo
         env:
           DEMO_ORIGIN: ${{ steps.pages.outputs.origin }}
           DEMO_BASE: ${{ steps.pages.outputs.base_path }}
