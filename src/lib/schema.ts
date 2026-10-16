@@ -37,7 +37,7 @@ export const entrySchema = z.object({
   status: z.string().optional(), links: z.array(z.object({label:z.string(),href:localOrExternal,icon:z.string().regex(/^(brands|solid):[a-z0-9-]+$/).optional()})).default([]),
 });
 export type Entry = z.infer<typeof entrySchema> & { body: string; kind: string };
-export type Publication = { id: string; title: string; author: string; year: string; venue: string; abstract: string; doi?: string; pdf?: string; preview?: string; bibtex: string; volume?:string; number?:string; pages?:string; url?:string; cnki?:string; gbt?:string; date?:string; venueUrl?:string; abbr?:string };
+export type Publication = { selected: boolean; id: string; title: string; author: string; year: string; venue: string; abstract: string; doi?: string; pdf?: string; preview?: string; bibtex: string; volume?:string; number?:string; pages?:string; url?:string; cnki?:string; gbt?:string; date?:string; venueUrl?:string; abbr?:string };
 export type Route = { path: string; title: string; kind: string; entry?: Entry; entries?: Entry[]; description?: string };
 export const profileSchema = z.object({
   headline: z.string().optional(), casualHeadline: z.string().optional(), summary: z.string(), casualSummary: z.string(), background: z.string().default(''),

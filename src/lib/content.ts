@@ -61,7 +61,8 @@ export function homeSections(mode: Mode) {
     section === 'now' ? nowGroups(mode).length > 0 :
     section === 'news' ? homeEntries(news, mode).length > 0 :
     section === 'writing' ? homeEntries(posts, mode).length > 0 || !!config.blog :
-    section === 'projects' ? homeProjects(mode).length > 0 : true);
+    section === 'projects' ? homeProjects(mode).length > 0 :
+    section === 'publications' ? homePublications().length > 0 : true);
 }
 const bibFile = safeFile(contentRoot, 'content/publications.bib');
 export const bibliography = existsSync(bibFile) ? readFileSync(bibFile, 'utf8').replace(/^---\s*\n---\s*\n/, '') : '';
@@ -69,8 +70,12 @@ const clean = (text = '') => text.replace(/[{}]/g, '');
 export const publications: Publication[] = bibtex.toJSON(bibliography).filter(p => p.citationKey).map(p => {
   const t = p.entryTags;
   const pdf = t.pdf ? (t.pdf.startsWith('/') || /^https?:/.test(t.pdf) ? t.pdf : `/assets/pdf/${t.pdf}`) : undefined;
-  return { id: p.citationKey, title: clean(t.title), author: clean(t.author).split(' and ').map(name=>{const parts=name.split(', ');return parts.length===2?`${parts[1]} ${parts[0]}`:name;}).join(', '), year: t.year, venue: t.journal || t.booktitle || '', abstract: clean(t.abstract), doi: t.doi, pdf, preview: t.preview ? `/assets/img/publication_preview/${t.preview}` : undefined, venueUrl:t.journal_url,abbr:t.abbr,volume:t.volume,number:t.number,pages:t.pages,url:t.url,cnki:t.cnki,gbt:clean(t.gbt),date:t.date,bibtex: `@${p.entryType}{${p.citationKey},\n${Object.entries(t).filter(([k]) => !['preview','pdf','selected','bibtex_show','abbr','cnki','gbt','journal_url'].includes(k)).map(([k,v]) => `  ${k} = {${v}}`).join(',\n')}\n}` };
+  return { selected: z.enum(['true','false']).default('false').parse(t.selected?.trim().toLowerCase()) === 'true', id: p.citationKey, title: clean(t.title), author: clean(t.author).split(' and ').map(name=>{const parts=name.split(', ');return parts.length===2?`${parts[1]} ${parts[0]}`:name;}).join(', '), year: t.year, venue: t.journal || t.booktitle || '', abstract: clean(t.abstract), doi: t.doi, pdf, preview: t.preview ? `/assets/img/publication_preview/${t.preview}` : undefined, venueUrl:t.journal_url,abbr:t.abbr,volume:t.volume,number:t.number,pages:t.pages,url:t.url,cnki:t.cnki,gbt:clean(t.gbt),date:t.date,bibtex: `@${p.entryType}{${p.citationKey},\n${Object.entries(t).filter(([k]) => !['preview','pdf','selected','bibtex_show','abbr','cnki','gbt','journal_url'].includes(k)).map(([k,v]) => `  ${k} = {${v}}`).join(',\n')}\n}` };
 }).sort((a,b) => b.year.localeCompare(a.year));
+
+export function homePublications() {
+  return publications.filter(publication => publication.selected);
+}
 
 export function href(path: string, mode?: Mode): string {
   if (!path.startsWith('/') || path.startsWith('//')) return path;

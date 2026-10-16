@@ -42,7 +42,7 @@ modes:
 
 Casual uses `modes.casual.heroProject` to choose its opening project independently of `featuredProjects`. Omit it to retain the first featured project fallback. The referenced project must exist, support Casual and allow homepage display (`home: true`). A project without an image uses the existing portrait/illustration fallback. `hero.enabled` controls the optional illustration, not the project preview.
 
-Available sections are `research`, `now`, `news`, `publications`, `projects`, `cv`, `writing`, `interests`, `about` and `contact`. Sections and navigation entries must be unique; desktop navigation can only point to enabled sections. Omitting `navigation` uses the standard desktop subset, including `now` when present. Mobile navigation lists all enabled sections. Empty `now`, `news` and `projects` sections and their navigation links are hidden.
+Available sections are `research`, `now`, `news`, `publications`, `projects`, `cv`, `writing`, `interests`, `about` and `contact`. Sections and navigation entries must be unique; desktop navigation can only point to enabled sections. Omitting `navigation` uses the standard desktop subset, including `now` when present. Mobile navigation lists all enabled sections. Empty `now`, `news`, `publications` and `projects` sections and their navigation links are hidden.
 
 Social links default to both modes. For a Casual-only game platform:
 
@@ -149,6 +149,19 @@ Standard BibTeX fields include title, author, year, journal/booktitle, volume, n
 - `pdf`: filename under `/assets/pdf/`, absolute local path, or external URL.
 - `preview`: filename under `/assets/img/publication_preview/`.
 - `abstract`, `abbr`, `journal_url`, `date`, `cnki` and `gbt`: abstract, venue details, release date and original citation links/text.
+
+Use the existing per-paper `selected` field to choose homepage publications:
+
+```bibtex
+@article{my-paper,
+  selected = {true},
+  title = {My paper},
+  author = {Author, Example},
+  year = {2026}
+}
+```
+
+Only `selected = {true}` publications appear on homepages. False or omitted values keep papers in the full bibliography. When the selected count is zero, the homepage section and its desktop/mobile navigation links are hidden automatically. Keep `publications` in the mode’s `sections` so future selected papers appear there. This is per-record metadata in `content/publications.bib`, rather than a YAML header for the entire file. The standalone `/publications/` page, search and bibliography download retain every paper. Copied citations omit presentation fields such as `selected`. The Markdown `home` flag does not apply to BibTeX records.
 
 Each citation key becomes an anchor on `/publications/`. The site provides a BibTeX copy button and `/publications.bib` download. Set `hero.enabled: false` to omit the sampling illustration; publication previews remain independent.
 

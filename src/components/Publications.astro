@@ -1,9 +1,11 @@
 ---
 import { publications, href, dateLabel } from '../lib/content';
 import Icon from './Icon.astro';
+import type { Publication } from '../lib/schema';
+const {entries=publications}=Astro.props as {entries?:Publication[]};
 ---
 <div class="publications">
-  {publications.map(p=><article id={p.id} class="publication">
+  {entries.map(p=><article id={p.id} class="publication">
     <span class="pub-year">{p.year}</span>
     <div><p class="eyebrow">{p.venueUrl?<a href={p.venueUrl}>{p.venue}{p.abbr&&` (${p.abbr})`}</a>:p.venue}</p><h3>{p.title}</h3><p class="pub-authors">{p.author}</p>
       <p class="pub-metadata">{[p.volume&&`Vol. ${p.volume}`,p.number&&`No. ${p.number}`,p.pages&&`p. ${p.pages}`,p.date&&dateLabel(p.date)].filter(Boolean).join(' · ')}</p>
@@ -13,5 +15,5 @@ import Icon from './Icon.astro';
     </div>
     {p.preview&&<img src={href(p.preview)} alt="Publication preview" width="200" height="140" loading="lazy" />}
   </article>)}
-  {publications.length===0&&<p>Publications will appear here as they are added to the bibliography.</p>}
+  {entries.length===0&&<p>Publications will appear here as they are added to the bibliography.</p>}
 </div>

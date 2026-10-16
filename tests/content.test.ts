@@ -123,3 +123,22 @@ for(const scenario of ['unknown hero project','hidden hero project','unavailable
     assert.match(result.stderr,/Unknown hero project|Hero project .* unavailable|Missing resource|Unknown featured|Unknown now project|Now project .* unavailable|Duplicate route/);
   }finally{assert.ok(resolve(fixture).startsWith(resolve(tmpdir())+sep+'academic-casual-'));rmSync(fixture,{recursive:true,force:true});}
 });
+
+test('selected publications appear on homepages and every paper remains in the archive',()=>{
+  const fixture=mkdtempSync(join(tmpdir(),'academic-casual-'));
+  try{
+    cpSync('examples/einstein',fixture,{recursive:true});
+    writeFileSync(join(fixture,'content/publications.bib'),[
+      '@article{chosen,title={Chosen},author={Author},year={2026},selected={true}}',
+      '@article{unselected,title={Unselected},author={Author},year={2025},selected={false}}',
+      '@article{unmarked,title={Unmarked},author={Author},year={2023}}',
+    ].join('\n'));
+    const script="import('./src/lib/content.ts').then(m=>process.stdout.write(JSON.stringify({all:m.publications.map(p=>p.id),home:m.homePublications().map(p=>p.id),copy:m.publications[0].bibtex})))";
+    const result=spawnSync(process.execPath,['--import','tsx','-e',script],{env:{...process.env,SITE_CONTENT_ROOT:fixture},encoding:'utf8'});
+    assert.equal(result.status,0,result.stderr);
+    const parsed=JSON.parse(result.stdout);
+    assert.deepEqual(parsed.all,['chosen','unselected','unmarked']);
+    assert.deepEqual(parsed.home,['chosen']);
+    assert.doesNotMatch(parsed.copy,/selected\s*=/);
+  }finally{rmSync(fixture,{recursive:true,force:true});}
+});

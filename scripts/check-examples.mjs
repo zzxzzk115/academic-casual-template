@@ -22,7 +22,12 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
   for (const mode of ['academic', 'casual']) {
     config.modes[mode].sections.unshift('now');
     config.modes[mode].navigation.unshift('now');
+    if (!config.modes[mode].sections.includes('publications')) config.modes[mode].sections.push('publications');
+    if (!config.modes[mode].navigation.includes('publications')) config.modes[mode].navigation.push('publications');
   }
+  const bibFile=join(content,'content/publications.bib');
+  const bibliography=readFileSync(bibFile,'utf8');
+  writeFileSync(bibFile,name==='root'?bibliography.replace(/(einstein1905brownian,[\s\S]*?)selected = \{true\}/, '$1selected = {false}'):bibliography.replace(/  selected = \{true\},\n/g,''));
   if (name === 'subpath') {
     config.identity.name = 'Taylor Quinn';
     config.identity.handle = 'TQ Notebook';
@@ -55,6 +60,14 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
   if (!pages.includes(email)) throw new Error(`Missing configured identity in ${name}`);
   const academic = readFileSync(join(out, 'index.html'), 'utf8');
   const casual = readFileSync(join(out, 'casual/index.html'), 'utf8');
+  const publicationArchive=readFileSync(join(out,'publications/index.html'),'utf8');
+  for(const id of ['einstein1905relativity','einstein1905brownian']) if(!publicationArchive.includes(`id="${id}"`)) throw new Error('A homepage-hidden paper disappeared from the full bibliography');
+  if(!readFileSync(join(out,'publications.bib'),'utf8').includes('einstein1905brownian')) throw new Error('A homepage-hidden paper disappeared from the BibTeX download');
+  for(const home of [academic,casual]) {
+    if(name==='root') {
+      if(!home.includes('id="publications"')||!home.includes('id="einstein1905relativity"')||home.includes('id="einstein1905brownian"')||!home.includes('/#publications')) throw new Error('Homepage publication metadata did not select eligible papers and navigation');
+    } else if(home.includes('id="publications"')||home.includes('id="einstein1905relativity"')||home.includes('/#publications')) throw new Error('An empty publication selection produced a section or navigation link');
+  }
   if (name === 'root') {
     if (academic.includes('id="now"') || academic.includes('/#now') || casual.includes('id="now"')) throw new Error('Empty now content produced a section or navigation link');
   } else {

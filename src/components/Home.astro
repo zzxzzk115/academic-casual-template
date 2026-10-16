@@ -9,7 +9,7 @@ import Toolkit from './Toolkit.astro';
 import Now from './Now.astro';
 import HeadingAnchor from './HeadingAnchor.astro';
 import {renderMarkdown} from '../lib/markdown';
-import {config,profile,biography,posts,news,href,dateLabel,loadBlog,sectionLabels,homeEntries,homeProjects,homeSections,heroProject,type Mode} from '../lib/content';
+import {config,profile,biography,posts,news,href,dateLabel,loadBlog,sectionLabels,homeEntries,homeProjects,homeSections,heroProject,homePublications,type Mode} from '../lib/content';
 const {mode='academic'}=Astro.props as {mode:Mode};
 const isCasual=mode==='casual';
 const visibleSocials=config.socials.filter(s=>s.modes.includes(mode));
@@ -39,7 +39,7 @@ const writing=[...homeEntries(posts,mode).map(p=>({title:p.title,url:p.legacyPat
     {section==='research'&&<><div class="research-grid">{profile.research.map(r=><article><h3>{r.title}</h3><p>{r.description}</p></article>)}</div>{config.modes[mode].showToolkit&&profile.toolkit.length>0&&<div class="home-toolkit"><h3>Tools & platforms</h3><Toolkit/></div>}</>}
     {section==='now'&&<Now mode={mode}/>}
     {section==='projects'&&<ProjectGrid entries={selected} mode={mode} filters={isCasual}/>}
-    {section==='publications'&&<Publications/>}
+    {section==='publications'&&<Publications entries={homePublications()}/>}
     {section==='news'&&<div class="news-list">{homeEntries(news,mode).slice(0,3).map(n=><article><time datetime={n.date}>{dateLabel(n.date)}</time><div><a href={href(n.legacyPath,mode)}>{n.title}</a><p>{n.description}</p></div></article>)}</div>}
     {section==='cv'&&<Timeline/>}
     {section==='writing'&&<div class="writing-list">{writing.map(w=><article><div class="writing-meta"><time datetime={w.date}>{dateLabel(w.date)}</time><span>{w.source}</span></div><h3><a href={href(w.url,mode)}>{w.title}</a></h3>{w.summary&&<p>{w.summary}</p>}</article>)}</div>}
