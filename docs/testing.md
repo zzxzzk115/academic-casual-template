@@ -34,6 +34,8 @@ Use real devices and Safari when those platforms are part of the intended audien
 - Open search, follow a result, and confirm mode/query context on detail pages.
 - Filter projects, reset the filter, and check the counts and visible entries.
 - Check that project images retain their proportions and complete contents.
+- Check portrait crops at desktop and phone widths; the head should remain visible
+  and the avatar should not overlap the name, role or affiliation.
 - Scroll down and activate Back to top with pointer and keyboard. Confirm that it
   returns to the page top, hands focus back to the header, and respects reduced motion.
 - Check heading permalinks with keyboard and pointer; copied URLs must preserve

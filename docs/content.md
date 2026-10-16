@@ -55,7 +55,7 @@ socials:
 
 Free icons accept `brands:<name>` or `solid:<name>`. The fonts are bundled locally; a hosted icon kit is not required.
 
-Set `socials[].primary: true` to include an archive, portfolio or other link in the Academic introduction. GitHub and LinkedIn remain introductory links by default for existing content. Email, handle and blog are optional; omitted data creates no placeholder links. The Casual title falls back to the person's name. A portrait can include `photoCredit: {label, href}`, and is used in Casual when no featured project image is configured. `site.footerText` can replace the default copyright line for a historical or curated example.
+Set `socials[].primary: true` to include an archive, portfolio or other link in the Academic introduction. GitHub and LinkedIn remain introductory links by default for existing content. Email, handle and blog are optional; omitted data creates no placeholder links. The Casual title falls back to the person's name. A portrait can include `photoCredit: {label, href}`, and is used in Casual when no featured project image is configured. Academic and About avatars use circular crops (192 px on the desktop Academic introduction, 96 px on phones); choose a photograph with the face near the centre and space around the head. The Casual introduction retains the full portrait. `site.footerText` can replace the default copyright line for a historical or curated example.
 
 ## Content files
 
