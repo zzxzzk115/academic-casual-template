@@ -39,7 +39,6 @@ sectionLabels:
   projects: Research topics
   cv: Biography
   writing: Reading
-  contact: Sources
 projectCategories:
   relativity: Relativity
   quantum: Quantum theory
@@ -53,19 +52,23 @@ hero:
   intensity: 1
 modes:
   academic:
-    sections: [research, publications, projects, cv, writing, contact]
-    navigation: [research, publications, cv, contact]
+    sidebar: true
+    sections: [research, publications, projects, cv, writing]
+    navigation: [research, publications, cv, writing]
     sectionTitles:
       research: Research
       projects: Featured work
       cv: Biography
       writing: Reading notes
-      contact: Sources
   casual:
-    sections: [interests, about, projects, writing, contact]
-    navigation: [interests, about, writing, contact]
+    sidebar: true
+    photo: /assets/einstein-1921.jpg
+    photoCredit:
+      label: Ferdinand Schmutzer, 1921 · Public domain
+      href: https://commons.wikimedia.org/wiki/File:Einstein_1921_by_F_Schmutzer.jpg
+    sections: [interests, projects, writing]
+    navigation: [interests, projects, writing]
     sectionTitles:
       interests: Beyond physics
       projects: Featured work
       writing: Reading notes
-      contact: Sources

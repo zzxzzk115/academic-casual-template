@@ -35,6 +35,10 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
   writeFileSync(bibFile,name==='root'?bibliography.replace(/(einstein1905brownian,[\s\S]*?)home = \{true\}/, '$1home = {false}'):bibliography.replace(/  home = \{true\},\n/g,''));
   if (name === 'root') {
     delete config.banner;
+    delete config.modes.academic.sidebar;
+    delete config.modes.casual.sidebar;
+    delete config.modes.casual.photo;
+    delete config.modes.casual.photoCredit;
     config.identity.address = 'Fixture public address';
     config.identity.contactNote = 'Fixture contact note';
     config.modes.academic.sections = config.modes.academic.sections.filter(id=>id!=='contact');
@@ -48,6 +52,7 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
     config.theme.academic = '#6b3db8';
     cpSync(join(content,'public/assets/einstein-1921.jpg'),join(content,'public/assets/casual-portrait.jpg'));
     config.modes.casual.photo = '/assets/casual-portrait.jpg';
+    delete config.modes.casual.photoCredit;
     config.modes.casual.email = 'casual-fixture@example.invalid';
     config.modes.academic.sidebar = true;
     config.modes.casual.sidebar = true;
@@ -73,6 +78,7 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
     config.modes.casual.sectionTitles.now = 'On the workbench';
     const profileFile = join(content, 'content/profile.yaml');
     const profile = parse(readFileSync(profileFile, 'utf8'));
+    config.modes.casual.sections.push('about');
     profile.casualAbout = 'A concise personal introduction.';
     profile.academicBackground = 'Supervised by [Fixture mentor](https://example.org/mentor/).';
     writeFileSync(profileFile, stringify(profile));

@@ -28,7 +28,7 @@ test('configuration rejects unsafe colors, wrong versions, and unknown section I
 });
 test('mode profile overrides are optional and independent',()=>{
   const original=parse(readFileSync('examples/einstein/site.config.yaml','utf8'));
-  const configured=configSchema.parse({...original,modes:{...original.modes,casual:{...original.modes.casual,sidebar:true,email:'casual@example.org',address:'',photo:'https://example.org/alternate-avatar.png'}}});
+  const configured=configSchema.parse({...original,modes:{...original.modes,academic:{...original.modes.academic,sidebar:undefined},casual:{...original.modes.casual,sidebar:true,email:'casual@example.org',address:'',photo:'https://example.org/alternate-avatar.png'}}});
   assert.equal(configured.identity.photo,original.identity.photo);
   assert.equal(configured.modes.academic.sidebar,false);
   assert.equal(configured.modes.casual.sidebar,true);
@@ -72,7 +72,7 @@ test('historical profiles do not require an email, handle or blog',()=>{
 
 test('mode navigation and display labels belong to site configuration',()=>{
   const original=parse(readFileSync('examples/einstein/site.config.yaml','utf8'));
-  const configured=configSchema.parse({...original,projectCategories:{work:'Field studies'},sectionLabels:{interests:'Outside work'},modes:{...original.modes,casual:{...original.modes.casual,navigation:['projects','contact'],sectionTitles:{projects:'Selected work'}}}});
+  const configured=configSchema.parse({...original,projectCategories:{work:'Field studies'},sectionLabels:{interests:'Outside work'},modes:{...original.modes,casual:{...original.modes.casual,navigation:['projects','interests'],sectionTitles:{projects:'Selected work'}}}});
   assert.equal(configured.projectCategories.work,'Field studies');
   assert.equal(configured.modes.casual.sectionTitles.projects,'Selected work');
   assert.throws(()=>configSchema.parse({...original,modes:{...original.modes,casual:{sections:['projects'],navigation:['contact']}}}));

@@ -79,7 +79,7 @@ The bundled Einstein example enables an Academic-only paper teaser using a credi
 
 ## Responsive profile sidebar
 
-Set `modes.<mode>.sidebar: true` to enable a left profile column on that homepage at viewport widths of **1280 CSS pixels and above**. It defaults to `false`. Enable it separately for Academic and Casual:
+Set `modes.<mode>.sidebar: true` to enable a left profile column on that homepage at viewport widths of **1280 CSS pixels and above**. The schema defaults to `false` for compatibility; the bundled Einstein starter explicitly enables it in both modes. Enable it separately for Academic and Casual:
 
 ```yaml
 modes:
