@@ -36,8 +36,8 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
     config.theme.academic = '#6b3db8';
     writeFileSync(join(content, 'content/now.yaml'), stringify({
       updated: '2026-10-16',
-      workingOn: [{projectId:'special-relativity',description:'Academic fixture work',modes:['academic']}],
-      exploring: [{title:'Casual fixture topic',description:'A casual experiment',links:[{label:'Example resource',href:'/projects/special-relativity/'}],modes:['casual']}],
+      workingOn: [{projectId:'special-relativity',description:'Academic fixture work',itemsTitle:'Current milestones',items:[{title:'Academic detail',description:'Academic nested description',href:'/projects/special-relativity/'}],modes:['academic']}],
+      exploring: [{title:'Casual fixture topic',description:'A casual experiment',items:[{title:'Casual detail',href:'/projects/special-relativity/'},{title:'Concise detail'}],links:[{label:'Example resource',href:'/projects/special-relativity/'}],modes:['casual']}],
     }));
     for (const path of ['projects/light-quanta.md', 'posts/reading-einstein.md']) {
       const file = join(content, 'content', path);
@@ -76,6 +76,9 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
     if (!academic.includes('Academic fixture work') || academic.includes('Casual fixture topic')) throw new Error('Academic now content was not scoped');
     if (!casual.includes('Casual fixture topic') || casual.includes('Academic fixture work') || !casual.includes('On the workbench')) throw new Error('Casual now content was not scoped');
     if (!casual.includes('/portfolio/projects/special-relativity/?mode=casual')) throw new Error('Now link lost its base or mode');
+    if (!academic.includes('Current milestones') || !academic.includes('Academic nested description') || academic.includes('Casual detail')) throw new Error('Working-on details or heading were not scoped');
+    if (!casual.includes('Concise detail') || casual.includes('Academic detail') || casual.includes('now-items-heading')) throw new Error('Exploring details lost their scope or gained an implicit heading');
+    if (!/href="\/portfolio\/projects\/special-relativity\/\?mode=casual"[^>]*>Casual detail/.test(casual)) throw new Error('Nested detail link lost its base or mode');
     if (academic.includes('Up next') || casual.includes('Up next')) throw new Error('Empty now group was rendered');
     if (!academic.includes('datetime="2026-10-16"')) throw new Error('Editorial update date was lost');
     for (const home of [academic, casual]) if (home.includes('/portfolio/projects/light-quanta/') || home.includes('/portfolio/featured-posts/2026/reading-einstein/')) throw new Error('home:false content leaked onto a homepage');

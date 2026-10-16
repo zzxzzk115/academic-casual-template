@@ -87,15 +87,24 @@ updated: '2026-10-16'
 workingOn:
   - projectId: my-project
     description: Building a small renderer to try out a new idea.
+    itemsTitle: Current milestones
+    items:
+      - title: First rendered frame
+        description: Establish a minimal render loop.
     modes: [academic, casual]
 exploring:
   - title: GPU profiling
     description: Learning how to identify expensive passes in a frame.
+    itemsTitle: Study topics
+    items:
+      - title: Memory access patterns
+      - title: Synchronization costs
     modes: [academic]
 upNext:
   - title: A playable prototype
     description: Try turning the latest experiment into a browser demo.
-    workItems:
+    itemsTitle: Planned work items
+    items:
       - title: A small playable scene
         description: Test the core interaction with a few placeholder assets.
       - title: Browser build
@@ -105,7 +114,7 @@ upNext:
 
 Each item needs a `description` and either a `title` or a valid `projectId`. Project references reuse the project's title and detail-page URL; an explicit `title` or `href` overrides either. Items default to both modes. A referenced project must support every mode listed on the item. Ordinary title links use `href`; an optional `links` list of `{label, href}` adds multiple resources, such as course assignments. Both use the same site-base and Casual context handling as other content links.
 
-An optional `workItems` list of `{title, description}` adds a visible **Planned work items** list beneath an item. Both fields must be non-empty. Groups containing these lists span the section width; work items use two columns on larger screens and one on phones. Omit the list for a brief update.
+All three groups share the same entry structure. An optional `items` list adds one level of details beneath any entry in `workingOn`, `exploring` or `upNext`. Each detail requires a non-empty `title`; `description` and `href` are optional (when supplied, descriptions must be non-empty and links must be safe local paths or external URLs). Detail links inherit the current mode and deployment base. Use the optional `itemsTitle` to label the list, for example **Current milestones**, **Study topics** or **Planned work items**; omitting it renders the list without an extra heading. Entries without `items` retain the brief layout. Groups containing detail lists span the section width, with two-column lists on larger screens and one column on phones. Nested lists are limited to one level.
 
 The optional `updated` date is an explicit editorial date (`YYYY-MM-DD`), never the build date. The groups display as **Working on**, **Exploring** and **Up next**. Empty groups are omitted. A missing file or a mode without any items produces no section or navigation link. Use mode-specific `sectionTitles.now`, for example **Current focus** and **On my workbench**, to change the section heading. These are brief public updates; tentative plans do not need deadlines.
 

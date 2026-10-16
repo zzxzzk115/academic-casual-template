@@ -83,11 +83,19 @@ test('optional now content validates dates, links and item identity',()=>{
   assert.throws(()=>nowSchema.parse({exploring:[{title:'Unsafe',description:'A topic',href:'javascript:alert(1)'}]}));
   const parsed=nowSchema.parse({updated:'2026-10-16',upNext:[{projectId:'special-relativity',description:'An experiment',modes:['academic']}]});
   assert.equal(parsed.upNext[0].projectId,'special-relativity');
-  assert.deepEqual(parsed.upNext[0].workItems,[]);
-  const plan={title:'Rendering studies',description:'Small demos',workItems:[{title:'Visibility',description:'Test GPU culling'}]};
-  assert.equal(nowSchema.parse({upNext:[plan]}).upNext[0].workItems[0].title,'Visibility');
-  assert.throws(()=>nowSchema.parse({upNext:[{...plan,workItems:[{title:'',description:'No title'}]}]}));
-  assert.throws(()=>nowSchema.parse({upNext:[{...plan,workItems:[{title:'Visibility',description:''}]}]}));
+  assert.deepEqual(parsed.upNext[0].items,[]);
+  const detail={title:'Visibility',description:'Test GPU culling',href:'/projects/special-relativity/'};
+  const entry={title:'Rendering studies',description:'Small demos',itemsTitle:'Study topics',items:[detail,{title:'A concise item'}]};
+  for(const group of ['workingOn','exploring','upNext'] as const){
+    const item=nowSchema.parse({[group]:[entry]})[group][0];
+    assert.equal(item.itemsTitle,'Study topics');
+    assert.deepEqual(item.items,[detail,{title:'A concise item'}]);
+  }
+  assert.equal(nowSchema.parse({upNext:[{title:'Topic',description:'Details',items:[{title:'Untitled list'}]}]}).upNext[0].itemsTitle,undefined);
+  for(const invalid of [{title:''},{title:'Visibility',description:''},{title:'Unsafe',href:'javascript:alert(1)'}]){
+    assert.throws(()=>nowSchema.parse({exploring:[{...entry,items:[invalid]}]}));
+  }
+  assert.throws(()=>nowSchema.parse({workingOn:[{...entry,itemsTitle:''}]}));
 });
 test('hero selection falls back to the first home project',()=>{
   assert.equal(homeHero('casual')?.id,homeProjects('casual')[0]?.id);
