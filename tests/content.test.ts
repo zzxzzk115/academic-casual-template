@@ -88,7 +88,7 @@ for(const scenario of ['missing asset','unknown featured project','unknown now p
       const file=join(fixture,'content/projects/light-quanta.md');
       writeFileSync(file,readFileSync(file,'utf8').replace(/^---\n/,'---\nmodes: [academic]\n'));
       const configFile=join(fixture,'site.config.yaml'),config=parse(readFileSync(configFile,'utf8'));
-      config.modes.casual.featuredProjects=config.modes.casual.featuredProjects.filter(id=>id!=='light-quanta');
+      config.modes.casual.featuredProjects=config.modes.casual.featuredProjects.filter((id:string)=>id!=='light-quanta');
       writeFileSync(configFile,stringify(config));
       writeFileSync(join(fixture,'content/now.yaml'),stringify({exploring:[{projectId:'light-quanta',description:'A scoped project',modes:['casual']}]}));
     }else{
