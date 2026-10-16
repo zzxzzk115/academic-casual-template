@@ -148,3 +148,5 @@ The homepage reads JSON Feed items with `id`, `url`, `title` and optional `summa
 ## Validation
 
 The build checks configuration, references, duplicate IDs/routes, publication fields and primary assets. `scripts/verify.mjs <output> <content>` checks generated internal destinations, anchors, feeds and search assets. External destinations are listed, not network-validated. A migration manifest can add counts, legacy paths and visible-text checks.
+
+Mermaid diagrams wait for fonts before rendering and use SVG text with wrapped node labels. Diagrams retain their natural size inside a keyboard-accessible horizontal scroll region, so narrow screens can inspect the complete diagram without shrinking or clipping text.

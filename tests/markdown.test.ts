@@ -41,3 +41,12 @@ test('heading permalink labels escape markup and do not break existing heading l
   assert.match(output,/aria-label="Copy link to A &amp; B"/);
   assert.match(output,/href="#reference"/);
 });
+
+test('Mermaid fences retain escaped source in a keyboard-accessible diagram region',()=>{
+  const source='flowchart TB\n  A["Renderer <core>"] --> B["A long node label"]\n';
+  const output=renderMarkdown(`\`\`\`mermaid\n${source}\`\`\``);
+  assert.match(output,/<pre class="mermaid" role="region" aria-label="Scrollable diagram" tabindex="0" data-pagefind-ignore>/);
+  assert.ok(output.includes('Renderer &lt;core&gt;'));
+  assert.ok(output.includes('A long node label'));
+  assert.equal((output.match(/<pre/g)||[]).length,1);
+});

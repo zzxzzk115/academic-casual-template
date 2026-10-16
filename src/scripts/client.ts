@@ -41,5 +41,32 @@ document.querySelector('[data-search-close]')?.addEventListener('click',()=>dial
 dialog?.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();const p=e as MouseEvent;if(p.clientX<r.left||p.clientX>r.right||p.clientY<r.top||p.clientY>r.bottom)dialog.close();}});
 document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();openSearch();}});
 const mermaids=document.querySelectorAll<HTMLElement>('pre.mermaid');
-if(mermaids.length){const observer=new IntersectionObserver(async entries=>{if(!entries.some(e=>e.isIntersecting))return;observer.disconnect();const {default:mermaid}=await import('mermaid');mermaid.initialize({startOnLoad:false,theme:document.documentElement.dataset.theme==='dark'?'dark':'neutral',securityLevel:'strict'});try{await mermaid.run({nodes:mermaids});}catch{console.warn('Diagram could not be rendered; the source remains available.');}},{rootMargin:'200px'});mermaids.forEach(el=>observer.observe(el));}
+if(mermaids.length){
+  const observer=new IntersectionObserver(async entries=>{
+    if(!entries.some(e=>e.isIntersecting))return;
+    observer.disconnect();
+    const {default:mermaid}=await import('mermaid');
+    await document.fonts.ready;
+    mermaid.initialize({
+      startOnLoad:false,
+      theme:document.documentElement.dataset.theme==='dark'?'dark':'neutral',
+      securityLevel:'strict',
+      // Native SVG text avoids clipped foreignObject labels at fractional browser zoom.
+      htmlLabels:false,
+      fontFamily:getComputedStyle(document.body).fontFamily,
+      flowchart:{wrappingWidth:220},
+    });
+    try{
+      await mermaid.run({nodes:mermaids});
+      mermaids.forEach(el=>{
+        const svg=el.querySelector('svg');
+        if(!svg?.viewBox.baseVal.width)return;
+        // Keep text at its rendered size; narrow screens scroll the diagram region.
+        svg.style.width=`${Math.ceil(svg.viewBox.baseVal.width)}px`;
+        svg.style.maxWidth='none';
+      });
+    }catch{console.warn('Diagram could not be rendered; the source remains available.');}
+  },{rootMargin:'200px'});
+  mermaids.forEach(el=>observer.observe(el));
+}
 document.querySelectorAll<HTMLElement>('[data-comments]').forEach(el=>{const observer=new IntersectionObserver(entries=>{if(!entries.some(e=>e.isIntersecting))return;observer.disconnect();const script=document.createElement('script');script.src='https://giscus.app/client.js';script.async=true;script.crossOrigin='anonymous';for(const key of ['repo','repoId','category','categoryId'])script.setAttribute(`data-${key.replace(/[A-Z]/g,c=>'-'+c.toLowerCase())}`,el.dataset[key]!);Object.entries({mapping:'pathname',strict:'0',reactionsEnabled:'1',emitMetadata:'0',inputPosition:'bottom',theme:document.documentElement.dataset.theme||'light',lang:'en',loading:'lazy'}).forEach(([k,v])=>script.setAttribute(`data-${k.replace(/[A-Z]/g,c=>'-'+c.toLowerCase())}`,v));el.append(script);},{rootMargin:'200px'});observer.observe(el);});

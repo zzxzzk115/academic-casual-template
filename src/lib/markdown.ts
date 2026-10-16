@@ -10,7 +10,7 @@ md.renderer.rules.table_close = (tokens,index,options,_env,self) =>
   `${self.renderToken(tokens,index,options)}</div>\n`;
 md.renderer.rules.fence = (tokens,index) => {
   const token=tokens[index], lang=token.info.trim().split(' ')[0];
-  if(lang==='mermaid')return `<pre class="mermaid" data-pagefind-ignore>${escape(token.content)}</pre>`;
+  if(lang==='mermaid')return `<pre class="mermaid" role="region" aria-label="Scrollable diagram" tabindex="0" data-pagefind-ignore>${escape(token.content)}</pre>`;
   const valid = highlighter.getLoadedLanguages().includes(lang);
   return highlighter.codeToHtml(token.content,{lang:valid?lang:'text',themes:{light:'github-light',dark:'github-dark'}});
 };
