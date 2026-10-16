@@ -18,3 +18,46 @@ jobs:
       - run: pnpm check
       - run: pnpm test
       - run: pnpm check:examples
+  build-demo:
+    needs: test
+    if: github.repository == 'zzxzzk115/academic-casual-template' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/configure-pages@v5
+        id: pages
+      - name: Build and verify the fictional demo
+        env:
+          DEMO_ORIGIN: ${{ steps.pages.outputs.origin }}
+          DEMO_BASE: ${{ steps.pages.outputs.base_path }}
+        run: pnpm demo:build --url "$DEMO_ORIGIN" --base "$DEMO_BASE"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .cache/demo-dist
+  deploy-demo:
+    needs: build-demo
+    if: github.repository == 'zzxzzk115/academic-casual-template' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deployment

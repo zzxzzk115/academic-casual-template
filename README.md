@@ -10,6 +10,12 @@ An MIT-licensed Astro + Vue + TypeScript template for a research homepage and a 
 
 All bundled identities, CV records, articles and projects are fictional. This repository contains the framework and starter examples. A site's personal information belongs in its content repository.
 
+## Live demo
+
+[Academic preview](https://zzxzzk115.github.io/academic-casual-template/) · [Casual preview](https://zzxzzk115.github.io/academic-casual-template/casual/)
+
+The demo uses only the bundled fictional example. Switch presentation mode and color theme independently; try the project filters, detail pages and local search.
+
 ## Quick start
 
 Use Node **24** (minimum 22.22) and **pnpm 10.34.5**.
@@ -70,6 +76,6 @@ pnpm test
 pnpm check:examples
 ```
 
-The last command builds two independent fixtures at `/` and `/portfolio/`, checks links/resources, and checks that configured identities do not leak between builds. GitHub Actions runs these checks without deploying a site.
+The last command builds two independent fixtures at `/` and `/portfolio/`, checks links/resources, and checks that configured identities do not leak between builds. GitHub Actions runs these checks for pushes and pull requests. Successful runs on this upstream repository's `main` branch also deploy the fictional Pages demo. Other repositories and pull requests only run validation.
 
 English UI is provided. `site.language` sets the document language; it does not translate interface copy. Markdown HTML is trusted build input. Third-party fonts and libraries retain their own licenses; Font Awesome Free assets and license are bundled locally.
