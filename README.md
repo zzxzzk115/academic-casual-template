@@ -16,6 +16,12 @@ All bundled identities, CV records, articles and projects are fictional. This re
 
 The demo uses only the bundled fictional example. Switch presentation mode and color theme independently; try the project filters, detail pages and local search.
 
+| Academic · light | Casual · dark |
+| --- | --- |
+| [![Academic demo in the light theme](docs/images/demo-academic.jpg)](https://zzxzzk115.github.io/academic-casual-template/) | [![Casual demo in the dark theme](docs/images/demo-casual.jpg)](https://zzxzzk115.github.io/academic-casual-template/casual/) |
+
+Screenshots are captured from the live fictional demo. Presentation mode and color theme are independent settings.
+
 ## Quick start
 
 Use Node **24** (minimum 22.22) and **pnpm 10.34.5**.
