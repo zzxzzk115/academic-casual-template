@@ -86,7 +86,7 @@ Customize identity, mode sections, navigation, section titles, category labels a
 - [Content and configuration](docs/content.md)
 - [GitHub integration and deployment](docs/github.md)
 - [Migrating a Jekyll/al-folio site](docs/migration.md)
-- [Validation notes](QA.md)
+- [Testing guide](docs/testing.md)
 
 ## Validate
 
