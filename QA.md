@@ -11,6 +11,7 @@ Validated on Windows with Node 24.12.0 and pnpm 10.34.5, 16 October 2026.
 - Browser checked at mobile (390 px), tablet, and desktop widths: navigation, Academic/Casual links, filtering, search results and anchors, theme toggle, detail-page context, and overflow.
 - The browser's reduced-motion preference was active: the SVG remains visible and WebGL does not start. Static generated HTML was also checked for complete primary content without client execution.
 - The personal site disables the decorative sampling field completely; publication figures remain attached to bibliography entries. Both modes render the configured copyright year range and self-hosted Font Awesome brand icons.
+- Enlarged typography checked on desktop, 390 px mobile, and 768 px tablet layouts: article text is 18/17 px, card descriptions 16 px, and no page overflow. News details show the original linked sentence once, while listing/SEO summaries remain available.
 - Local Lighthouse mobile audit with Font Awesome Free: Academic performance/accessibility/SEO 92/100/100; Casual 91/100/100. Font loading uses swap, and interest links use descriptive text.
 
 Lighthouse values describe the local production build under the audit's simulated mobile conditions, not field measurements or guarantees about a deployed CDN. Reports and preview screenshots are local, ignored artifacts under `reports/`.

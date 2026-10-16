@@ -50,6 +50,8 @@ Markdown supports highlighted code, tables, raw HTML embeds, Mermaid fences, and
 
 `/` is Academic; `/casual/` is Casual. Detail URLs remain shared, with `?mode=casual` retaining presentation context. Dark/light preferences are independent and stored locally. English UI copy is centralized in the components and section labels; no Chinese routes are published until translated content and interface copy exist.
 
+Text sizes use `rem` units: article text is 18 px at the default browser size, 17 px on phones, with 16 px card descriptions and larger navigation/metadata. News detail pages render the body once; their summaries remain available in listings and metadata.
+
 Set `hero.enabled: false` to remove the optional sampling illustration entirely, including its static fallback. Use the bibliography's `preview` field for figures from actual publications instead.
 
 Interface icons use Font Awesome Free's Brands and Classic Solid fonts, bundled locally through the pinned dependency. Social links can specify `icon: brands:github`, `icon: brands:linkedin`, or another free icon using `brands:` / `solid:`. `Icon.astro` keeps decorative glyphs hidden from assistive technology; controls retain text or accessible labels. Font Awesome retains its own font and code licenses.
