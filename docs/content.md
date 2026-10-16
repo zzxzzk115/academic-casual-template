@@ -102,6 +102,8 @@ Each item needs a `description` and either a `title` or a valid `projectId`. Pro
 
 The optional `updated` date is an explicit editorial date (`YYYY-MM-DD`), never the build date. The groups display as **Working on**, **Exploring** and **Up next**. Empty groups are omitted. A missing file or a mode without any items produces no section or navigation link. Use mode-specific `sectionTitles.now`, for example **Current focus** and **On my workbench**, to change the section heading. These are brief public updates; tentative plans do not need deadlines.
 
+Project card images preserve their source aspect ratio and show the complete image. Prefer a real application capture or an SVG diagram; avoid adding decorative window frames to the asset.
+
 ## Homepage curation
 
 Use **one per-record field, `home`**, for projects, local posts, news and publications. All four content types use the same defaults and mode settings. `site.config.yaml` controls which sections are enabled and their layout; record selection, ordering and the Casual project hero belong in the records themselves.
