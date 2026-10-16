@@ -4,34 +4,9 @@ import { parse } from 'yaml';
 import matter from 'gray-matter';
 import bibtex from 'bibtex-parse-js';
 import { z } from 'zod';
+import { modes, configSchema, entrySchema, profileSchema, cvSchema, type Mode, type Entry, type Publication, type Route } from './schema';
+export * from './schema';
 
-export const modes = ['academic', 'casual'] as const;
-export type Mode = typeof modes[number];
-const sectionIds = ['research', 'news', 'publications', 'projects', 'cv', 'writing', 'interests', 'about', 'contact'] as const;
-const localOrExternal = z.string().min(1).refine(v => v.startsWith('/') || /^(https?:|mailto:)/.test(v), 'Use an absolute site path or URL');
-const modeConfig = z.object({ sections: z.array(z.enum(sectionIds)), featuredProjects: z.array(z.string()).default([]) });
-export const configSchema = z.object({
-  schemaVersion: z.literal(1),
-  site: z.object({ title: z.string().min(1), description: z.string().min(1), url: z.url(), base: z.string().default('/'), language: z.string().default('en'), availableLanguages: z.array(z.string()).default(['en']), copyrightStartYear: z.number().int().min(1900).max(new Date().getUTCFullYear()).optional() }),
-  identity: z.object({ name: z.string().min(1), handle: z.string().min(1), initials: z.string().min(1), role: z.string().min(1), institution: z.string().min(1), location: z.string(), address: z.string().optional(), contactNote: z.string().optional(), email: z.email(), photo: z.string().optional(), cv: z.string().optional() }),
-  socials: z.array(z.object({ label: z.string(), href: localOrExternal, icon: z.string().regex(/^(brands|solid):[a-z0-9-]+$/).optional(), modes: z.array(z.enum(modes)).default(['academic','casual']) })),
-  theme: z.object({ academic: z.string().regex(/^#[0-9a-f]{6}$/i), casual: z.string().regex(/^#[0-9a-f]{6}$/i) }),
-  hero: z.object({ enabled: z.boolean().default(true), label: z.string(), intensity: z.number().min(0).max(2).default(1) }),
-  modes: z.object({ academic: modeConfig, casual: modeConfig }),
-  blog: z.object({ href: localOrExternal, feedUrl: z.url().optional(), snapshot: z.string().optional() }),
-  comments: z.object({ repo: z.string(), repoId: z.string(), category: z.string(), categoryId: z.string(), mapping: z.literal('pathname') }).optional(),
-});
-export const entrySchema = z.object({
-  id: z.string().regex(/^[a-z0-9_-]+$/), title: z.string().min(1), description: z.string().min(1),
-  legacyPath: z.string().regex(/^\/[\w/-]+\/$/),
-  image: z.string().optional(), category: z.string().default('work'), categories: z.array(z.string()).default([]), tags: z.array(z.string()).default([]),
-  modes: z.array(z.enum(modes)).default(['academic', 'casual']), order: z.number().default(100),
-  date: z.preprocess(v=>v instanceof Date?v.toISOString():v,z.string().optional()), comments: z.boolean().default(false), featured: z.boolean().default(false),
-  status: z.string().optional(), links: z.array(z.object({label:z.string(),href:localOrExternal,icon:z.string().regex(/^(brands|solid):[a-z0-9-]+$/).optional()})).default([]),
-});
-export type Entry = z.infer<typeof entrySchema> & { body: string; kind: string };
-export type Publication = { id: string; title: string; author: string; year: string; venue: string; abstract: string; doi?: string; pdf?: string; preview?: string; bibtex: string; volume?:string; number?:string; pages?:string; url?:string; cnki?:string; gbt?:string; date?:string; venueUrl?:string; abbr?:string };
-export type Route = { path: string; title: string; kind: string; entry?: Entry; entries?: Entry[]; description?: string };
 export const contentRoot = resolve(process.env.SITE_CONTENT_ROOT || './examples/minimal');
 
 export function safeFile(root: string, file: string) {
@@ -51,16 +26,9 @@ export function entriesIn(folder: string, kind: string): Entry[] {
 }
 export const config = configSchema.parse(yaml('site.config.yaml'));
 if (!/^\/(?:[\w-]+\/)*$/.test(config.site.base)) throw new Error('site.base must begin and end with /');
-const profileSchema = z.object({
-  headline: z.string().optional(), casualHeadline: z.string().optional(), summary: z.string(), casualSummary: z.string(), background: z.string().default(''),
-  research: z.array(z.object({ title: z.string(), description: z.string() })),
-  interests: z.array(z.object({ title: z.string(), description: z.string(), href: localOrExternal.optional() })),
-  toolkit: z.array(z.object({label:z.string(),items:z.array(z.string())})).default([]),
-});
 export const profile = profileSchema.parse(yaml('content/profile.yaml'));
 export const biography = existsSync(safeFile(contentRoot,'content/about.md')) ? readFileSync(safeFile(contentRoot,'content/about.md'),'utf8') : '';
-const timelineSchema = z.object({ title: z.string(), institution: z.string(), start: z.string(), end: z.string(), description: z.string().default(''),url:localOrExternal.optional(),location:z.string().optional() });
-export const cv = z.object({ education: z.array(timelineSchema), work: z.array(timelineSchema), languages: z.array(z.string()), skills: z.array(z.string()), basics:z.object({label:z.string(),summary:z.string(),phone:z.string().optional(),url:localOrExternal.optional(),address:z.string().optional()}).optional() }).parse(yaml('content/cv.yaml'));
+export const cv = cvSchema.parse(yaml('content/cv.yaml'));
 export const repositories = z.array(z.string().regex(/^[\w.-]+\/[\w.-]+$/)).parse(yaml('content/repositories.yaml'));
 export const projects = entriesIn('projects', 'project');
 export const posts = entriesIn('posts', 'post').sort((a,b) => (b.date || '').localeCompare(a.date || ''));
@@ -81,10 +49,10 @@ export function href(path: string, mode?: Mode): string {
 }
 export const dateLabel = (date?: string) => date ? new Intl.DateTimeFormat('en-GB', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'Europe/London' }).format(new Date(date)) : '';
 export const yearLabel = (date: string) => new Date(date).getUTCFullYear().toString();
-export const sectionLabels: Record<string,string> = { research:'Research', news:'News', publications:'Publications', projects:'Projects', cv:'Experience', writing:'Writing', interests:'Off the clock', about:'About', contact:'Contact' };
+export const sectionLabels: Record<string,string> = { research:'Research', news:'News', publications:'Publications', projects:'Projects', cv:'Experience', writing:'Writing', interests:'Interests', about:'About', contact:'Contact', ...config.sectionLabels };
 
 export const routes: Route[] = [
-  { path:'/projects/', title:'Projects', kind:'projects', description:'Graphics libraries, engines, games, and personal tools.' },
+  { path:'/projects/', title:'Projects', kind:'projects', description:'Research projects, tools, and creative work.' },
   { path:'/publications/', title:'Publications', kind:'publications' },
   { path:'/cv/', title:'Curriculum vitae', kind:'cv' },
   { path:'/news/', title:'News & milestones', kind:'list', entries:news },

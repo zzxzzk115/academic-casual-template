@@ -8,6 +8,11 @@ category: work
 tags: [Graphics, Experiment]
 modes: [academic, casual]
 order: 1
+status: Fictional example
+links:
+  - label: Source
+    href: https://github.com
+    icon: brands:github
 ---
 
 ## The question

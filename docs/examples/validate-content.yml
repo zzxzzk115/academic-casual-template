@@ -1,0 +1,42 @@
+name: Validate site content
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: content
+      - name: Read template pin
+        id: template
+        run: |
+          node --input-type=module <<'JS' >> "$GITHUB_OUTPUT"
+          import {readFileSync} from 'node:fs';
+          const pin=JSON.parse(readFileSync('content/template.lock.json','utf8'));
+          if(pin.schemaVersion!==1 || !/^[\w.-]+\/[\w.-]+$/.test(pin.repository) || !/^[a-f0-9]{40}$/.test(pin.revision)) throw Error('Invalid template pin');
+          console.log('repository='+pin.repository);
+          console.log('revision='+pin.revision);
+          JS
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.template.outputs.repository }}
+          ref: ${{ steps.template.outputs.revision }}
+          path: template
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: template/pnpm-lock.yaml
+      - run: pnpm --dir template install --frozen-lockfile
+      - run: pnpm --dir template site build --content ../content --out ../content/dist
+      - run: node template/scripts/verify.mjs content/dist content
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site-preview
+          path: content/dist
+          include-hidden-files: true

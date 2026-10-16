@@ -1,11 +1,11 @@
-headline: |-
-  Seeing more.
-  Rendering less.
-casualHeadline: |-
-  A little code.
-  A lot of curiosity.
+casualHeadline: Code and experiments.
 summary: This fictional example shows how a researcher can introduce their work through a shared, content-driven template.
 casualSummary: A collection of illustrative experiments, playful tools, and small worlds. Replace these examples with your own work.
+toolkit:
+  - label: Languages
+    items: [TypeScript, Python]
+  - label: Platforms
+    items: [Linux, macOS, Windows]
 research:
   - title: Perceptual rendering
     description: Exploring the relationship between where we look and how much detail we need.

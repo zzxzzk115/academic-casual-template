@@ -1,10 +1,10 @@
 ---
-import { href, type Entry, type Mode } from '../lib/content';
+import { config, href, type Entry, type Mode } from '../lib/content';
 import Icon from './Icon.astro';
 interface Props { entries:Entry[]; mode?:Mode; filters?:boolean; }
 const {entries,mode='academic',filters=false}=Astro.props;
 const categories=[...new Set(entries.map(p=>p.category))];
-const labels:Record<string,string>={work:'Graphics & XR',library:'Libraries',fun:'Tools & apps',indie:'Games',retro:'Retro & emulation'};
+const labels=config.projectCategories;
 ---
 <div class="project-gallery" data-gallery>
   {filters && <div class="filters" role="group" aria-label="Filter projects"><button class="active" data-filter="all" aria-pressed="true">All projects <span>{entries.length.toString().padStart(2,'0')}</span></button>{categories.map(c=><button id={c} data-filter={c} aria-pressed="false">{labels[c]||c} <span>{entries.filter(p=>p.category===c).length}</span></button>)}</div>}

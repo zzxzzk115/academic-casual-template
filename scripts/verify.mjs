@@ -25,7 +25,12 @@ for(const file of html){
     if(url.origin!==origin){external.add(url.href);continue;}
     if(/^https?:/.test(config.blog.href)&&url.href.startsWith(config.blog.href)){external.add(url.href);continue;}
     if(config.blog.href.startsWith('/')&&url.pathname.startsWith(`${base}${config.blog.href}`)){external.add(url.href);continue;}
-    if(!url.pathname.startsWith(base+'/')){errors.push(`Outside base: ${raw}`);continue;}
+    if(!url.pathname.startsWith(base+'/')){
+      // An explicit URL may point to another site/project on the same host.
+      // Unprefixed root-relative paths remain errors for subpath deployments.
+      if(raw.startsWith(origin+'/')){external.add(url.href);continue;}
+      errors.push(`Outside base: ${raw}`);continue;
+    }
     const path=decodeURIComponent(url.pathname.slice(base.length));
     let target=join(out,path);
     if(existsSync(target)&&statSync(target).isDirectory())target=join(target,'index.html');

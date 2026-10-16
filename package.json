@@ -13,8 +13,9 @@
     "dev": "node scripts/site.mjs dev",
     "build": "node scripts/site.mjs build",
     "check": "astro check",
-    "test": "node --import tsx --test tests/*.test.ts",
-    "verify": "node scripts/verify.mjs"
+    "test": "node --import tsx --test tests/*.test.ts tests/*.test.mjs",
+    "verify": "node scripts/verify.mjs",
+    "check:examples": "node scripts/check-examples.mjs"
   },
   "dependencies": {
     "@astrojs/vue": "7.1.0",
@@ -39,5 +40,10 @@
     "lighthouse": "13.5.0",
     "tsx": "4.21.0",
     "typescript": "6.0.2"
+  },
+  "description": "Configurable Academic and Casual static homepages with separate site content.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zzxzzk115/academic-casual-template.git"
   }
 }

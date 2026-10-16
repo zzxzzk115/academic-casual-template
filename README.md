@@ -1,86 +1,75 @@
-# Academic / Casual
+# Academic / Casual Template
 
-A content-driven Astro + Vue template for a research homepage with a second, more playful presentation of the same work. Two long homepages, stable detail URLs, a lightweight foveated sampling field, and static HTML throughout.
+An MIT-licensed Astro + Vue + TypeScript template for a research homepage and a separate Casual view. Both share Markdown, YAML, BibTeX and public assets from an independent content directory.
 
-The bundled **Alex Morgan** site is explicitly fictional. Personal information belongs in a separate content repository.
+- `/`: a plain Academic homepage.
+- `/casual/`: projects, interests and personal writing.
+- Shared detail pages with stable paths and optional `?mode=casual` context.
+- Static HTML, local search, project filters, bibliography export, dark mode and optional Giscus.
+- An optional Vue/WebGL sampling illustration with a static SVG fallback.
 
-## Develop a site
+All bundled identities, CV records, articles and projects are fictional. This repository contains the framework and starter examples. A site's personal information belongs in its content repository.
 
-Use Node 24 (or Node >=22.22) and pnpm 10.34.5. Clone this template and a content repository into sibling directories, then run from the template:
+## Quick start
+
+Use Node **24** (minimum 22.22) and **pnpm 10.34.5**.
 
 ```sh
+git clone https://github.com/zzxzzk115/academic-casual-template.git
+cd academic-casual-template
 pnpm install --frozen-lockfile
+pnpm site dev
+```
+
+The default content is `examples/minimal`. Production builds include the Pagefind search index:
+
+```sh
+pnpm site build
+pnpm site preview
+```
+
+## Start a separate content repository
+
+```sh
+pnpm site init --content ../my-homepage
 pnpm site dev --content ../my-homepage
 pnpm site build --content ../my-homepage --out ../my-homepage/dist
-pnpm site preview --content ../my-homepage --out ../my-homepage/dist
 node scripts/verify.mjs ../my-homepage/dist ../my-homepage
 ```
 
-Without `--content`, commands use `examples/minimal`. `--out` is resolved against the working directory. `--port 4321` selects a development/preview port. Build output includes the Pagefind full-text index; search is available after a production build.
+`init` requires a new or empty directory. It copies the fictional starter, adds a content README and `.gitignore`, and writes `template.lock.json` with the current template commit. It does not create a Git repository or deploy anything. Replace the fictional records, initialize your own content repository, and commit its configuration and assets.
 
-## Content contract (schema version 1)
+Content paths are relative to the directory where you run the command. `--port 4321` is available for dev/preview. The template checkout must be at the revision recorded by the content repository; the CLI does not switch Git revisions automatically.
 
-- `site.config.yaml`: identity, absolute site URL, leading/trailing-slash base path, language, social links, accents, mode section order, featured project IDs, hero settings, blog source, and optional Giscus configuration. See the complete example.
-- `content/profile.yaml`: headlines, summaries, research topics, interests, and optional `toolkit` rows (`label`, `items`). Toolkit facts appear on Academic, Casual and CV pages. `content/about.md` preserves the complete biography on Casual and CV pages.
-- `content/cv.yaml`: education/work timelines, languages, skills, optional institution `url`/`location`, and optional `basics` contact information. Dates retain known precision; full CV timelines display months. Quote dates in YAML. Use `identity.contactNote` in site configuration for a short contact preference.
-- `content/projects/*.md`, `content/posts/*.md`, `content/news/*.md`: Markdown with YAML frontmatter. Required: `id`, `title`, `description`, `legacyPath`. Optional: `image`, `category`, `categories`, `tags`, `modes`, `order`, `date`, `comments`, `featured`, `status`, and action `links` (`label`, `href`, optional `icon`). Projects without screenshots use text cards. Explicit paths preserve old slugs.
-- `content/publications.bib`: the sole publication source. Standard fields plus optional `pdf` and `preview` are rendered; local PDFs use `/assets/pdf/`, previews `/assets/img/publication_preview/`. BibTeX is downloadable and copyable.
-- `content/repositories.yaml`: a list of `owner/repository` strings.
-- `public/`: copied without changing resource URLs. Local image paths must begin with `/` and are checked at build time.
+## Structure
 
-Set `site.copyrightStartYear` to show a footer year range ending in the build year. When omitted, the footer shows only the build year.
-
-Frontmatter example:
-
-```yaml
-id: my-project
-title: My project
-description: A short, factual account of what it does.
-legacyPath: /projects/my-project/
-image: /assets/my-project.webp
-category: work
-tags: [C++, Graphics]
-modes: [academic, casual]
-order: 1
+```text
+src/lib/schema.ts       Typed content/configuration contract
+src/lib/content.ts      Content loading, references and routes
+src/lib/markdown.ts     Markdown, highlighting and diagrams
+src/layouts/            Shared document and navigation
+src/components/         Homepage sections and optional Vue graphics
+src/pages/              Static routes, feeds and metadata
+src/scripts/            Progressive client-side interactions
+scripts/                CLI, initialization and verification
+examples/minimal/       Standalone fictional content site
 ```
 
-Markdown supports highlighted code, tables, raw HTML embeds, Mermaid fences, and explicit heading anchors such as `## Architecture {#architecture}`. Existing internal links are prefixed for `site.base`. Templates render repository-authored HTML; content repositories are trusted build inputs, not public upload endpoints.
+Customize identity, mode sections, navigation, section titles, category labels, project selections and colors through site configuration. Update personal copy and tool preferences through content files. Template upgrades use an explicit commit pin; no npm package publication is needed.
 
-## Presentation and accessibility
+- [Content and configuration](docs/content.md)
+- [GitHub integration and deployment](docs/github.md)
+- [Migrating a Jekyll/al-folio site](docs/migration.md)
+- [Validation notes](QA.md)
 
-`/` is Academic; `/casual/` is Casual. Detail URLs remain shared, with `?mode=casual` retaining presentation context. Dark/light preferences are independent and stored locally. English UI copy is centralized in the components and section labels; no Chinese routes are published until translated content and interface copy exist.
-
-Text sizes use `rem` units: article text is 18 px at the default browser size, 17 px on phones, with 16 px card descriptions and larger navigation/metadata. News detail pages render the body once; their summaries remain available in listings and metadata.
-
-Set `hero.enabled: false` to remove the optional sampling illustration entirely, including its static fallback. Use the bibliography's `preview` field for figures from actual publications instead.
-
-Interface icons use Font Awesome Free's Brands and Classic Solid fonts, bundled locally through the pinned dependency. Social links can specify `icon: brands:github`, `icon: brands:linkedin`, or another free icon using `brands:` / `solid:`. `Icon.astro` keeps decorative glyphs hidden from assistive technology; controls retain text or accessible labels. Font Awesome retains its own font and code licenses.
-
-Social links accept optional `modes: [casual]` or `[academic]`; omitted modes show in both. This supports game-platform links alongside the Casual profile. Project category buttons retain anchors and initialize their filter from a matching URL fragment.
-
-When enabled, the Vue sampling field hydrates when visible. It renders only on resize/pointer interaction, pauses offscreen/in hidden tabs, caps pixel density, and leaves a static SVG visible when reduced motion is requested or WebGL is unavailable. All content, navigation, project details, bibliography, and CV remain readable without JavaScript. Search, filtering, and copying progressively enhance them.
-
-## Blog integration
-
-Set `blog.feedUrl` to a JSON Feed 1.1 URL and `blog.snapshot` to a content-relative saved JSON file. Only `items[].id`, `url`, `title`, optional `summary`, and `date_published` are consumed. Builds fetch the feed once per homepage, with a five-second timeout; failures use the saved snapshot. `SITE_OFFLINE=1` forces the snapshot for repeatable checks. Blog content stays on its original host; snapshots and the homepage refresh when the homepage is rebuilt.
-
-## Pin and deploy
-
-Store the template repository and exact commit SHA in the content repository's `template.lock.json`. CI checks out that revision beside the content repository and runs the same build command; no package publication is needed. Upgrades are explicit commit changes reviewed alongside a preview build. Deploy the output with `.nojekyll` to GitHub Pages. Change `site.url`/`site.base` to publish under a project subpath.
-
-## Verify
+## Validate
 
 ```sh
 pnpm check
 pnpm test
-pnpm site build
-pnpm verify
+pnpm check:examples
 ```
 
-Validation catches invalid configuration, missing featured IDs, duplicate content IDs/routes, malformed publication entries, and missing primary assets. The output verifier checks generated destinations, anchors, migration counts, feed, sitemap, bibliography, and search assets. Test both modes, keyboard search, mobile navigation, filtering, dark mode, and WebGL/reduced-motion fallbacks in a browser.
+The last command builds two independent fixtures at `/` and `/portfolio/`, checks links/resources, and checks that configured identities do not leak between builds. GitHub Actions runs these checks without deploying a site.
 
-For one-time Jekyll/al-folio migration, `node scripts/import-jekyll.mjs <source> <destination> [vuepress-blog-source]` imports content without modifying the source. It preserves filenames as public slugs, parses JSONC resumes, normalizes invalid legacy days to their known month, and copies assets. Supply personal configuration separately and review the migration manifest. Preserve an old Git tag before replacing the legacy sources.
-
-`node scripts/audit-migration.mjs <content-repository>` compares migrated records, the biography, resume fields, bibliography and assets against `migration-manifest.json`'s source Git commit, then writes `migration-audit.json`. The original commit must be available locally. The manifest can record reviewed content refreshes and text replacements; unexplained differences fail the audit. `legacyPaths` and `contentChecks` in the manifest also protect old paths, anchors and visible information during normal output verification.
-
-MIT licensed. Third-party dependencies retain their respective licenses.
+English UI is provided. `site.language` sets the document language; it does not translate interface copy. Markdown HTML is trusted build input. Third-party fonts and libraries retain their own licenses; Font Awesome Free assets and license are bundled locally.

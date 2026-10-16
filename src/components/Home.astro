@@ -22,7 +22,7 @@ const writing=[...posts.map(p=>({title:p.title,url:p.legacyPath,summary:p.descri
   <section class:list={['hero',{'hero-casual':isCasual}]}>
     <div class="hero-copy">
       <h1>{isCasual?config.identity.handle:config.identity.name}</h1>
-      <p class="hero-role">{isCasual?'Games, graphics, and handhelds.':config.identity.role}</p>
+      <p class="hero-role">{isCasual?(profile.casualHeadline||'Projects and interests'):config.identity.role}</p>
       {!isCasual&&<p class="hero-affiliation">{config.identity.institution} · {config.identity.location}</p>}
       <p class="hero-summary">{isCasual?profile.casualSummary:profile.summary}</p>
       {!isCasual&&profile.background&&<p class="hero-background">{profile.background}</p>}
@@ -32,7 +32,7 @@ const writing=[...posts.map(p=>({title:p.title,url:p.legacyPath,summary:p.descri
     {isCasual?(featured?.image||config.hero.enabled)&&<div class="casual-preview">{featured?.image?<a href={href(featured.legacyPath,mode)}><div class="preview-bar"><span class="window-dots"><i></i><i></i><i></i></span><span>{featured.title}</span><Icon name="arrow-up-right"/></div><img src={href(featured.image)} alt={`${featured.title} in action`} width="640" height="480" fetchpriority="high"/><p>{featured.tags.join(' · ')}</p></a>:<Field/>}</div>:<aside class="academic-aside">{config.identity.photo&&<img class="portrait" src={href(config.identity.photo)} width="180" height="210" alt={config.identity.name} fetchpriority="high"/>}{config.hero.enabled&&<div class="small-field"><Field/></div>}</aside>}
   </section>
   {config.modes[mode].sections.map(section=> <section id={section} class:list={['home-section',`section-${section}`]}>
-    <div class="section-heading"><h2>{section==='projects'?(isCasual?'Projects & games':'Selected projects'):section==='research'?'Research interests':section==='writing'?'Recent writing':section==='contact'?'Contact':sectionLabels[section]}</h2>{section==='projects'&&<a href={href('/projects/',mode)}>All projects <Icon name="arrow-up-right"/></a>}{section==='publications'&&<a href={href('/publications/')}>Bibliography <Icon name="arrow-up-right"/></a>}{section==='writing'&&<a href={href(config.blog.href)}>Blog <Icon name="arrow-up-right"/></a>}{section==='cv'&&<a href={href('/cv/')}>Full CV <Icon name="arrow-up-right"/></a>}</div>
+    <div class="section-heading"><h2>{config.modes[mode].sectionTitles[section]||(section==='projects'?(isCasual?'Projects':'Selected projects'):section==='research'?'Research interests':section==='writing'?'Recent writing':sectionLabels[section])}</h2>{section==='projects'&&<a href={href('/projects/',mode)}>All projects <Icon name="arrow-up-right"/></a>}{section==='publications'&&<a href={href('/publications/')}>Bibliography <Icon name="arrow-up-right"/></a>}{section==='writing'&&<a href={href(config.blog.href)}>Blog <Icon name="arrow-up-right"/></a>}{section==='cv'&&<a href={href('/cv/')}>Full CV <Icon name="arrow-up-right"/></a>}</div>
     {section==='research'&&<><div class="research-grid">{profile.research.map(r=><article><h3>{r.title}</h3><p>{r.description}</p></article>)}</div>{profile.toolkit.length>0&&<div class="home-toolkit"><h3>Tools & platforms</h3><Toolkit/></div>}</>}
     {section==='projects'&&<ProjectGrid entries={selected} mode={mode} filters={isCasual}/>}
     {section==='publications'&&<Publications/>}

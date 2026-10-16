@@ -24,6 +24,15 @@ test('YAML timestamp objects normalize without losing the instant',()=>{
   const entry={id:'note',title:'A note',description:'A real timestamp',legacyPath:'/notes/a/',date:new Date('2025-04-11T01:35:00Z')};
   assert.equal(entrySchema.parse(entry).date,'2025-04-11T01:35:00.000Z');
 });
+
+test('mode navigation and display labels belong to site configuration',()=>{
+  const original=parse(readFileSync('examples/minimal/site.config.yaml','utf8'));
+  const configured=configSchema.parse({...original,projectCategories:{work:'Field studies'},sectionLabels:{interests:'Outside work'},modes:{...original.modes,casual:{...original.modes.casual,navigation:['projects','contact'],sectionTitles:{projects:'Selected work'}}}});
+  assert.equal(configured.projectCategories.work,'Field studies');
+  assert.equal(configured.modes.casual.sectionTitles.projects,'Selected work');
+  assert.throws(()=>configSchema.parse({...original,modes:{...original.modes,casual:{sections:['projects'],navigation:['contact']}}}));
+  assert.throws(()=>configSchema.parse({...original,modes:{...original.modes,casual:{sections:['projects','projects']}}}));
+});
 test('social links default to both modes and can be scoped to one mode',()=>{
   const original=parse(readFileSync('examples/minimal/site.config.yaml','utf8'));
   assert.deepEqual(configSchema.parse(original).socials[0].modes,['academic','casual']);

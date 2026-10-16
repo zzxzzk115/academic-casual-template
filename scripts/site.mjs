@@ -1,15 +1,24 @@
-import { spawnSync } from 'node:child_process';
+import { spawnSync, execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { resolve, join } from 'node:path';
 import { readFileSync, mkdirSync, copyFileSync } from 'node:fs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const [command = 'dev', ...args] = process.argv.slice(2);
-if (!['dev', 'build', 'preview', 'check'].includes(command)) throw new Error('Use site dev|build|preview|check --content <directory> --out <directory>');
+if (!['init', 'dev', 'build', 'preview', 'check'].includes(command)) throw new Error('Use site init|dev|build|preview|check --content <directory> --out <directory>');
 const options = {};
 for (let i = 0; i < args.length; i += 2) {
   if (!['--content', '--out', '--port'].includes(args[i]) || !args[i + 1]) throw new Error(`Invalid argument: ${args[i]}`);
   options[args[i].slice(2)] = args[i + 1];
+}
+if (command === 'init') {
+  if (!options.content || options.out || options.port) throw new Error('Use site init --content <empty-directory>');
+  const { initContent } = await import('./init-content.mjs');
+  const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+  const repository = pkg.repository.url.match(/github\.com\/([^/]+\/[^/]+?)\.git$/)?.[1];
+  const revision = execFileSync('git', ['-C', root, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+  console.log(`Created content site: ${initContent(options.content, { templateRoot: root, repository, revision })}`);
+  process.exit(0);
 }
 const env = { ...process.env, SITE_CONTENT_ROOT: resolve(options.content || join(root, 'examples/minimal')), SITE_OUTPUT_ROOT: resolve(options.out || join(root, 'dist')) };
 const astroRoot = join(root, 'node_modules/astro');

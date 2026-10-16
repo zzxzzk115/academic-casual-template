@@ -14,9 +14,18 @@ identity:
   institution: Independent practice
   location: Earth
   email: hello@example.com
+  contactNote: This is a fictional contact address.
 socials:
   - label: GitHub
     href: https://github.com
+    icon: brands:github
+  - label: itch.io
+    href: https://itch.io/
+    icon: brands:itch-io
+    modes: [casual]
+projectCategories:
+  work: Research
+  fun: Experiments
 theme:
   academic: '#2455cf'
   casual: '#09876e'
@@ -26,10 +35,14 @@ hero:
   intensity: 1
 modes:
   academic:
-    sections: [research, publications, projects, cv, writing, contact]
+    sections: [research, news, publications, projects, cv, writing, contact]
+    navigation: [research, projects, writing, contact]
     featuredProjects: [sampling-study]
   casual:
     sections: [projects, interests, writing, about, contact]
+    sectionTitles:
+      projects: Experiments
     featuredProjects: [sampling-study, little-world]
 blog:
   href: https://example.com/blog/
+  snapshot: content/blog-feed.json

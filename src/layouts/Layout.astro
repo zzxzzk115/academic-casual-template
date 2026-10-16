@@ -32,7 +32,7 @@ const copyrightYears=config.site.copyrightStartYear&&config.site.copyrightStartY
     <a class="skip" href="#main">Skip to content</a>
     <header class="site-header">
       <a class="brand" href={href(mode==='casual'?'/casual/':'/')}><span class="monogram">{config.identity.initials}<i></i></span><span class="brand-name">{config.identity.name}<small>{config.identity.handle}</small></span></a>
-      {(['academic','casual'] as const).map(navMode=><nav class="desktop-nav" aria-label="Main navigation" data-nav-mode={navMode} hidden={navMode!==mode}>{config.modes[navMode].sections.filter(s=>['research','publications','projects','writing','contact'].includes(s)).map(s=><a href={`${href(navMode==='casual'?'/casual/':'/')}#${s}`} data-section-link={s}>{sectionLabels[s]}</a>)}</nav>)}
+      {(['academic','casual'] as const).map(navMode=><nav class="desktop-nav" aria-label="Main navigation" data-nav-mode={navMode} hidden={navMode!==mode}>{(config.modes[navMode].navigation??config.modes[navMode].sections.filter(s=>['research','publications','projects','writing','contact'].includes(s))).map(s=><a href={`${href(navMode==='casual'?'/casual/':'/')}#${s}`} data-section-link={s}>{sectionLabels[s]}</a>)}</nav>)}
       <div class="header-actions">
         <div class="mode-switch" aria-label="Presentation mode"><a href={academicTarget} data-mode-link="academic" aria-current={mode==='academic'?'page':undefined}>Academic</a><a href={casualTarget} data-mode-link="casual" aria-current={mode==='casual'?'page':undefined}>Casual</a></div>
         <button class="icon-button" aria-label="Search website" data-search hidden><Icon name="search"/></button>
