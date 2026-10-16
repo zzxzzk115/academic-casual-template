@@ -17,6 +17,9 @@ importers:
       '@fontsource-variable/newsreader':
         specifier: 5.3.0
         version: 5.3.0
+      '@fortawesome/fontawesome-free':
+        specifier: 7.3.1
+        version: 7.3.1
       astro:
         specifier: 7.4.0
         version: 7.4.0(@types/node@24.10.1)(esbuild@0.27.7)(tsx@4.21.0)(yaml@2.9.1)
@@ -623,6 +626,10 @@ packages:
 
   '@formatjs/intl-localematcher@0.6.2':
     resolution: {integrity: sha512-XOMO2Hupl0wdd172Y06h6kLpBz6Dv+J4okPLl4LPtzbr8f66WbIoy4ev98EBuZ6ZK4h5ydTN6XneT4QVpD7cdA==}
+
+  '@fortawesome/fontawesome-free@7.3.1':
+    resolution: {integrity: sha512-wmglKKPDIkgV3aWlZzWECCPoGIkYCulzBwxG9+w7rc5BGapZ6cPMpoPOT8k36J0Ni7PPX6c/rsoMWfS4d1MUMg==}
+    engines: {node: '>=6'}
 
   '@iconify/types@2.0.0':
     resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
@@ -5693,6 +5700,8 @@ snapshots:
   '@formatjs/intl-localematcher@0.6.2':
     dependencies:
       tslib: 2.8.1
+
+  '@fortawesome/fontawesome-free@7.3.1': {}
 
   '@iconify/types@2.0.0': {}
 

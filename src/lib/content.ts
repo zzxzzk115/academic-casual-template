@@ -12,9 +12,9 @@ const localOrExternal = z.string().min(1).refine(v => v.startsWith('/') || /^(ht
 const modeConfig = z.object({ sections: z.array(z.enum(sectionIds)), featuredProjects: z.array(z.string()).default([]) });
 export const configSchema = z.object({
   schemaVersion: z.literal(1),
-  site: z.object({ title: z.string().min(1), description: z.string().min(1), url: z.url(), base: z.string().default('/'), language: z.string().default('en'), availableLanguages: z.array(z.string()).default(['en']) }),
+  site: z.object({ title: z.string().min(1), description: z.string().min(1), url: z.url(), base: z.string().default('/'), language: z.string().default('en'), availableLanguages: z.array(z.string()).default(['en']), copyrightStartYear: z.number().int().min(1900).max(new Date().getUTCFullYear()).optional() }),
   identity: z.object({ name: z.string().min(1), handle: z.string().min(1), initials: z.string().min(1), role: z.string().min(1), institution: z.string().min(1), location: z.string(), address: z.string().optional(), email: z.email(), photo: z.string().optional(), cv: z.string().optional() }),
-  socials: z.array(z.object({ label: z.string(), href: localOrExternal })),
+  socials: z.array(z.object({ label: z.string(), href: localOrExternal, icon: z.string().regex(/^(brands|solid):[a-z0-9-]+$/).optional() })),
   theme: z.object({ academic: z.string().regex(/^#[0-9a-f]{6}$/i), casual: z.string().regex(/^#[0-9a-f]{6}$/i) }),
   hero: z.object({ enabled: z.boolean().default(true), label: z.string(), intensity: z.number().min(0).max(2).default(1) }),
   modes: z.object({ academic: modeConfig, casual: modeConfig }),

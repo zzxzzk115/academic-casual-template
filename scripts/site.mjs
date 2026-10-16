@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { resolve, join } from 'node:path';
-import { readFileSync } from 'node:fs';
+import { readFileSync, mkdirSync, copyFileSync } from 'node:fs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const [command = 'dev', ...args] = process.argv.slice(2);
@@ -18,6 +18,9 @@ const cli = join(astroRoot, typeof astroPackage.bin === 'string' ? astroPackage.
 const result = spawnSync(process.execPath, [cli, command, '--root', root, ...(options.port ? ['--port', options.port] : [])], { cwd: root, env, stdio: 'inherit' });
 if (result.status !== 0) process.exit(result.status || 1);
 if (command === 'build') {
+  const licenses = join(env.SITE_OUTPUT_ROOT, 'licenses');
+  mkdirSync(licenses, { recursive: true });
+  copyFileSync(join(root, 'node_modules/@fortawesome/fontawesome-free/LICENSE.txt'), join(licenses, 'fontawesome-free.txt'));
   const { createIndex } = await import('pagefind');
   const { index } = await createIndex();
   const added = await index.addDirectory({ path: env.SITE_OUTPUT_ROOT, glob: '{index.html,casual/**/*.html,projects/**/*.html,publications/**/*.html,cv/**/*.html,news/**/*.html,featured-posts/**/*.html,repositories/**/*.html}' });

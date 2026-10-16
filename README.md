@@ -28,6 +28,8 @@ Without `--content`, commands use `examples/minimal`. `--out` is resolved agains
 - `content/repositories.yaml`: a list of `owner/repository` strings.
 - `public/`: copied without changing resource URLs. Local image paths must begin with `/` and are checked at build time.
 
+Set `site.copyrightStartYear` to show a footer year range ending in the build year. When omitted, the footer shows only the build year.
+
 Frontmatter example:
 
 ```yaml
@@ -48,7 +50,11 @@ Markdown supports highlighted code, tables, raw HTML embeds, Mermaid fences, and
 
 `/` is Academic; `/casual/` is Casual. Detail URLs remain shared, with `?mode=casual` retaining presentation context. Dark/light preferences are independent and stored locally. English UI copy is centralized in the components and section labels; no Chinese routes are published until translated content and interface copy exist.
 
-The Vue sampling field hydrates when visible. It renders only on resize/pointer interaction, pauses offscreen/in hidden tabs, caps pixel density, and leaves a static SVG visible when reduced motion is requested or WebGL is unavailable. All content, navigation, project details, bibliography, and CV remain readable without JavaScript. Search, filtering, and copying progressively enhance them.
+Set `hero.enabled: false` to remove the optional sampling illustration entirely, including its static fallback. Use the bibliography's `preview` field for figures from actual publications instead.
+
+Interface icons use Font Awesome Free's Brands and Classic Solid fonts, bundled locally through the pinned dependency. Social links can specify `icon: brands:github`, `icon: brands:linkedin`, or another free icon using `brands:` / `solid:`. `Icon.astro` keeps decorative glyphs hidden from assistive technology; controls retain text or accessible labels. Font Awesome retains its own font and code licenses.
+
+When enabled, the Vue sampling field hydrates when visible. It renders only on resize/pointer interaction, pauses offscreen/in hidden tabs, caps pixel density, and leaves a static SVG visible when reduced motion is requested or WebGL is unavailable. All content, navigation, project details, bibliography, and CV remain readable without JavaScript. Search, filtering, and copying progressively enhance them.
 
 ## Blog integration
 

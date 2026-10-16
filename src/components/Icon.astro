@@ -1,0 +1,7 @@
+---
+interface Props { name: string; class?: string; }
+const {name,class:className}=Astro.props;
+const aliases: Record<string,string> = {search:'magnifying-glass',list:'bars','x-lg':'xmark','journal-text':'book-open','arrow-up-right':'arrow-up-right-from-square','file-earmark-pdf':'file-pdf',clipboard:'copy','link-45deg':'link'};
+const [style,glyph]=name.includes(':')?name.split(':'):['github','linkedin'].includes(name)?['brands',name]:['solid',aliases[name]||name];
+---
+<i class:list={[`fa-${style}`,`fa-${glyph}`,'icon',className]} aria-hidden="true" data-pagefind-ignore></i>

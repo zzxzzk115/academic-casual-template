@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Icon from '../components/Icon.astro';
 import {href} from '../lib/content';
 ---
-<Layout title="Page not found"><div class="detail-container not-found"><h1>Page not found</h1><p>The page may have moved. Try the search, or head back to the homepage.</p><a class="button button-primary" href={href('/')}>Homepage ↗</a></div></Layout>
+<Layout title="Page not found"><div class="detail-container not-found"><h1>Page not found</h1><p>The page may have moved. Try the search, or head back to the homepage.</p><a class="button button-primary" href={href('/')}>Homepage <Icon name="arrow-up-right"/></a></div></Layout>

@@ -1,5 +1,6 @@
 ---
 import { href, type Entry, type Mode } from '../lib/content';
+import Icon from './Icon.astro';
 interface Props { entries:Entry[]; mode?:Mode; filters?:boolean; }
 const {entries,mode='academic',filters=false}=Astro.props;
 const categories=[...new Set(entries.map(p=>p.category))];
@@ -10,7 +11,7 @@ const categories=[...new Set(entries.map(p=>p.category))];
     {entries.map((p,i)=><article class:list={['project', { 'project-wide':i===0 && entries.length>2 }]} data-category={p.category}>
       <a class="project-image" href={href(p.legacyPath,mode)} aria-label={`Explore ${p.title}`}>
         {p.image?<img src={href(p.image)} alt={`${p.title} screenshot`} loading="lazy" decoding="async" width="960" height="600" />:<div class="project-placeholder" aria-hidden="true"><span>{p.title.charAt(0)}</span></div>}
-        <span class="project-arrow" aria-hidden="true" data-pagefind-ignore>↗</span>
+        <span class="project-arrow" aria-hidden="true" data-pagefind-ignore><Icon name="arrow-up-right"/></span>
       </a>
       <div class="project-meta">{p.tags.slice(0,2).join(' / ') || p.category}</div>
       <h3><a href={href(p.legacyPath,mode)}>{p.title}</a></h3><p>{p.description}</p>
