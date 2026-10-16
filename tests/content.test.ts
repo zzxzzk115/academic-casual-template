@@ -26,6 +26,14 @@ test('configuration rejects unsafe colors, wrong versions, and unknown section I
   assert.throws(()=>configSchema.parse({...original,theme:{...original.theme,academic:'red;display:none'}}));
   assert.throws(()=>configSchema.parse({...original,modes:{...original.modes,academic:{sections:['unregistered']}}}));
 });
+test('mode portraits are optional and independent',()=>{
+  const original=parse(readFileSync('examples/einstein/site.config.yaml','utf8'));
+  const configured=configSchema.parse({...original,modes:{...original.modes,casual:{...original.modes.casual,photo:'https://example.org/alternate-avatar.png'}}});
+  assert.equal(configured.identity.photo,original.identity.photo);
+  assert.equal(configured.modes.academic.photo,undefined);
+  assert.equal(configured.modes.casual.photo,'https://example.org/alternate-avatar.png');
+  assert.throws(()=>configSchema.parse({...original,modes:{...original.modes,casual:{...original.modes.casual,photo:''}}}));
+});
 test('YAML timestamp objects normalize without losing the instant',()=>{
   const entry={id:'note',title:'A note',description:'A real timestamp',legacyPath:'/notes/a/',date:new Date('2025-04-11T01:35:00Z')};
   assert.equal(entrySchema.parse(entry).date,'2025-04-11T01:35:00.000Z');
@@ -111,7 +119,7 @@ test('home hero selection is independent of homepage ordering',()=>{
     assert.equal(result.status,0,result.stderr);
   }finally{rmSync(fixture,{recursive:true,force:true});}
 });
-for(const scenario of ['duplicate home heroes','unavailable home mode','non-project hero','academic hero','obsolete project selector','obsolete featured flag','obsolete paper flag','missing asset','unknown now project','unavailable now project','duplicate path'])test(`build validation catches ${scenario}`,()=>{
+for(const scenario of ['duplicate home heroes','unavailable home mode','non-project hero','academic hero','obsolete project selector','obsolete featured flag','obsolete paper flag','missing asset','missing mode portrait','unknown now project','unavailable now project','duplicate path'])test(`build validation catches ${scenario}`,()=>{
   const fixture=mkdtempSync(join(tmpdir(),'academic-casual-'));
   try{
     cpSync('examples/einstein',fixture,{recursive:true});
@@ -131,6 +139,8 @@ for(const scenario of ['duplicate home heroes','unavailable home mode','non-proj
       writeFileSync(join(fixture,'content/publications.bib'),'@article{old,title={Old},author={Author},year={2020},selected={true}}');
     }else if(scenario==='missing asset'){
       const file=join(fixture,'site.config.yaml'),config=parse(readFileSync(file,'utf8'));config.identity.photo='/assets/missing.jpg';writeFileSync(file,stringify(config));
+    }else if(scenario==='missing mode portrait'){
+      const file=join(fixture,'site.config.yaml'),config=parse(readFileSync(file,'utf8'));config.modes.casual.photo='/assets/missing-mode-portrait.png';writeFileSync(file,stringify(config));
     }else if(scenario==='unknown now project'){
       writeFileSync(join(fixture,'content/now.yaml'),stringify({workingOn:[{projectId:'missing',description:'A missing project'}]}));
     }else if(scenario==='unavailable now project'){

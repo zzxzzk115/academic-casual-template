@@ -34,6 +34,8 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
     config.identity.handle = 'TQ Notebook';
     config.identity.initials = 'TQ';
     config.theme.academic = '#6b3db8';
+    cpSync(join(content,'public/assets/einstein-1921.jpg'),join(content,'public/assets/casual-portrait.jpg'));
+    config.modes.casual.photo = '/assets/casual-portrait.jpg';
     writeFileSync(join(content, 'content/now.yaml'), stringify({
       updated: '2026-10-16',
       workingOn: [{projectId:'special-relativity',description:'Academic fixture work',itemsTitle:'Current milestones',items:[{title:'Academic detail',description:'Academic nested description',href:'/projects/special-relativity/'}],modes:['academic']}],
@@ -73,6 +75,9 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
   if (name === 'root') {
     if (academic.includes('id="now"') || academic.includes('/#now') || casual.includes('id="now"')) throw new Error('Empty now content produced a section or navigation link');
   } else {
+    if (!academic.includes('src="/portfolio/assets/einstein-1921.jpg"') || academic.includes('src="/portfolio/assets/casual-portrait.jpg"')) throw new Error('Mode portrait leaked into Academic');
+    if (!casual.includes('src="/portfolio/assets/casual-portrait.jpg"') || casual.includes('src="/portfolio/assets/einstein-1921.jpg"')) throw new Error('Casual portrait override or deployment base was lost');
+    if (casual.includes('<figcaption>')) throw new Error('Default portrait credit was applied to a mode override');
     if (!academic.includes('Academic fixture work') || academic.includes('Casual fixture topic')) throw new Error('Academic now content was not scoped');
     if (!casual.includes('Casual fixture topic') || casual.includes('Academic fixture work') || !casual.includes('On the workbench')) throw new Error('Casual now content was not scoped');
     if (!casual.includes('/portfolio/projects/special-relativity/?mode=casual')) throw new Error('Now link lost its base or mode');

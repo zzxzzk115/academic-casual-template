@@ -10,6 +10,8 @@ const modeConfig = z.object({
   navigation: sectionList.optional(),
   sectionTitles: z.partialRecord(z.enum(sectionIds), z.string().min(1)).default({}),
   showToolkit: z.boolean().default(true),
+  photo: z.string().min(1).optional(),
+  photoCredit: z.object({label:z.string(),href:localOrExternal}).optional(),
 }).strict().refine(mode => !mode.navigation || mode.navigation.every(id => mode.sections.includes(id)), 'Navigation must refer to enabled sections');
 export const configSchema = z.object({
   schemaVersion: z.literal(1),
