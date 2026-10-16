@@ -17,7 +17,7 @@ export function initContent(destination, { templateRoot, repository, revision })
   mkdirSync(target, { recursive: true });
   cpSync(source, target, { recursive: true, force: false, errorOnExist: true });
   writeFileSync(join(target, 'template.lock.json'), JSON.stringify({ schemaVersion: 1, repository, revision }, null, 2) + '\n');
-  writeFileSync(join(target, '.gitignore'), 'dist/\n.cache/\n.astro/\nnode_modules/\n');
+  writeFileSync(join(target, '.gitignore'), 'dist/\n.cache/\n.astro/\nnode_modules/\n**/.latex-build/\n');
   writeFileSync(join(target, 'README.md'), `# Site content
 
 This directory owns the configuration, Markdown, BibTeX and public assets for one site.

@@ -5,7 +5,7 @@ import HeadingAnchor from '../components/HeadingAnchor.astro';
 import ProjectGrid from '../components/ProjectGrid.astro';
 import Publications from '../components/Publications.astro';
 import Timeline from '../components/Timeline.astro';
-import {routes,projects,repositories,config,cv,biography,href,dateLabel,type Route} from '../lib/content';
+import {routes,projects,repositories,config,cv,cvDownloads,biography,href,dateLabel,type Route} from '../lib/content';
 import {renderMarkdown} from '../lib/markdown';
 export function getStaticPaths(){return routes.map(route=>({params:{path:route.path.slice(1,-1)},props:{route}}));}
 const {route}=Astro.props as {route:Route};
@@ -14,7 +14,7 @@ const entry=route.entry;
 <Layout title={route.title} description={route.description || config.site.description} image={entry?.image}>
   <div class="detail-container">
     <a class="back-link" href={href(entry?.kind==='project'?'/projects/':'/')} data-mode-preserve><Icon name="arrow-left"/> {entry?.kind==='project'?`All ${(config.sectionLabels.projects||'Projects').toLowerCase()}`:'Back home'}</a>
-    <header class="page-heading">{entry&&<p class="eyebrow">{entry.category}{entry.date?` · ${dateLabel(entry.date)}`:''}</p>}<h1 class="has-heading-anchor">{route.title}<HeadingAnchor target="main" label={route.title}/></h1>{route.description&&entry?.kind!=='news'&&!(entry?.kind==='project'&&entry.overview)&&<p>{route.description}</p>}{route.kind==='cv'&&config.identity.cv&&<a class="button button-primary" href={href(config.identity.cv)}><Icon name="download"/> Download CV</a>}</header>
+    <header class="page-heading">{entry&&<p class="eyebrow">{entry.category}{entry.date?` · ${dateLabel(entry.date)}`:''}</p>}<h1 class="has-heading-anchor">{route.title}<HeadingAnchor target="main" label={route.title}/></h1>{route.description&&entry?.kind!=='news'&&!(entry?.kind==='project'&&entry.overview)&&<p>{route.description}</p>}{route.kind==='cv'&&cvDownloads.length>0&&<div class="cv-downloads">{cvDownloads.map(doc=><a class="button button-primary" href={href(doc.href)} hreflang={doc.lang}><Icon name="download"/> {typeof config.identity.cv==='string'?'Download CV':doc.label}</a>)}</div>}</header>
     {entry?.status&&<p class="project-status">{entry.status}</p>}
     {entry&&entry.links.length>0&&<div class="project-links">{entry.links.map(link=><a href={href(link.href)}>{link.icon&&<Icon name={link.icon}/>} {link.label}</a>)}</div>}
     {route.kind==='projects'&&<ProjectGrid entries={projects} filters/>}

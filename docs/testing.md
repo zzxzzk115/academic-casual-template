@@ -54,3 +54,7 @@ Use real devices and Safari when those platforms are part of the intended audien
 
 Store local screenshots, Lighthouse output and other generated reports in ignored
 `reports/` directories. They are local inspection artifacts rather than template documentation.
+
+## Optional LaTeX documents
+
+Run `pnpm latex --content tests/fixtures/latex` with TeX Live available to exercise the real English/Chinese smoke documents; CI runs the same sources through the composite action and uploads the resulting PDFs. Ordinary unit tests do not require TeX. For configured CVs, inspect every generated page for clipping, missing glyphs and awkward page breaks. Confirm each language's download link on the Academic homepage and CV page, the unchanged single-link fallback, and correct deployment-base handling. Break one source to confirm that compilation fails before PDF publication and deployment.

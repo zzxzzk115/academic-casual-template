@@ -15,6 +15,7 @@ Quick links: [Homepage curation](#homepage-curation) · [Current work and plans]
 | `socials` | Links with a label, URL, optional Font Awesome icon and optional mode visibility |
 | `theme` | Academic and Casual accent colors in six-digit hex form |
 | `banner` | Optional homepage feature image, caption, link and mode visibility |
+| `latex` | Optional LaTeX engine and source-to-PDF output mappings |
 | `hero` | Enable the optional illustration, set its label and intensity |
 | `modes` | Ordered sections, optional desktop navigation, section headings, `showToolkit` and an optional responsive `sidebar` for each mode |
 | `sectionLabels` | Optional navigation labels, keyed by section ID |
@@ -59,6 +60,47 @@ socials:
 Free icons accept `brands:<name>` or `solid:<name>`. The fonts are bundled locally; a hosted icon kit is not required.
 
 When a separate Contact section is enabled, set `socials[].primary: true` to include an archive, portfolio or other link in the Academic introduction. If `contact` is omitted from a mode’s `sections`, the introduction automatically shows all of that mode’s social links, contact note and resolved address alongside its email, so a separate Contact block is optional. Remove `contact` from explicit navigation as well, if configured. GitHub and LinkedIn remain introductory links by default for existing content. Email, handle and blog are optional; omitted data creates no placeholder links. `modes.<mode>.email` overrides `identity.email` in that homepage's introductory and Contact links; without an override the identity address is used. Use `socials[].modes` to choose which modes show a social link. `modes.<mode>.address` overrides the homepage Contact address; set it to an empty string (`address: ""`) to hide the default office address in that mode. Omission inherits `identity.address`. The Casual title falls back to the person's name. The default portrait is `identity.photo`, with optional `identity.photoCredit: {label, href}`. Set `modes.academic.photo` or `modes.casual.photo` to override it for that mode, using an absolute site path or an HTTPS image URL (for example a GitHub avatar). An override applies to that mode’s introduction and About portrait. An explicit `modes.casual.photo` takes priority over any featured project in the opening visual and uses the same circular avatar layout, size and position as Academic at each breakpoint. If no override is set, the identity portrait and credit are used; an overridden photo uses only that mode’s optional `photoCredit`, so the default image’s credit is not attached to a different picture. Without an explicit mode photo, Casual uses a featured project cover when available, then the default portrait or illustration fallback. Academic and explicit Casual introduction avatars share the same right-hand anchor and circular crop (192 px on desktop, 160 px on tablets, 96 px on phones). About avatars also use circular crops; choose a photograph with the face near the centre and space around the head. The Casual introduction retains the full portrait. `site.footerText` can replace the default copyright line for a historical or curated example.
+
+## CV downloads and optional LaTeX compilation
+
+`identity.cv` keeps accepting a single URL/path. For multiple PDF languages, use the same field as a list:
+
+```yaml
+identity:
+  cv:
+    - label: CV · English
+      href: /assets/pdf/CV.pdf
+      lang: en
+    - label: CV · 中文
+      href: /assets/pdf/CV-zh.pdf
+      lang: zh-CN
+latex:
+  engine: xelatex
+  documents:
+    - source: latex/cv/resume-en.tex
+      output: /assets/pdf/CV.pdf
+    - source: latex/cv/resume-zh.tex
+      output: /assets/pdf/CV-zh.pdf
+```
+
+Downloads appear in the Academic profile and on the CV page, with optional `hreflang` attributes. Casual keeps its existing personal links. PDF languages are independent of the website interface language. Omitting `identity.cv` renders no download links; the existing single string retains its CV / Download CV labels.
+
+`latex` is opt-in. Its documents can be CVs or other PDFs. `engine` is `xelatex` (default), `lualatex` or `pdflatex`; all documents in one site use that engine. Sources are `.tex` paths relative to the content checkout, and outputs are absolute public `.pdf` paths without the deployment base. Use ASCII filenames with letters, numbers, underscores, hyphens and directories. Duplicate sources/outputs, missing sources and paths or symlinks that escape the checkout fail before compilation. Source files and supporting `.cls`/`.sty` files belong outside `public/`; only the configured PDFs are copied into the published site.
+
+After dependency installation, add this step **before** the site build in a content repository workflow (where `template/` is the pinned template checkout):
+
+```yaml
+- name: Compile configured PDFs
+  uses: ./template/.github/actions/compile-latex
+  with:
+    content-directory: content
+```
+
+The action skips TeX entirely when `latex` is omitted. Configured sites use the pinned LaTeX Action release and TeX Live 2025, build each root file in its own source directory, and publish PDFs only after all configured documents compile and validate. It uses `latexmk`, disables shell escape and does not load `.latexmkrc`. Compile errors stop deployment; an old public PDF is not used to conceal a failed build. Use UTF-8 sources and fonts available in TeX Live; `ctex` with `fontset=fandol` supports Chinese without committing proprietary fonts. The action needs a Linux runner with Docker, Node 24 and the template's installed dependencies. It does not push generated files back to Git or require Overleaf credentials.
+
+For local compilation with `latexmk` and the configured TeX engine installed, run `pnpm latex --content <content-directory>` from the template checkout, then the normal site build. Intermediates stay in `.latex-build/` beside each root file. Ignore those directories in the content repository. A site may keep generated PDF snapshots for local preview without TeX; CI still rebuilds and replaces them from source on every run. Static development/build commands do not implicitly install or invoke TeX.
+
+The template CI also compiles minimal English and Chinese documents as a smoke test. The Einstein starter has no invented CV or configured LaTeX build and continues to work without TeX.
 
 ## Optional homepage feature image
 
