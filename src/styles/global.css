@@ -20,3 +20,13 @@ dialog{background:var(--paper);color:var(--ink);border:1px solid var(--line);bor
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
 .academic-photo{margin:0;max-width:180px}.academic-photo figcaption,.casual-photo figcaption{font-size:.75rem;line-height:1.5;color:var(--muted);margin-top:8px}.casual-photo{margin:0 0 0 auto;max-width:320px}.casual-photo img{display:block;width:100%;height:auto;max-height:420px;object-fit:contain;border-radius:3px}@media(max-width:550px){.academic-photo{max-width:85px}.academic-photo figcaption{display:none}.casual-photo{max-width:200px;margin:25px auto 0}}
+
+/* Keep navigation usable with touch, keyboard and orientation changes. */
+.icon-button{width:44px;height:44px;padding:11px;flex-shrink:0}
+.mode-switch a{display:inline-flex;align-items:center;min-width:44px;min-height:44px;line-height:1.4}
+.mobile-nav>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 12px}
+.mobile-nav a{display:flex;align-items:center;min-height:44px;padding:6px 8px;line-height:1.5;overflow-wrap:anywhere;border-radius:3px}
+.mobile-nav a:hover{background:var(--paper)}
+@media(min-width:1001px){.mobile-nav{display:none}}
+@media(max-width:550px){.site-header{gap:8px}.header-actions{gap:2px}.mode-switch{gap:8px}.mobile-nav{padding:12px 22px}.mobile-nav>div{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 8px}}
+@media(max-width:380px){.site-header{height:auto;flex-wrap:wrap;gap:0 12px;padding-top:8px;padding-bottom:8px}.brand{margin-right:auto}.header-actions{display:contents}.mode-switch{order:1;flex-basis:100%;justify-content:center}}
