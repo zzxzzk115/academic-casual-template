@@ -49,7 +49,7 @@ modes:
     navigation: [research, publications, cv, contact]
     sectionTitles:
       research: Research
-      projects: Selected work
+      projects: Featured work
       cv: Biography
       writing: Reading notes
       contact: Sources
@@ -58,6 +58,6 @@ modes:
     navigation: [interests, about, writing, contact]
     sectionTitles:
       interests: Beyond physics
-      projects: Selected work
+      projects: Featured work
       writing: Reading notes
       contact: Sources

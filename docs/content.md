@@ -36,7 +36,7 @@ modes:
   casual:
     sections: [projects, interests, writing, about, contact]
     sectionTitles:
-      projects: Selected work
+      projects: Featured work
 ```
 
 Homepage content is chosen in each record’s `home` metadata. Site configuration controls the section layout and navigation; it contains no project selection or hero IDs. `hero.enabled` controls the optional sampling illustration.
@@ -242,7 +242,7 @@ Use the shared [`home` rules](#homepage-curation) for homepage visibility, mode-
 
 Optional `overview: {purpose, contribution, outcome}` gives a project detail page a compact opening summary, labeled **Purpose**, **My contribution** and **Outcome**. Supply all three as plain text; use the Markdown body for evidence, images and technical detail. This replaces the repeated description under the page title; the description remains in cards, search and page metadata. Projects without an overview keep their existing layout.
 
-Homepage writing defaults to **Selected writing**; override `sectionTitles.writing` or `sectionLabels.writing` to suit your editorial selection. Use `sectionTitles.news: Milestones` for infrequent announcements without changing existing URLs or section IDs.
+Homepage writing defaults to **Featured writing**; override `sectionTitles.writing` or `sectionLabels.writing` to suit your editorial selection. Use `sectionTitles.news: Milestones` for infrequent announcements without changing existing URLs or section IDs.
 
 Projects without an image render as text cards at their natural height. The all-projects page remains a shared catalog. Category fragments such as `/projects/#work` initialize the filter.
 
