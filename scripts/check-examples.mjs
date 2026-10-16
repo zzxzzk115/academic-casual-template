@@ -49,6 +49,8 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
     config.identity.name = 'Taylor Quinn';
     config.identity.handle = 'TQ Notebook';
     config.identity.initials = 'TQ';
+    config.site.favicon = '/assets/favicon.jpg';
+    cpSync(join(content,'public/assets/einstein-1921.jpg'),join(content,'public/assets/favicon.jpg'));
     config.theme.academic = '#6b3db8';
     cpSync(join(content,'public/assets/einstein-1921.jpg'),join(content,'public/assets/casual-portrait.jpg'));
     config.modes.casual.photo = '/assets/casual-portrait.jpg';
@@ -99,6 +101,7 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
     } else if(home.includes('id="publications"')||home.includes('id="einstein1905relativity"')||home.includes('/#publications')) throw new Error('An empty publication selection produced a section or navigation link');
   }
   if (name === 'root') {
+    if(!academic.includes('rel="icon" href="data:image/svg+xml,') || !casual.includes('rel="icon" href="data:image/svg+xml,')) throw new Error('Omitted favicon lost the initials fallback');
     if(academic.includes('class="feature-banner"') || casual.includes('class="feature-banner"')) throw new Error('Unconfigured banner reserved a homepage element');
     const intro=academic.split('</section>')[0];
     for(const text of ['Fixture public address','Fixture contact note','Fixture secondary link']) if(!intro.includes(text)) throw new Error('Omitting Contact lost introductory contact details');
@@ -106,6 +109,7 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
     if (!casual.includes('class="casual-preview"') || !casual.includes('/assets/project-cover.jpg')) throw new Error('Project preview fallback was lost without a mode portrait');
     if (academic.includes('id="now"') || academic.includes('/#now') || casual.includes('id="now"')) throw new Error('Empty now content produced a section or navigation link');
   } else {
+    for(const html of [academic,casual,readFileSync(join(out,'projects/special-relativity/index.html'),'utf8')]) if(!html.includes('rel="icon" href="/portfolio/assets/favicon.jpg"')) throw new Error('Configured favicon lost its base or page/mode scope');
     if(!academic.includes('class="feature-banner"') || !academic.includes('src="/portfolio/assets/feature-banner.svg"') || !academic.includes('Fixture featured paper') || !academic.includes('href="/portfolio/publications/#einstein1905relativity"') || casual.includes('class="feature-banner"')) throw new Error('Feature banner lost its base or mode scope');
     if(readFileSync(join(out,'projects/special-relativity/index.html'),'utf8').includes('class="feature-banner"')) throw new Error('Homepage banner leaked into a detail page');
     for(const home of [academic,casual]) if(!home.includes('class="profile-sidebar"') || !home.includes('home-with-sidebar')) throw new Error('Configured profile sidebar was not rendered');
