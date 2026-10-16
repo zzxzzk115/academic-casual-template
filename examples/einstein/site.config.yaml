@@ -53,7 +53,6 @@ modes:
       cv: Biography
       writing: Reading notes
       contact: Sources
-    featuredProjects: [special-relativity, light-quanta, brownian-motion]
   casual:
     sections: [interests, about, projects, writing, contact]
     navigation: [interests, about, writing, contact]
@@ -62,4 +61,3 @@ modes:
       projects: Selected work
       writing: Reading notes
       contact: Sources
-    featuredProjects: [special-relativity, light-quanta, brownian-motion]

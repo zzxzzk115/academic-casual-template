@@ -16,6 +16,21 @@ document.addEventListener('click',e=>{if(!mobile.hidden&&e.target instanceof Nod
 matchMedia('(max-width:1000px)').addEventListener('change',()=>setMenuOpen(false));
 document.querySelectorAll<HTMLElement>('[data-gallery]').forEach(gallery=>{const buttons=[...gallery.querySelectorAll<HTMLButtonElement>('[data-filter]')];const apply=(button:HTMLButtonElement)=>{buttons.forEach(b=>{b.classList.remove('active');b.setAttribute('aria-pressed','false');});button.classList.add('active');button.setAttribute('aria-pressed','true');let count=0;gallery.querySelectorAll<HTMLElement>('[data-category]').forEach(card=>{card.hidden=button.dataset.filter!=='all'&&card.dataset.category!==button.dataset.filter;if(!card.hidden)count++;});gallery.querySelector('[data-filter-status]')!.textContent=`Showing ${count} projects`;};buttons.forEach(button=>button.addEventListener('click',()=>apply(button)));const fromHash=buttons.find(button=>button.dataset.filter===location.hash.slice(1));if(fromHash)apply(fromHash);});
 document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach(b=>b.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(b.dataset.copy!);toast('BibTeX copied.');}catch{toast('Copy unavailable. Use the .bib download instead.');}}));
+async function copyHeadingLink(anchor:HTMLAnchorElement,event:MouseEvent){
+  if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+  event.preventDefault();
+  const url=new URL(location.href);
+  url.hash=anchor.hash;
+  try{await navigator.clipboard.writeText(url.href);toast('Link copied.');}
+  catch{location.hash=url.hash;toast('Copy unavailable. Copy the link from the address bar.');}
+}
+document.querySelectorAll<HTMLAnchorElement>('[data-copy-heading]').forEach(anchor=>{
+  anchor.addEventListener('click',event=>void copyHeadingLink(anchor,event));
+  anchor.closest<HTMLElement>('.has-heading-anchor')?.addEventListener('click',event=>{
+    if(!(event.target instanceof Element)||event.target.closest('a,button')||!window.getSelection()?.isCollapsed)return;
+    void copyHeadingLink(anchor,event);
+  });
+});
 const dialog=document.querySelector<HTMLDialogElement>('#search-dialog')!;
 let searchPromise:Promise<void>|undefined;
 if(mode==='casual')new MutationObserver(()=>{document.querySelectorAll<HTMLAnchorElement>('#search-results a[href]').forEach(a=>{const u=new URL(a.href);if(u.origin===location.origin&&!u.pathname.includes('/casual/')){if(u.pathname===base)u.pathname=`${base}casual/`;else u.searchParams.set('mode','casual');a.href=u.href;}});}).observe(document.querySelector('#search-results')!,{childList:true,subtree:true});
@@ -26,5 +41,32 @@ document.querySelector('[data-search-close]')?.addEventListener('click',()=>dial
 dialog?.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();const p=e as MouseEvent;if(p.clientX<r.left||p.clientX>r.right||p.clientY<r.top||p.clientY>r.bottom)dialog.close();}});
 document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();openSearch();}});
 const mermaids=document.querySelectorAll<HTMLElement>('pre.mermaid');
-if(mermaids.length){const observer=new IntersectionObserver(async entries=>{if(!entries.some(e=>e.isIntersecting))return;observer.disconnect();const {default:mermaid}=await import('mermaid');mermaid.initialize({startOnLoad:false,theme:document.documentElement.dataset.theme==='dark'?'dark':'neutral',securityLevel:'strict'});try{await mermaid.run({nodes:mermaids});}catch{console.warn('Diagram could not be rendered; the source remains available.');}},{rootMargin:'200px'});mermaids.forEach(el=>observer.observe(el));}
+if(mermaids.length){
+  const observer=new IntersectionObserver(async entries=>{
+    if(!entries.some(e=>e.isIntersecting))return;
+    observer.disconnect();
+    const {default:mermaid}=await import('mermaid');
+    await document.fonts.ready;
+    mermaid.initialize({
+      startOnLoad:false,
+      theme:document.documentElement.dataset.theme==='dark'?'dark':'neutral',
+      securityLevel:'strict',
+      // Native SVG text avoids clipped foreignObject labels at fractional browser zoom.
+      htmlLabels:false,
+      fontFamily:getComputedStyle(document.body).fontFamily,
+      flowchart:{wrappingWidth:220},
+    });
+    try{
+      await mermaid.run({nodes:mermaids});
+      mermaids.forEach(el=>{
+        const svg=el.querySelector('svg');
+        if(!svg?.viewBox.baseVal.width)return;
+        // Keep text at its rendered size; narrow screens scroll the diagram region.
+        svg.style.width=`${Math.ceil(svg.viewBox.baseVal.width)}px`;
+        svg.style.maxWidth='none';
+      });
+    }catch{console.warn('Diagram could not be rendered; the source remains available.');}
+  },{rootMargin:'200px'});
+  mermaids.forEach(el=>observer.observe(el));
+}
 document.querySelectorAll<HTMLElement>('[data-comments]').forEach(el=>{const observer=new IntersectionObserver(entries=>{if(!entries.some(e=>e.isIntersecting))return;observer.disconnect();const script=document.createElement('script');script.src='https://giscus.app/client.js';script.async=true;script.crossOrigin='anonymous';for(const key of ['repo','repoId','category','categoryId'])script.setAttribute(`data-${key.replace(/[A-Z]/g,c=>'-'+c.toLowerCase())}`,el.dataset[key]!);Object.entries({mapping:'pathname',strict:'0',reactionsEnabled:'1',emitMetadata:'0',inputPosition:'bottom',theme:document.documentElement.dataset.theme||'light',lang:'en',loading:'lazy'}).forEach(([k,v])=>script.setAttribute(`data-${k.replace(/[A-Z]/g,c=>'-'+c.toLowerCase())}`,v));el.append(script);},{rootMargin:'200px'});observer.observe(el);});

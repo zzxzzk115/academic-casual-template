@@ -17,3 +17,36 @@ test('multiple table regions end before following prose and do not wrap pipe cha
   assert.match(output,/<\/table>\s*<\/div>\s*<p>After the first table\.<\/p>/);
   assert.match(output,/<\/table>\s*<\/div>\s*<pre/);
 });
+
+test('all six Markdown heading levels have accessible permalink controls and retain inline formatting',()=>{
+  const output=renderMarkdown('# Main\n\n## **Bold** and `code` {#stable-section}\n\n### Third\n\n#### Fourth\n\n##### Fifth\n\n###### Sixth');
+  for(let level=1;level<=6;level++)assert.match(output,new RegExp(`<h${level}[^>]*class="has-heading-anchor"`));
+  assert.equal((output.match(/data-copy-heading/g)||[]).length,6);
+  assert.match(output,/<h2 id="stable-section"[^>]*><strong>Bold<\/strong> and <code>code<\/code>/);
+  assert.match(output,/href="#stable-section"[^>]*data-pagefind-ignore[^>]*aria-label="Copy link to Bold and code"/);
+  assert.ok(!output.includes('{#stable-section}'));
+});
+
+test('heading IDs avoid collisions, reserve authored anchors and reset between documents',()=>{
+  const output=renderMarkdown('## Example\n\n## Example\n\n## Authored {#example}\n\n## Other {#example-2}\n\n## 你好 世界\n\n## 你好 世界\n\n## !!!');
+  const ids=[...output.matchAll(/<h2 id="([^"]+)"/g)].map(match=>match[1]);
+  assert.deepEqual(ids,['example-3','example-4','example','example-2','你好-世界','你好-世界-2','section']);
+  assert.match(output,/href="#%E4%BD%A0%E5%A5%BD-%E4%B8%96%E7%95%8C"/);
+  assert.match(renderMarkdown('## Example'),/<h2 id="example"/);
+});
+
+test('heading permalink labels escape markup and do not break existing heading links',()=>{
+  const output=renderMarkdown('## [A & B](https://example.org/) {#reference}');
+  assert.match(output,/<a href="https:\/\/example.org\/">A &amp; B<\/a>/);
+  assert.match(output,/aria-label="Copy link to A &amp; B"/);
+  assert.match(output,/href="#reference"/);
+});
+
+test('Mermaid fences retain escaped source in a keyboard-accessible diagram region',()=>{
+  const source='flowchart TB\n  A["Renderer <core>"] --> B["A long node label"]\n';
+  const output=renderMarkdown(`\`\`\`mermaid\n${source}\`\`\``);
+  assert.match(output,/<pre class="mermaid" role="region" aria-label="Scrollable diagram" tabindex="0" data-pagefind-ignore>/);
+  assert.ok(output.includes('Renderer &lt;core&gt;'));
+  assert.ok(output.includes('A long node label'));
+  assert.equal((output.match(/<pre/g)||[]).length,1);
+});

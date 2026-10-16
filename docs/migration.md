@@ -6,7 +6,7 @@ Migration scripts are optional adapters. Normal builds read only the content dir
 node scripts/import-jekyll.mjs <legacy-source> <new-content> [vuepress-blog-source]
 ```
 
-Use a new destination and retain a source Git tag. The importer reads `_projects`, `_posts`, `_news`, `_pages/about.md`, the JSONC resume, bibliography and repository list. It preserves filenames as public slugs, copies assets and writes a migration manifest. It parses resume comments, keeps valid dates and reduces impossible day values to known month precision. Supply and review the new site/profile configuration separately. Review imported HTML and external links before building.
+Use a new destination and retain a source Git tag. The importer reads `_projects`, `_posts`, `_news`, `_pages/about.md`, the JSONC resume, bibliography and repository list. It preserves filenames as public slugs, copies assets and writes a migration manifest. It parses resume comments, keeps valid dates and reduces impossible day values to known month precision. Supply and review the new site/profile configuration separately. Review imported HTML and external links before building. Homepage collection uses the shared `home` field and defaults to false: follow the [homepage curation upgrade table](content.md#upgrade-earlier-content) to migrate project selections, Casual hero settings, paper `selected` flags and default-on Markdown records.
 
 ```sh
 node scripts/audit-migration.mjs <content-repository>

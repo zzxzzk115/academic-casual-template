@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Icon from '../components/Icon.astro';
+import HeadingAnchor from '../components/HeadingAnchor.astro';
 import ProjectGrid from '../components/ProjectGrid.astro';
 import Publications from '../components/Publications.astro';
 import Timeline from '../components/Timeline.astro';
@@ -13,7 +14,7 @@ const entry=route.entry;
 <Layout title={route.title} description={route.description || config.site.description} image={entry?.image}>
   <div class="detail-container">
     <a class="back-link" href={href(entry?.kind==='project'?'/projects/':'/')} data-mode-preserve><Icon name="arrow-left"/> {entry?.kind==='project'?`All ${(config.sectionLabels.projects||'Projects').toLowerCase()}`:'Back home'}</a>
-    <header class="page-heading">{entry&&<p class="eyebrow">{entry.category}{entry.date?` · ${dateLabel(entry.date)}`:''}</p>}<h1>{route.title}</h1>{route.description&&entry?.kind!=='news'&&<p>{route.description}</p>}{route.kind==='cv'&&config.identity.cv&&<a class="button button-primary" href={href(config.identity.cv)}><Icon name="download"/> Download CV</a>}</header>
+    <header class="page-heading">{entry&&<p class="eyebrow">{entry.category}{entry.date?` · ${dateLabel(entry.date)}`:''}</p>}<h1 class="has-heading-anchor">{route.title}<HeadingAnchor target="main" label={route.title}/></h1>{route.description&&entry?.kind!=='news'&&!(entry?.kind==='project'&&entry.overview)&&<p>{route.description}</p>}{route.kind==='cv'&&config.identity.cv&&<a class="button button-primary" href={href(config.identity.cv)}><Icon name="download"/> Download CV</a>}</header>
     {entry?.status&&<p class="project-status">{entry.status}</p>}
     {entry&&entry.links.length>0&&<div class="project-links">{entry.links.map(link=><a href={href(link.href)}>{link.icon&&<Icon name={link.icon}/>} {link.label}</a>)}</div>}
     {route.kind==='projects'&&<ProjectGrid entries={projects} filters/>}
@@ -21,6 +22,7 @@ const entry=route.entry;
     {route.kind==='cv'&&<>{cv.basics&&<section class="cv-contact"><p>{cv.basics.label} · {cv.basics.summary}</p><div>{config.identity.email&&<a href={`mailto:${config.identity.email}`}>{config.identity.email}</a>}{cv.basics.phone&&<a href={`tel:${cv.basics.phone.replace(/[\s()-]/g,'')}`}>{cv.basics.phone}</a>}{cv.basics.url&&<a href={href(cv.basics.url)}>Website</a>}</div>{cv.basics.address&&<p>{cv.basics.address}</p>}</section>}<Timeline full/>{biography&&<section class="prose"><h2>Background</h2><div set:html={renderMarkdown(biography)}/></section>}</>}
     {route.kind==='list'&&<div class="writing-list">{route.entries?.map(e=><article><time datetime={e.date}>{dateLabel(e.date)}</time><h2><a href={href(e.legacyPath)} data-mode-preserve>{e.title} <Icon name="arrow-up-right"/></a></h2><p>{e.description}</p></article>)}</div>}
     {route.kind==='repositories'&&<div class="repo-list">{repositories.map((repo,i)=><a href={`https://github.com/${repo}`}><span>{(i+1).toString().padStart(2,'0')}</span><strong>{repo}</strong><span><Icon name="github"/> GitHub <Icon name="arrow-up-right"/></span></a>)}</div>}
+    {entry?.kind==='project'&&entry.overview&&<dl class="project-overview">{[['Purpose',entry.overview.purpose],['My contribution',entry.overview.contribution],['Outcome',entry.overview.outcome]].map(([label,text])=><div><dt>{label}</dt><dd>{text}</dd></div>)}</dl>}
     {entry&&<article class="prose" set:html={renderMarkdown(entry.body)}/>}
     {entry?.comments&&config.comments&&<section class="comments-section"><h2>Conversation</h2><div class="giscus" data-comments data-repo={config.comments.repo} data-repo-id={config.comments.repoId} data-category={config.comments.category} data-category-id={config.comments.categoryId}></div></section>}
   </div>

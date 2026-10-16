@@ -1,4 +1,9 @@
 ---
+home:
+  academic:
+    order: 2
+  casual:
+    order: 2
 id: light-quanta
 title: Light quanta
 description: A 1905 proposal treating light as discrete energy quanta, with an explanation of the photoelectric effect.

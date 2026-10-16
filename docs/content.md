@@ -2,6 +2,8 @@
 
 The starter at `examples/einstein` is a sourced historical profile, with a real public-domain photograph and editorial reading notes. Use `pnpm site init --content <empty-directory>` to create an independent copy. Replace its historical content with your own; the template reads that separate directory at build time.
 
+Quick links: [Homepage curation](#homepage-curation) · [Current work and plans](#current-work-and-plans) · [Markdown records](#markdown-records) · [Publications](#publications)
+
 ## Site configuration
 
 `site.config.yaml` uses schema version 1. The complete contract lives in `src/lib/schema.ts`.
@@ -13,7 +15,7 @@ The starter at `examples/einstein` is a sourced historical profile, with a real 
 | `socials` | Links with a label, URL, optional Font Awesome icon and optional mode visibility |
 | `theme` | Academic and Casual accent colors in six-digit hex form |
 | `hero` | Enable the optional illustration, set its label and intensity |
-| `modes` | Ordered sections, optional desktop navigation, section headings and featured project IDs for each mode |
+| `modes` | Ordered sections, optional desktop navigation, section headings and `showToolkit` for each mode |
 | `sectionLabels` | Optional navigation labels, keyed by section ID |
 | `projectCategories` | Category IDs mapped to display names |
 | `blog` | Optional external blog integration: original URL, JSON Feed URL and content-relative snapshot file |
@@ -31,15 +33,15 @@ modes:
   academic:
     sections: [research, publications, projects, cv, writing, contact]
     navigation: [research, projects, contact]
-    featuredProjects: [my-project]
   casual:
     sections: [projects, interests, writing, about, contact]
     sectionTitles:
       projects: Selected work
-    featuredProjects: [my-project]
 ```
 
-Available sections are `research`, `news`, `publications`, `projects`, `cv`, `writing`, `interests`, `about` and `contact`. Sections and navigation entries must be unique; desktop navigation can only point to enabled sections. Omitting `navigation` uses the standard desktop subset. Mobile navigation lists all enabled sections.
+Homepage content is chosen in each record’s `home` metadata. Site configuration controls the section layout and navigation; it contains no project selection or hero IDs. `hero.enabled` controls the optional sampling illustration.
+
+Available sections are `research`, `now`, `news`, `publications`, `projects`, `cv`, `writing`, `interests`, `about` and `contact`. Sections and navigation entries must be unique; desktop navigation can only point to enabled sections. Omitting `navigation` uses the standard desktop subset, including `now` when present. Mobile navigation lists all enabled sections. Empty `now`, `news`, `publications` and `projects` sections and their navigation links are hidden.
 
 Social links default to both modes. For a Casual-only game platform:
 
@@ -59,8 +61,9 @@ Set `socials[].primary: true` to include an archive, portfolio or other link in 
 
 | Path | Contents |
 | --- | --- |
-| `content/profile.yaml` | Academic/Casual summaries, background, optional `casualHeadline`, research topics, interests and toolkit rows |
-| `content/about.md` | Complete biography, shown on Casual and CV pages |
+| `content/profile.yaml` | Academic/Casual summaries, background, optional `academicBackground`, `casualHeadline` and `casualAbout`, research topics, interests and toolkit rows |
+| `content/now.yaml` | Optional current work, learning topics and tentative next steps |
+| `content/about.md` | Complete biography for CV and the default Casual About section |
 | `content/cv.yaml` | Education/work timelines, languages, skills and optional basics/contact fields |
 | `content/projects/*.md` | Project records |
 | `content/posts/*.md` | Homepage articles, separate from an external blog |
@@ -69,9 +72,128 @@ Set `socials[].primary: true` to include an archive, portfolio or other link in 
 | `content/repositories.yaml` | Repository names in `owner/repository` form |
 | `public/` | Assets copied with their existing paths |
 
-The Academic hero uses `identity.role` and factual summaries. The Casual role line uses `profile.casualHeadline`, or “Projects and interests” when omitted. The legacy `headline` field is not displayed. Optional toolkit rows use `label` and an `items` list; they appear in Academic, Casual and CV views.
+The Academic hero uses `identity.role` and factual summaries. The Casual role line uses `profile.casualHeadline`, or “Projects and interests” when omitted. The legacy `headline` field is not displayed. Optional toolkit rows use `label` and an `items` list; they appear in Academic, Casual and CV views. Set a mode’s `showToolkit: false` to omit toolkit rows from that homepage while retaining them on the full CV. `profile.academicBackground` optionally replaces the longer `background` in the Academic introduction; an empty string hides that paragraph. Omission preserves the original background.
+
+Set `profile.casualAbout` to a short plain-text personal introduction to use it in the Casual About section instead of the complete biography and toolkit. The full biography and toolkit remain available on the CV page. Omitting it preserves the existing About layout.
 
 CV records use `title`, `institution`, quoted `start`/`end` dates and `description`, with optional `url` and `location`. Keep known date precision. Full CV timelines display months when available. `basics` accepts `label`, `summary`, optional `phone`, `url` and `address`.
+
+## Current work and plans
+
+Add `now` to a mode's ordered `sections` list, then create `content/now.yaml`:
+
+```yaml
+updated: '2026-10-16'
+workingOn:
+  - projectId: my-project
+    description: Building a small renderer to try out a new idea.
+    modes: [academic, casual]
+exploring:
+  - title: GPU profiling
+    description: Learning how to identify expensive passes in a frame.
+    modes: [academic]
+upNext:
+  - title: A playable prototype
+    description: Try turning the latest experiment into a browser demo.
+    modes: [casual]
+```
+
+Each item needs a `description` and either a `title` or a valid `projectId`. Project references reuse the project's title and detail-page URL; an explicit `title` or `href` overrides either. Items default to both modes. A referenced project must support every mode listed on the item. Ordinary title links use `href`; an optional `links` list of `{label, href}` adds multiple resources, such as course assignments. Both use the same site-base and Casual context handling as other content links.
+
+The optional `updated` date is an explicit editorial date (`YYYY-MM-DD`), never the build date. The groups display as **Working on**, **Exploring** and **Up next**. Empty groups are omitted. A missing file or a mode without any items produces no section or navigation link. Use mode-specific `sectionTitles.now`, for example **Current focus** and **On my workbench**, to change the section heading. These are brief public updates; tentative plans do not need deadlines.
+
+Project card images preserve their source aspect ratio and show the complete image. Prefer a real application capture or an SVG diagram; avoid adding decorative window frames to the asset.
+
+## Homepage curation
+
+Use **one per-record field, `home`**, for projects, local posts, news and publications. All four content types use the same defaults and mode settings. `site.config.yaml` controls which sections are enabled and their layout; record selection, ordering and the Casual project hero belong in the records themselves.
+
+### Include or exclude a record
+
+In Markdown frontmatter:
+
+```yaml
+home: true
+```
+
+| Setting | Homepage behavior |
+| --- | --- |
+| Omitted, or `home: false` | Excluded from automatic homepage lists |
+| `home: true` | Eligible in every mode supported by the record |
+| `home: { academic: true }` | Eligible only in Academic |
+| `home: { casual: true }` | Eligible only in Casual |
+| `home: { academic: false, casual: { order: 2 } }` | Excluded from Academic; eligible in Casual with order 2 |
+
+The default is **false everywhere**. In an object, an omitted mode is also excluded. Use real YAML booleans, not quoted strings such as `home: "true"`. A mode object (even `{}`) enables that mode with the placement defaults below.
+
+For a record to appear, the mode must enable its section and, for Markdown, be included in the record’s `modes` list. `home: true` does not enable a disabled section. An explicit home mode unsupported by `modes` fails validation rather than silently widening visibility.
+
+### Order and the Casual hero
+
+Put all homepage placement choices under `home`:
+
+```yaml
+# In content/projects/my-project.md frontmatter:
+modes: [academic, casual]
+order: 20
+home:
+  academic: { order: 1 }
+  casual: { order: 3, hero: true }
+```
+
+This project is first in Academic and third in Casual when other projects have orders 1 and 2. It also supplies the Casual opening preview. The top-level `order: 20` remains its catalog order.
+
+| Placement field | Default | Rule |
+| --- | --- | --- |
+| `home.<mode>.order` | `100` | Numeric values sort in ascending order |
+| `home.casual.hero` | `false` | Marks the project used in the Casual opening preview |
+
+Equal homepage orders retain the underlying content order: catalog order for projects, newest dates first for news/writing, and newest years first for publications. The Academic and Casual orders are independent. Homepage filtering happens before limits: news shows up to three items and writing shows up to four combined local/blog items. An eligible record can therefore be beyond the visible limit.
+
+Only projects can set `hero: true`, and only in Casual. At most one project may do so; conflicting heroes fail validation. Hero selection is independent of card order. Without an explicit hero, the first eligible project is used. A missing project cover uses the existing portrait/illustration fallback. The site-level `hero.enabled` setting controls the optional illustration; Academic retains its profile introduction and portrait.
+
+### Publications on homepages
+
+Write the same field on each record in `content/publications.bib`:
+
+```bibtex
+@article{my-paper,
+  home = {true},
+  title = {My paper},
+  author = {Author, Example},
+  year = {2026}
+}
+```
+
+Use `home = {false}` or omit the field to keep a paper out of homepage lists. BibTeX metadata belongs on each paper, not in a YAML header for the whole bibliography.
+
+The same mode-specific object is supported as JSON inside the BibTeX value:
+
+```bibtex
+home = {{"academic":{"order":1},"casual":false}},
+```
+
+This paper appears only in Academic, with order 1. `hero` remains restricted to project records. Copied citations omit `home` and other presentation fields; the full bibliography download retains the source records.
+
+### Sections, navigation and retained content
+
+Keep a section such as `publications` in `modes.<mode>.sections` when it should become visible automatically as eligible content is added. Its homepage block and desktop/mobile navigation links appear only when the eligible count is greater than zero. The same empty-section rule applies to projects and news; `now` hides when it has no items for that mode.
+
+`home` only changes automatic homepage collection. Detail pages, archive/catalog pages and search keep their records. Local posts remain in RSS, and `/publications/` plus `/publications.bib` retain every paper. A zero-paper homepage therefore does not delete the bibliography.
+
+Explicit editorial sections such as `content/now.yaml` keep their own content: a manually authored reference can still link to a project with `home: false`. Imported blog articles are controlled by the independent JSON Feed, not local Markdown `home` metadata.
+
+### Upgrade earlier content
+
+| Earlier setting | Replacement |
+| --- | --- |
+| `modes.<mode>.featuredProjects: [a, b]` | Set `home.<mode>.order: 1` on project a and `2` on b; omit that mode on projects not selected |
+| `modes.casual.heroProject: a` | Set `home.casual.hero: true` on project a |
+| Project frontmatter `featured: true` | Set `home: true`, or explicit mode placements |
+| BibTeX `selected = {true/false}` | Use `home = {true/false}` |
+| Markdown relying on the former default-on behavior | Add `home: true` to entries intended for the homepage |
+
+Remove the old settings after moving their values. Legacy selectors are rejected rather than treated as competing aliases. The bundled example and personal content site have already been migrated. For imported Jekyll/al-folio content, review homepage eligibility before building; see the [migration guide](migration.md).
 
 ## Markdown records
 
@@ -85,7 +207,12 @@ category: work
 tags: [Research, Python]
 modes: [academic, casual]
 order: 1
+home: true
 status: In development
+overview:
+  purpose: The problem this project addresses.
+  contribution: What I implemented or contributed.
+  outcome: What works today, with any relevant limits.
 links:
   - label: Source
     href: https://github.com
@@ -93,11 +220,19 @@ links:
 ---
 ```
 
-Required fields are `id`, `title`, `description` and `legacyPath`. The path name retains migration terminology but is also the canonical route for new content. IDs are stable and unique across projects, posts and news. Public paths must end in `/` and remain unique. Optional fields also include `image`, `imageAlt`, `categories`, `date`, `comments` and `featured`. Posts and news should include a quoted ISO timestamp.
+Required fields are `id`, `title`, `description` and `legacyPath`. The path name retains migration terminology but is also the canonical route for new content. IDs are stable and unique across projects, posts and news. Public paths must end in `/` and remain unique. Optional fields also include `image`, `imageAlt`, `categories`, `date`, `comments` and `home`. Posts and news should include a quoted ISO timestamp.
 
-Projects without an image render as text cards. Featured project IDs must exist and support the selected mode. The all-projects page remains a shared catalog. Category fragments such as `/projects/#work` initialize the filter.
+Use the shared [`home` rules](#homepage-curation) for homepage visibility, mode-specific order and the Casual hero.
+
+Optional `overview: {purpose, contribution, outcome}` gives a project detail page a compact opening summary, labeled **Purpose**, **My contribution** and **Outcome**. Supply all three as plain text; use the Markdown body for evidence, images and technical detail. This replaces the repeated description under the page title; the description remains in cards, search and page metadata. Projects without an overview keep their existing layout.
+
+Homepage writing defaults to **Selected writing**; override `sectionTitles.writing` or `sectionLabels.writing` to suit your editorial selection. Use `sectionTitles.news: Milestones` for infrequent announcements without changing existing URLs or section IDs.
+
+Projects without an image render as text cards at their natural height. The all-projects page remains a shared catalog. Category fragments such as `/projects/#work` initialize the filter.
 
 Markdown supports code highlighting, tables, Mermaid fences, raw HTML and custom anchors (`## Method {#method}`). Raw HTML is for trusted content authors. Major content remains readable without JavaScript; diagrams retain their source, and interactive filtering/search/copying progressively enhance the page.
+
+All Markdown headings (`#` through `######`) have a `#` permalink control in the left margin, revealed on hover or keyboard focus and always visible on touch devices. The heading is underlined on hover or focus. Click its text or the `#` control to copy the current page URL, including its deployment base, query parameters and heading fragment; existing links inside a heading retain their own destinations. Selecting heading text does not trigger copying. Existing authored `{#id}` anchors and English slugs are retained; repeated generated slugs receive numeric suffixes. Headings with no English slug use a Unicode slug or `section` fallback. Homepage section headings and detail-page titles also provide copy-link controls. Without JavaScript, controls act as ordinary fragment links; if clipboard access is unavailable, clicking navigates to the fragment so the address-bar URL can be copied.
 
 ## Publications
 
@@ -106,6 +241,8 @@ Standard BibTeX fields include title, author, year, journal/booktitle, volume, n
 - `pdf`: filename under `/assets/pdf/`, absolute local path, or external URL.
 - `preview`: filename under `/assets/img/publication_preview/`.
 - `abstract`, `abbr`, `journal_url`, `date`, `cnki` and `gbt`: abstract, venue details, release date and original citation links/text.
+
+Use the same `home` metadata as Markdown records to curate homepage papers; see [Publications on homepages](#publications-on-homepages) for boolean and mode-specific BibTeX examples. The complete bibliography remains available independently of homepage selection.
 
 Each citation key becomes an anchor on `/publications/`. The site provides a BibTeX copy button and `/publications.bib` download. Set `hero.enabled: false` to omit the sampling illustration; publication previews remain independent.
 
@@ -116,3 +253,5 @@ The homepage reads JSON Feed items with `id`, `url`, `title` and optional `summa
 ## Validation
 
 The build checks configuration, references, duplicate IDs/routes, publication fields and primary assets. `scripts/verify.mjs <output> <content>` checks generated internal destinations, anchors, feeds and search assets. External destinations are listed, not network-validated. A migration manifest can add counts, legacy paths and visible-text checks.
+
+Mermaid diagrams wait for fonts before rendering and use SVG text with wrapped node labels. Diagrams retain their natural size inside a keyboard-accessible horizontal scroll region, so narrow screens can inspect the complete diagram without shrinking or clipping text.

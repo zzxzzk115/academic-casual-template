@@ -14,9 +14,11 @@ const labels=config.projectCategories;
         <img src={href(p.image)} alt={p.imageAlt||p.title} loading="lazy" decoding="async" width="960" height="600" />
         <span class="project-arrow" aria-hidden="true" data-pagefind-ignore><Icon name="arrow-up-right"/></span>
       </a>}
+      <div class="project-copy">
       <div class="project-meta">{p.tags.slice(0,2).join(' / ') || p.category}</div>
       <h3><a href={href(p.legacyPath,mode)}>{p.title}</a></h3><p>{p.description}</p>
       {p.status&&<p class="project-status">{p.status}</p>}{p.links.length>0&&<div class="project-links">{p.links.map(link=><a href={href(link.href)}>{link.icon&&<Icon name={link.icon}/>} {link.label}</a>)}</div>}
+      </div>
     </article>)}
   </div>
   <p class="sr-only" aria-live="polite" data-filter-status></p>

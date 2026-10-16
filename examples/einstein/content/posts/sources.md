@@ -1,4 +1,5 @@
 ---
+home: true
 id: sources
 title: Sources and photograph
 description: Historical references and the source of the 1921 portrait used in this example.
