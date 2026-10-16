@@ -33,6 +33,13 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
   const bibFile=join(content,'content/publications.bib');
   const bibliography=readFileSync(bibFile,'utf8');
   writeFileSync(bibFile,name==='root'?bibliography.replace(/(einstein1905brownian,[\s\S]*?)home = \{true\}/, '$1home = {false}'):bibliography.replace(/  home = \{true\},\n/g,''));
+  if (name === 'root') {
+    config.identity.address = 'Fixture public address';
+    config.identity.contactNote = 'Fixture contact note';
+    config.modes.academic.sections = config.modes.academic.sections.filter(id=>id!=='contact');
+    config.modes.academic.navigation = config.modes.academic.navigation.filter(id=>id!=='contact');
+    config.socials.push({label:'Fixture secondary link',href:'https://example.org/contact',modes:['academic']});
+  }
   if (name === 'subpath') {
     config.identity.name = 'Taylor Quinn';
     config.identity.handle = 'TQ Notebook';
@@ -40,6 +47,9 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
     config.theme.academic = '#6b3db8';
     cpSync(join(content,'public/assets/einstein-1921.jpg'),join(content,'public/assets/casual-portrait.jpg'));
     config.modes.casual.photo = '/assets/casual-portrait.jpg';
+    config.modes.casual.email = 'casual-fixture@example.invalid';
+    config.identity.address = 'Fixture research office';
+    config.modes.casual.address = '';
     writeFileSync(join(content, 'content/now.yaml'), stringify({
       updated: '2026-10-16',
       workingOn: [{projectId:'special-relativity',description:'Academic fixture work',itemsTitle:'Current milestones',items:[{title:'Academic detail',description:'Academic nested description',href:'/projects/special-relativity/'}],modes:['academic']}],
@@ -77,12 +87,18 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
     } else if(home.includes('id="publications"')||home.includes('id="einstein1905relativity"')||home.includes('/#publications')) throw new Error('An empty publication selection produced a section or navigation link');
   }
   if (name === 'root') {
+    const intro=academic.split('</section>')[0];
+    for(const text of ['Fixture public address','Fixture contact note','Fixture secondary link']) if(!intro.includes(text)) throw new Error('Omitting Contact lost introductory contact details');
+    if(academic.includes('id="contact"') || [...academic.matchAll(/data-nav-mode="academic"[^>]*>([\s\S]*?)<\/(?:nav|div)>/g)].some(match=>match[1].includes('/#contact'))) throw new Error('Removed Contact section or navigation was rendered');
     if (!casual.includes('class="casual-preview"') || !casual.includes('/assets/project-cover.jpg')) throw new Error('Project preview fallback was lost without a mode portrait');
     if (academic.includes('id="now"') || academic.includes('/#now') || casual.includes('id="now"')) throw new Error('Empty now content produced a section or navigation link');
   } else {
+    if (!academic.includes('Fixture research office') || casual.includes('Fixture research office')) throw new Error('Mode-specific address hiding failed');
+    if (!academic.includes('mailto:subpath@example.org') || academic.includes('mailto:casual-fixture@example.invalid')) throw new Error('Casual email override leaked into Academic');
+    if (!casual.includes('mailto:casual-fixture@example.invalid') || casual.includes('mailto:subpath@example.org')) throw new Error('Casual email override was not applied');
     if (!academic.includes('src="/portfolio/assets/einstein-1921.jpg"') || academic.includes('src="/portfolio/assets/casual-portrait.jpg"')) throw new Error('Mode portrait leaked into Academic');
     if (!casual.includes('src="/portfolio/assets/casual-portrait.jpg"') || casual.includes('src="/portfolio/assets/einstein-1921.jpg"')) throw new Error('Casual portrait override or deployment base was lost');
-    if (!casual.includes('casual-photo casual-avatar') || casual.includes('class="casual-preview"')) throw new Error('Explicit Casual avatar did not take priority over a project cover');
+    if (!casual.includes('hero-casual hero-with-portrait') || !casual.includes('class="hero-aside"') || casual.includes('class="casual-preview"')) throw new Error('Explicit Casual avatar did not take priority over a project cover');
     if (casual.includes('<figcaption>')) throw new Error('Default portrait credit was applied to a mode override');
     if (!academic.includes('Academic fixture work') || academic.includes('Casual fixture topic')) throw new Error('Academic now content was not scoped');
     if (!casual.includes('Casual fixture topic') || casual.includes('Academic fixture work') || !casual.includes('On the workbench')) throw new Error('Casual now content was not scoped');

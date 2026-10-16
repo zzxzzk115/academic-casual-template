@@ -26,11 +26,17 @@ test('configuration rejects unsafe colors, wrong versions, and unknown section I
   assert.throws(()=>configSchema.parse({...original,theme:{...original.theme,academic:'red;display:none'}}));
   assert.throws(()=>configSchema.parse({...original,modes:{...original.modes,academic:{sections:['unregistered']}}}));
 });
-test('mode portraits are optional and independent',()=>{
+test('mode profile overrides are optional and independent',()=>{
   const original=parse(readFileSync('examples/einstein/site.config.yaml','utf8'));
-  const configured=configSchema.parse({...original,modes:{...original.modes,casual:{...original.modes.casual,photo:'https://example.org/alternate-avatar.png'}}});
+  const configured=configSchema.parse({...original,modes:{...original.modes,casual:{...original.modes.casual,email:'casual@example.org',address:'',photo:'https://example.org/alternate-avatar.png'}}});
   assert.equal(configured.identity.photo,original.identity.photo);
   assert.equal(configured.modes.academic.photo,undefined);
+  assert.equal(configured.modes.academic.email,undefined);
+  assert.equal(configured.modes.academic.address,undefined);
+  assert.equal(configured.modes.casual.address,'');
+  assert.equal(configured.identity.email,original.identity.email);
+  assert.equal(configured.modes.casual.email,'casual@example.org');
+  assert.throws(()=>configSchema.parse({...original,modes:{...original.modes,casual:{...original.modes.casual,email:'invalid-email'}}}));
   assert.equal(configured.modes.casual.photo,'https://example.org/alternate-avatar.png');
   assert.throws(()=>configSchema.parse({...original,modes:{...original.modes,casual:{...original.modes.casual,photo:''}}}));
 });
