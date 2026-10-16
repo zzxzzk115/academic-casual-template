@@ -1,0 +1,46 @@
+---
+import '@fontsource-variable/manrope';
+import '@fontsource-variable/newsreader';
+import '../styles/global.css';
+import {config,href,sectionLabels,type Mode} from '../lib/content';
+interface Props {title?:string;description?:string;mode?:Mode;home?:boolean;image?:string;}
+const {title,description=config.site.description,mode='academic',home=false,image}=Astro.props;
+const canonical=new URL(Astro.url.pathname,config.site.url).toString();
+const currentPath=Astro.url.pathname.slice(config.site.base.replace(/\/$/,'').length) || '/';
+const academicTarget=home||currentPath.startsWith('/404')?href('/'):href(currentPath);
+const casualTarget=home||currentPath.startsWith('/404')?href('/casual/'):href(currentPath,'casual');
+---
+<!doctype html>
+<html lang={config.site.language}>
+  <head>
+    <meta charset="UTF-8"/><meta name="viewport" content="width=device-width"/>
+    <title>{title?`${title} — ${config.identity.name}`:config.site.title}</title>
+    <meta name="description" content={description}/><link rel="canonical" href={canonical}/>
+    <meta property="og:title" content={title || config.site.title}/><meta property="og:description" content={description}/><meta property="og:url" content={canonical}/><meta property="og:type" content="website"/>
+    {image&&<meta property="og:image" content={new URL(href(image),config.site.url).toString()}/>}
+    <meta name="twitter:card" content={image?'summary_large_image':'summary'}/><meta name="theme-color" content="#f8f7f3"/>
+    <link rel="icon" href={`data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="18" fill="${config.theme.academic}"/><text x="32" y="42" font-family="sans-serif" font-size="29" text-anchor="middle" fill="white">${config.identity.initials.replace(/[^\w]/g,'')}</text></svg>`)}`}/>
+    <link rel="alternate" type="application/rss+xml" title={config.site.title} href={href('/feed.xml')}/>
+    <script is:inline>try{const t=localStorage.getItem('color-theme');document.documentElement.dataset.theme=t|| (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.dataset.mode=new URLSearchParams(location.search).get('mode')==='casual'?'casual':location.pathname.includes('/casual/')?'casual':'academic';}catch{}</script>
+    <style is:global define:vars={{academicAccent:config.theme.academic,casualAccent:config.theme.casual}}>:root{--academic:var(--academicAccent);--casual:var(--casualAccent);}</style>
+  </head>
+  <body data-mode={mode} data-base={config.site.base}>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="brand" href={href(mode==='casual'?'/casual/':'/')}><span class="monogram">{config.identity.initials}<i></i></span><span class="brand-name">{config.identity.name}<small>{config.identity.handle}</small></span></a>
+      {(['academic','casual'] as const).map(navMode=><nav class="desktop-nav" aria-label="Main navigation" data-nav-mode={navMode} hidden={navMode!==mode}>{config.modes[navMode].sections.filter(s=>['research','publications','projects','writing','contact'].includes(s)).map(s=><a href={`${href(navMode==='casual'?'/casual/':'/')}#${s}`} data-section-link={s}>{sectionLabels[s]}</a>)}</nav>)}
+      <div class="header-actions">
+        <div class="mode-switch" aria-label="Presentation mode"><a href={academicTarget} data-mode-link="academic" aria-current={mode==='academic'?'page':undefined}>Academic</a><a href={casualTarget} data-mode-link="casual" aria-current={mode==='casual'?'page':undefined}>Casual <span aria-hidden="true">↗</span></a></div>
+        <button class="icon-button" aria-label="Search website" data-search hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg></button>
+        <button class="icon-button" aria-label="Switch color theme" data-theme-toggle hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20.8 13.1A9 9 0 0 1 10.9 3.2 9 9 0 1 0 20.8 13Z"/></svg></button>
+        <button class="icon-button menu-toggle" aria-label="Open navigation" aria-expanded="false" data-menu hidden><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      </div>
+    </header>
+    <nav class="mobile-nav" aria-label="Mobile navigation" hidden>{(['academic','casual'] as const).map(navMode=><div data-nav-mode={navMode} hidden={navMode!==mode}>{config.modes[navMode].sections.map(s=><a href={`${href(navMode==='casual'?'/casual/':'/')}#${s}`}>{sectionLabels[s]}</a>)}</div>)}</nav>
+    <main id="main" data-pagefind-body><slot/></main>
+    <footer class="site-footer"><span>© {new Date().getUTCFullYear()} {config.identity.name}</span><div><a href={href('/feed.xml')}>RSS</a><a href={href(config.blog.href)}>Blog</a><a href={href('/repositories/')}>Repositories</a></div></footer>
+    <dialog id="search-dialog" aria-label="Search website"><div class="search-heading"><strong>Find something</strong><button class="icon-button" data-search-close aria-label="Close search">✕</button></div><div id="search-results"></div><p class="muted">Search projects, research, and writing. <kbd>Esc</kbd> to close.</p></dialog>
+    <div class="toast" role="status" aria-live="polite"></div>
+    <script>import '../scripts/client';</script>
+  </body>
+</html>

@@ -1,0 +1,35 @@
+schemaVersion: 1
+site:
+  title: Alex Morgan — Research & experiments
+  description: An independent notebook on graphics, perception, and creative tools.
+  url: https://example.com
+  base: /
+  language: en
+  availableLanguages: [en]
+identity:
+  name: Alex Morgan
+  handle: Studio AM
+  initials: AM
+  role: Graphics researcher & creative coder
+  institution: Independent practice
+  location: Earth
+  email: hello@example.com
+socials:
+  - label: GitHub
+    href: https://github.com
+theme:
+  academic: '#2455cf'
+  casual: '#09876e'
+hero:
+  enabled: true
+  label: An illustrative exploration of foveated sampling.
+  intensity: 1
+modes:
+  academic:
+    sections: [research, publications, projects, cv, writing, contact]
+    featuredProjects: [sampling-study]
+  casual:
+    sections: [projects, interests, writing, about, contact]
+    featuredProjects: [sampling-study, little-world]
+blog:
+  href: https://example.com/blog/

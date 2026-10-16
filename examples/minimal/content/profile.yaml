@@ -1,0 +1,22 @@
+headline: |-
+  Seeing more.
+  Rendering less.
+casualHeadline: |-
+  A little code.
+  A lot of curiosity.
+summary: This fictional example shows how a researcher can introduce their work through a shared, content-driven template.
+casualSummary: A collection of illustrative experiments, playful tools, and small worlds. Replace these examples with your own work.
+research:
+  - title: Perceptual rendering
+    description: Exploring the relationship between where we look and how much detail we need.
+  - title: Real-time graphics
+    description: Building practical tools for trying ideas quickly and sharing them openly.
+  - title: Creative systems
+    description: Small computational experiments at the intersection of visual art and technology.
+interests:
+  - title: Small worlds
+    description: Illustrative games, simulations, and little places to explore.
+  - title: Open notebooks
+    description: Writing down the process, including the things that do not work.
+  - title: Building things
+    description: Making tools to follow a question wherever it leads.

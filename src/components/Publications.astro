@@ -1,0 +1,14 @@
+---
+import { publications, href } from '../lib/content';
+---
+<div class="publications">
+  {publications.map(p=><article class="publication">
+    <span class="pub-year">{p.year}</span>
+    <div><p class="eyebrow">{p.venue}</p><h3>{p.title}</h3><p class="pub-authors">{p.author}</p>
+      <div class="pub-links">{p.pdf&&<a href={href(p.pdf)}>Read paper ↗</a>}{p.doi&&<a href={`https://doi.org/${p.doi}`}>DOI ↗</a>}<button data-copy={p.bibtex}>Copy BibTeX <span aria-hidden="true">⧉</span></button><a href={href('/publications.bib')}>Download .bib ↓</a></div>
+      <details><summary>Abstract</summary><p>{p.abstract}</p></details>
+    </div>
+    {p.preview&&<img src={href(p.preview)} alt="Publication preview" width="200" height="140" loading="lazy" />}
+  </article>)}
+  {publications.length===0&&<p>Publications will appear here as they are added to the bibliography.</p>}
+</div>
