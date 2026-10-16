@@ -4,7 +4,7 @@ import { parse } from 'yaml';
 import matter from 'gray-matter';
 import bibtex from 'bibtex-parse-js';
 import { z } from 'zod';
-import { modes, configSchema, entrySchema, profileSchema, cvSchema, type Mode, type Entry, type Publication, type Route } from './schema';
+import { modes, configSchema, entrySchema, profileSchema, cvSchema, nowSchema, type Mode, type Entry, type Publication, type Route } from './schema';
 export * from './schema';
 
 export const contentRoot = resolve(process.env.SITE_CONTENT_ROOT || './examples/einstein');
@@ -33,6 +33,32 @@ export const repositories = z.array(z.string().regex(/^[\w.-]+\/[\w.-]+$/)).pars
 export const projects = entriesIn('projects', 'project');
 export const posts = entriesIn('posts', 'post').sort((a,b) => (b.date || '').localeCompare(a.date || ''));
 export const news = entriesIn('news', 'news').sort((a,b) => (b.date || '').localeCompare(a.date || ''));
+export const now = existsSync(safeFile(contentRoot, 'content/now.yaml')) ? nowSchema.parse(yaml('content/now.yaml')) : nowSchema.parse({});
+export const nowGroupLabels = { workingOn: 'Working on', exploring: 'Exploring', upNext: 'Up next' } as const;
+export function homeEntries(entries: Entry[], mode: Mode) {
+  return entries.filter(entry => entry.home && entry.modes.includes(mode));
+}
+export function homeProjects(mode: Mode) {
+  const available = homeEntries(projects, mode);
+  const configured = config.modes[mode].featuredProjects;
+  if (configured.length) return configured.flatMap(id => available.filter(project => project.id === id));
+  return available.some(project => project.featured) ? available.filter(project => project.featured) : available;
+}
+export function nowGroups(mode: Mode) {
+  return (Object.keys(nowGroupLabels) as (keyof typeof nowGroupLabels)[]).map(key => ({
+    key, label: nowGroupLabels[key], items: now[key].filter(item => item.modes.includes(mode)).map(item => {
+      const project = projects.find(project => project.id === item.projectId);
+      return {...item, title: item.title || project?.title, href: item.href || project?.legacyPath};
+    }),
+  })).filter(group => group.items.length);
+}
+export function homeSections(mode: Mode) {
+  return config.modes[mode].sections.filter(section =>
+    section === 'now' ? nowGroups(mode).length > 0 :
+    section === 'news' ? homeEntries(news, mode).length > 0 :
+    section === 'writing' ? homeEntries(posts, mode).length > 0 || !!config.blog :
+    section === 'projects' ? homeProjects(mode).length > 0 : true);
+}
 const bibFile = safeFile(contentRoot, 'content/publications.bib');
 export const bibliography = existsSync(bibFile) ? readFileSync(bibFile, 'utf8').replace(/^---\s*\n---\s*\n/, '') : '';
 const clean = (text = '') => text.replace(/[{}]/g, '');
@@ -49,7 +75,7 @@ export function href(path: string, mode?: Mode): string {
 }
 export const dateLabel = (date?: string) => date ? new Intl.DateTimeFormat('en-GB', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'Europe/London' }).format(new Date(date)) : '';
 export const yearLabel = (date: string) => new Date(date).getUTCFullYear().toString();
-export const sectionLabels: Record<string,string> = { research:'Research', news:'News', publications:'Publications', projects:'Projects', cv:'Experience', writing:'Writing', interests:'Interests', about:'About', contact:'Contact', ...config.sectionLabels };
+export const sectionLabels: Record<string,string> = { research:'Research', now:'Now', news:'News', publications:'Publications', projects:'Projects', cv:'Experience', writing:'Writing', interests:'Interests', about:'About', contact:'Contact', ...config.sectionLabels };
 
 export const routes: Route[] = [
   { path:'/projects/', title:config.sectionLabels.projects||'Projects', kind:'projects', description:'Selected work and research.' },
@@ -76,6 +102,12 @@ export function validateContent() {
     const project=projects.find(p=>p.id===id);
     if(!project)throw new Error(`Unknown featured project: ${id}`);
     if(!project.modes.includes(mode))throw new Error(`Featured project ${id} is unavailable in ${mode}`);
+  }
+  for (const key of Object.keys(nowGroupLabels) as (keyof typeof nowGroupLabels)[]) for (const item of now[key]) {
+    if (!item.projectId) continue;
+    const project = projects.find(project => project.id === item.projectId);
+    if (!project) throw new Error(`Unknown now project: ${item.projectId}`);
+    if (item.modes.some(mode => !project.modes.includes(mode))) throw new Error(`Now project ${item.projectId} is unavailable in a requested mode`);
   }
   const resources = [config.identity.photo,config.identity.cv,...projects.map(p=>p.image),...publications.flatMap(p=>[p.pdf,p.preview])].filter(Boolean) as string[];
   for (const resource of resources) if (resource.startsWith('/') && !existsSync(safeFile(contentRoot, `public${resource}`))) throw new Error(`Missing resource: ${resource}`);

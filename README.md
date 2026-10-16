@@ -6,6 +6,7 @@ An MIT-licensed Astro + Vue + TypeScript template for a research homepage and a 
 - `/casual/`: projects, interests and personal writing.
 - Shared detail pages with stable paths and optional `?mode=casual` context.
 - Static HTML, local search, project filters, bibliography export, dark mode and optional Giscus.
+- Optional mode-aware current work, learning topics and next steps; Markdown `home` flags curate homepage visibility.
 - Optional photos, portfolios and integrations; no developer accounts or blog required.
 
 The bundled example is a sourced historical profile of **Albert Einstein**: research, publications, biography, music and correspondence. It uses a real public-domain photograph by Ferdinand Schmutzer (1921), with [source and image credits](examples/einstein/ASSETS.md). A site's own content belongs in a separate repository.

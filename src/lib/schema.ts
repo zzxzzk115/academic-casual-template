@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const modes = ['academic', 'casual'] as const;
 export type Mode = typeof modes[number];
-const sectionIds = ['research', 'news', 'publications', 'projects', 'cv', 'writing', 'interests', 'about', 'contact'] as const;
+const sectionIds = ['research', 'now', 'news', 'publications', 'projects', 'cv', 'writing', 'interests', 'about', 'contact'] as const;
 const localOrExternal = z.string().min(1).refine(v => v.startsWith('/') || /^(https?:|mailto:)/.test(v), 'Use an absolute site path or URL');
 const sectionList = z.array(z.enum(sectionIds)).refine(items => new Set(items).size === items.length, 'Sections must be unique');
 const modeConfig = z.object({
@@ -30,6 +30,7 @@ export const entrySchema = z.object({
   image: z.string().optional(), imageAlt: z.string().optional(), category: z.string().default('work'), categories: z.array(z.string()).default([]), tags: z.array(z.string()).default([]),
   modes: z.array(z.enum(modes)).default(['academic', 'casual']), order: z.number().default(100),
   date: z.preprocess(v=>v instanceof Date?v.toISOString():v,z.string().optional()), comments: z.boolean().default(false), featured: z.boolean().default(false),
+  home: z.boolean().default(true),
   status: z.string().optional(), links: z.array(z.object({label:z.string(),href:localOrExternal,icon:z.string().regex(/^(brands|solid):[a-z0-9-]+$/).optional()})).default([]),
 });
 export type Entry = z.infer<typeof entrySchema> & { body: string; kind: string };
@@ -37,9 +38,24 @@ export type Publication = { id: string; title: string; author: string; year: str
 export type Route = { path: string; title: string; kind: string; entry?: Entry; entries?: Entry[]; description?: string };
 export const profileSchema = z.object({
   headline: z.string().optional(), casualHeadline: z.string().optional(), summary: z.string(), casualSummary: z.string(), background: z.string().default(''),
+  casualAbout: z.string().min(1).optional(),
   research: z.array(z.object({ title: z.string(), description: z.string() })),
   interests: z.array(z.object({ title: z.string(), description: z.string(), href: localOrExternal.optional() })),
   toolkit: z.array(z.object({label:z.string(),items:z.array(z.string())})).default([]),
+});
+const nowItemSchema = z.object({
+  title: z.string().min(1).optional(),
+  projectId: z.string().optional(),
+  description: z.string().min(1),
+  href: localOrExternal.optional(),
+  links: z.array(z.object({label:z.string().min(1),href:localOrExternal})).default([]),
+  modes: z.array(z.enum(modes)).min(1).default(['academic', 'casual']),
+}).refine(item => !!item.title || !!item.projectId, 'A now item needs a title or projectId');
+export const nowSchema = z.object({
+  updated: z.iso.date().optional(),
+  workingOn: z.array(nowItemSchema).default([]),
+  exploring: z.array(nowItemSchema).default([]),
+  upNext: z.array(nowItemSchema).default([]),
 });
 const timelineSchema = z.object({ title: z.string(), institution: z.string(), start: z.string(), end: z.string(), description: z.string().default(''),url:localOrExternal.optional(),location:z.string().optional() });
 export const cvSchema = z.object({ education: z.array(timelineSchema), work: z.array(timelineSchema), languages: z.array(z.string()), skills: z.array(z.string()), basics:z.object({label:z.string(),summary:z.string(),phone:z.string().optional(),url:localOrExternal.optional(),address:z.string().optional()}).optional() });

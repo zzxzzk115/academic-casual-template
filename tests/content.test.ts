@@ -5,7 +5,7 @@ import {tmpdir} from 'node:os';
 import {resolve,join,sep} from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {parse,stringify} from 'yaml';
-import {safeFile,configSchema,entrySchema} from '../src/lib/content';
+import {safeFile,configSchema,entrySchema,nowSchema,homeEntries,nowGroups} from '../src/lib/content';
 
 test('content paths reject traversal and absolute escapes',()=>{
   const root=resolve('examples/einstein');
@@ -54,7 +54,27 @@ test('project action links reject executable URLs',()=>{
   assert.throws(()=>entrySchema.parse(entry));
   assert.equal(entrySchema.parse({...entry,links:[{label:'Play',href:'https://example.com/demo/'}]}).links.length,1);
 });
-for(const scenario of ['missing asset','unknown featured project','duplicate path'])test(`build validation catches ${scenario}`,()=>{
+test('home eligibility defaults on and respects both visibility and presentation mode',()=>{
+  const entry={id:'note',title:'Note',description:'A note',legacyPath:'/notes/note/'};
+  const records=[
+    {...entrySchema.parse(entry),body:'',kind:'post'},
+    {...entrySchema.parse({...entry,id:'hidden',home:false}),body:'',kind:'post'},
+    {...entrySchema.parse({...entry,id:'casual',modes:['casual']}),body:'',kind:'post'},
+  ];
+  assert.deepEqual(homeEntries(records,'academic').map(entry=>entry.id),['note']);
+  assert.deepEqual(homeEntries(records,'casual').map(entry=>entry.id),['note','casual']);
+  assert.throws(()=>entrySchema.parse({...entry,home:'false'}));
+});
+test('optional now content validates dates, links and item identity',()=>{
+  assert.deepEqual(nowGroups('academic'),[]);
+  assert.deepEqual(nowSchema.parse({}),{workingOn:[],exploring:[],upNext:[]});
+  assert.throws(()=>nowSchema.parse({updated:'2026-02-30'}));
+  assert.throws(()=>nowSchema.parse({workingOn:[{description:'No identity'}]}));
+  assert.throws(()=>nowSchema.parse({exploring:[{title:'Unsafe',description:'A topic',href:'javascript:alert(1)'}]}));
+  const parsed=nowSchema.parse({updated:'2026-10-16',upNext:[{projectId:'special-relativity',description:'An experiment',modes:['academic']}]});
+  assert.equal(parsed.upNext[0].projectId,'special-relativity');
+});
+for(const scenario of ['missing asset','unknown featured project','unknown now project','unavailable now project','duplicate path'])test(`build validation catches ${scenario}`,()=>{
   const fixture=mkdtempSync(join(tmpdir(),'academic-casual-'));
   try{
     cpSync('examples/einstein',fixture,{recursive:true});
@@ -62,11 +82,20 @@ for(const scenario of ['missing asset','unknown featured project','duplicate pat
       const file=join(fixture,'site.config.yaml'),config=parse(readFileSync(file,'utf8'));config.identity.photo='/assets/missing.jpg';writeFileSync(file,stringify(config));
     }else if(scenario==='unknown featured project'){
       const file=join(fixture,'site.config.yaml'),config=parse(readFileSync(file,'utf8'));config.modes.academic.featuredProjects=['missing'];writeFileSync(file,stringify(config));
+    }else if(scenario==='unknown now project'){
+      writeFileSync(join(fixture,'content/now.yaml'),stringify({workingOn:[{projectId:'missing',description:'A missing project'}]}));
+    }else if(scenario==='unavailable now project'){
+      const file=join(fixture,'content/projects/light-quanta.md');
+      writeFileSync(file,readFileSync(file,'utf8').replace(/^---\n/,'---\nmodes: [academic]\n'));
+      const configFile=join(fixture,'site.config.yaml'),config=parse(readFileSync(configFile,'utf8'));
+      config.modes.casual.featuredProjects=config.modes.casual.featuredProjects.filter(id=>id!=='light-quanta');
+      writeFileSync(configFile,stringify(config));
+      writeFileSync(join(fixture,'content/now.yaml'),stringify({exploring:[{projectId:'light-quanta',description:'A scoped project',modes:['casual']}]}));
     }else{
       const file=join(fixture,'content/projects/light-quanta.md');writeFileSync(file,readFileSync(file,'utf8').replace('/projects/light-quanta/','/projects/special-relativity/'));
     }
     const result=spawnSync(process.execPath,['--import','tsx','-e',"import('./src/lib/content.ts')"],{env:{...process.env,SITE_CONTENT_ROOT:fixture},encoding:'utf8'});
     assert.notEqual(result.status,0);
-    assert.match(result.stderr,/Missing resource|Unknown featured|Duplicate route/);
+    assert.match(result.stderr,/Missing resource|Unknown featured|Unknown now project|Now project .* unavailable|Duplicate route/);
   }finally{assert.ok(resolve(fixture).startsWith(resolve(tmpdir())+sep+'academic-casual-'));rmSync(fixture,{recursive:true,force:true});}
 });

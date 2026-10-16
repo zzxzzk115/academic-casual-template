@@ -6,17 +6,16 @@ import ProjectGrid from './ProjectGrid.astro';
 import Publications from './Publications.astro';
 import Timeline from './Timeline.astro';
 import Toolkit from './Toolkit.astro';
+import Now from './Now.astro';
 import {renderMarkdown} from '../lib/markdown';
-import {config,profile,biography,projects,posts,news,href,dateLabel,loadBlog,sectionLabels,type Mode} from '../lib/content';
+import {config,profile,biography,posts,news,href,dateLabel,loadBlog,sectionLabels,homeEntries,homeProjects,homeSections,type Mode} from '../lib/content';
 const {mode='academic'}=Astro.props as {mode:Mode};
 const isCasual=mode==='casual';
 const visibleSocials=config.socials.filter(s=>s.modes.includes(mode));
-const available=projects.filter(p=>p.modes.includes(mode));
-const configured=config.modes[mode].featuredProjects.map(id=>projects.find(p=>p.id===id)!);
-const selected=configured.length?configured:available.some(p=>p.featured)?available.filter(p=>p.featured):available;
+const selected=homeProjects(mode);
 const featured=selected[0];
 const blog=await loadBlog();
-const writing=[...posts.map(p=>({title:p.title,url:p.legacyPath,summary:p.description,date:p.date,source:'Note'})),...blog.map(p=>({title:p.title,url:p.url,summary:p.summary,date:p.date_published,source:'Blog'}))].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,4);
+const writing=[...homeEntries(posts,mode).map(p=>({title:p.title,url:p.legacyPath,summary:p.description,date:p.date,source:'Note'})),...blog.map(p=>({title:p.title,url:p.url,summary:p.summary,date:p.date_published,source:'Blog'}))].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,4);
 ---
 <Layout mode={mode} home>
   <section class:list={['hero',{'hero-casual':isCasual}]}>
@@ -31,16 +30,17 @@ const writing=[...posts.map(p=>({title:p.title,url:p.legacyPath,summary:p.descri
     </div>
     {isCasual?(!featured?.image&&config.identity.photo)?<figure class="casual-photo"><img src={href(config.identity.photo!)} alt={config.identity.name} width="360" height="473" fetchpriority="high"/>{config.identity.photoCredit&&<figcaption><a href={config.identity.photoCredit.href}>{config.identity.photoCredit.label}</a></figcaption>}</figure>:(featured?.image||config.hero.enabled)&&<div class="casual-preview">{featured?.image?<a href={href(featured.legacyPath,mode)}><div class="preview-bar"><span class="window-dots"><i></i><i></i><i></i></span><span>{featured.title}</span><Icon name="arrow-up-right"/></div><img src={href(featured.image)} alt={featured.imageAlt||featured.title} width="640" height="480" fetchpriority="high"/><p>{featured.tags.join(' · ')}</p></a>:<Field/>}</div>:<aside class="academic-aside">{config.identity.photo&&<figure class="academic-photo"><img class="portrait" src={href(config.identity.photo)} width="180" height="210" alt={config.identity.name} fetchpriority="high"/>{config.identity.photoCredit&&<figcaption><a href={config.identity.photoCredit.href}>{config.identity.photoCredit.label}</a></figcaption>}</figure>}{config.hero.enabled&&<div class="small-field"><Field/></div>}</aside>}
   </section>
-  {config.modes[mode].sections.map(section=> <section id={section} class:list={['home-section',`section-${section}`]}>
+  {homeSections(mode).map(section=> <section id={section} class:list={['home-section',`section-${section}`]}>
     <div class="section-heading"><h2>{config.modes[mode].sectionTitles[section]||(section==='projects'?(isCasual?'Projects':'Selected projects'):section==='research'?'Research interests':section==='writing'?'Recent writing':sectionLabels[section])}</h2>{section==='projects'&&<a href={href('/projects/',mode)}>All {(config.sectionLabels.projects||'Projects').toLowerCase()} <Icon name="arrow-up-right"/></a>}{section==='publications'&&<a href={href('/publications/')}>Bibliography <Icon name="arrow-up-right"/></a>}{section==='writing'&&config.blog&&<a href={href(config.blog.href)}>Blog <Icon name="arrow-up-right"/></a>}{section==='cv'&&<a href={href('/cv/')}>Full CV <Icon name="arrow-up-right"/></a>}</div>
     {section==='research'&&<><div class="research-grid">{profile.research.map(r=><article><h3>{r.title}</h3><p>{r.description}</p></article>)}</div>{profile.toolkit.length>0&&<div class="home-toolkit"><h3>Tools & platforms</h3><Toolkit/></div>}</>}
+    {section==='now'&&<Now mode={mode}/>}
     {section==='projects'&&<ProjectGrid entries={selected} mode={mode} filters={isCasual}/>}
     {section==='publications'&&<Publications/>}
-    {section==='news'&&<div class="news-list">{news.slice(0,3).map(n=><article><time datetime={n.date}>{dateLabel(n.date)}</time><div><a href={href(n.legacyPath,mode)}>{n.title}</a><p>{n.description}</p></div></article>)}</div>}
+    {section==='news'&&<div class="news-list">{homeEntries(news,mode).slice(0,3).map(n=><article><time datetime={n.date}>{dateLabel(n.date)}</time><div><a href={href(n.legacyPath,mode)}>{n.title}</a><p>{n.description}</p></div></article>)}</div>}
     {section==='cv'&&<Timeline/>}
     {section==='writing'&&<div class="writing-list">{writing.map(w=><article><div class="writing-meta"><time datetime={w.date}>{dateLabel(w.date)}</time><span>{w.source}</span></div><h3><a href={href(w.url,mode)}>{w.title}</a></h3>{w.summary&&<p>{w.summary}</p>}</article>)}</div>}
     {section==='interests'&&<div class="interests-grid">{profile.interests.map(interest=><article><h3>{interest.title}</h3><p>{interest.description}</p>{interest.href&&<a href={href(interest.href)}>More about {interest.title.toLowerCase()} <Icon name="arrow-up-right"/></a>}</article>)}</div>}
-    {section==='about'&&<div class="about-block">{config.identity.photo&&<img src={href(config.identity.photo)} alt={config.identity.name} width="150" height="170" loading="lazy"/>}<div>{biography?<div class="prose" set:html={renderMarkdown(biography)}/>:<><p>{profile.summary}</p><p>{profile.background}</p></>}{profile.toolkit.length>0&&<div class="home-toolkit"><h3>Tools & platforms</h3><Toolkit/></div>}<a href={href('/')} data-mode-fixed>Academic page <Icon name="arrow-up-right"/></a></div></div>}
+    {section==='about'&&<div class="about-block">{config.identity.photo&&<img src={href(config.identity.photo)} alt={config.identity.name} width="150" height="170" loading="lazy"/>}<div>{isCasual&&profile.casualAbout?<p>{profile.casualAbout}</p>:biography?<div class="prose" set:html={renderMarkdown(biography)}/>:<><p>{profile.summary}</p><p>{profile.background}</p></>}{!(isCasual&&profile.casualAbout)&&profile.toolkit.length>0&&<div class="home-toolkit"><h3>Tools & platforms</h3><Toolkit/></div>}<a href={href('/')} data-mode-fixed>Academic page <Icon name="arrow-up-right"/></a></div></div>}
     {section==='contact'&&<div class="contact-body">{config.identity.email&&<a class="contact-email" href={`mailto:${config.identity.email}`}><Icon name="envelope"/> {config.identity.email}</a>}{config.identity.contactNote&&<p>{config.identity.contactNote}</p>}{config.identity.address&&<p>{config.identity.address}</p>}<div>{visibleSocials.map(s=><a href={href(s.href)}><Icon name={s.icon||(s.label==='GitHub'?'github':s.label==='LinkedIn'?'linkedin':'link-45deg')}/> {s.label}</a>)}</div></div>}
   </section>)}
 </Layout>
