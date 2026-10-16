@@ -84,7 +84,11 @@ export function homePublications(mode: Mode='academic') {
 export function href(path: string, mode?: Mode): string {
   if (!path.startsWith('/') || path.startsWith('//')) return path;
   const withBase = `${config.site.base.replace(/\/$/, '')}${path}`;
-  return mode === 'casual' && !path.startsWith('/casual/') && !path.startsWith('/assets/') && !path.startsWith('/blog/') && path !== '/' ? `${withBase}${withBase.includes('?') ? '&' : '?'}mode=casual` : withBase;
+  const pathname=path.split(/[?#]/,1)[0];
+  if(mode!=='casual'||pathname.startsWith('/casual/')||pathname.startsWith('/assets/')||pathname.startsWith('/blog/')||pathname==='/')return withBase;
+  const url=new URL(withBase,'https://local.invalid');
+  url.searchParams.set('mode','casual');
+  return `${url.pathname}${url.search}${url.hash}`;
 }
 export const dateLabel = (date?: string) => date ? new Intl.DateTimeFormat('en-GB', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'Europe/London' }).format(new Date(date)) : '';
 export const yearLabel = (date: string) => new Date(date).getUTCFullYear().toString();
@@ -129,7 +133,7 @@ export function validateContent() {
     if (!project) throw new Error(`Unknown now project: ${item.projectId}`);
     if (item.modes.some(mode => !project.modes.includes(mode))) throw new Error(`Now project ${item.projectId} is unavailable in a requested mode`);
   }
-  const resources = [config.identity.photo,config.identity.cv,...projects.map(p=>p.image),...publications.flatMap(p=>[p.pdf,p.preview])].filter(Boolean) as string[];
+  const resources = [config.banner?.image,config.identity.photo,...modes.map(mode=>config.modes[mode].photo),config.identity.cv,...projects.map(p=>p.image),...publications.flatMap(p=>[p.pdf,p.preview])].filter(Boolean) as string[];
   for (const resource of resources) if (resource.startsWith('/') && !existsSync(safeFile(contentRoot, `public${resource}`))) throw new Error(`Missing resource: ${resource}`);
   for (const pub of publications) if (!pub.title || !pub.author || !pub.year) throw new Error(`Incomplete publication: ${pub.id}`);
 }

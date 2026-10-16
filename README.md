@@ -15,7 +15,7 @@ The bundled example is a sourced historical profile of **Albert Einstein**: rese
 
 [Academic preview](https://zzxzzk115.github.io/academic-casual-template/) · [Casual preview](https://zzxzzk115.github.io/academic-casual-template/casual/)
 
-The demo presents Einstein’s research, selected papers, biography and interests. The 1921 portrait is a historical photograph, not generated artwork. Switch presentation mode and color theme independently, or try the research filters and local search.
+The demo presents Einstein’s research, selected papers, biography and interests. The 1921 portrait is a historical photograph, not generated artwork. Both modes enable the responsive profile sidebar: on wide screens, the portrait and name sit on the left beside an “About me” introduction; narrower screens retain the compact opening layout. The Academic homepage also demonstrates an optional paper feature banner. Contact links and source credits live in the opening profile, without repeated About/Contact sections. Switch presentation mode and color theme independently, or try the research filters and local search.
 
 <a href="https://commons.wikimedia.org/wiki/File:Einstein_1921_by_F_Schmutzer.jpg"><img src="examples/einstein/public/assets/einstein-1921.jpg" alt="Albert Einstein in Vienna, photographed by Ferdinand Schmutzer in 1921" width="220"></a>
 

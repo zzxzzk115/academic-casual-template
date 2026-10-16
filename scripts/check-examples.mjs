@@ -20,6 +20,10 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
   const file = join(content, 'site.config.yaml'), config = parse(readFileSync(file, 'utf8'));
   config.site.base = base;
   config.identity.email = email;
+  cpSync(join(content,'public/assets/einstein-1921.jpg'),join(content,'public/assets/project-cover.jpg'));
+  const coverFile=join(content,'content/projects/special-relativity.md');
+  const covered=matter(readFileSync(coverFile,'utf8'));
+  writeFileSync(coverFile,matter.stringify(covered.content,{...covered.data,image:'/assets/project-cover.jpg'}));
   for (const mode of ['academic', 'casual']) {
     config.modes[mode].sections.unshift('now');
     config.modes[mode].navigation.unshift('now');
@@ -29,15 +33,37 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
   const bibFile=join(content,'content/publications.bib');
   const bibliography=readFileSync(bibFile,'utf8');
   writeFileSync(bibFile,name==='root'?bibliography.replace(/(einstein1905brownian,[\s\S]*?)home = \{true\}/, '$1home = {false}'):bibliography.replace(/  home = \{true\},\n/g,''));
+  if (name === 'root') {
+    delete config.banner;
+    delete config.modes.academic.sidebar;
+    delete config.modes.casual.sidebar;
+    delete config.modes.casual.photo;
+    delete config.modes.casual.photoCredit;
+    config.identity.address = 'Fixture public address';
+    config.identity.contactNote = 'Fixture contact note';
+    config.modes.academic.sections = config.modes.academic.sections.filter(id=>id!=='contact');
+    config.modes.academic.navigation = config.modes.academic.navigation.filter(id=>id!=='contact');
+    config.socials.push({label:'Fixture secondary link',href:'https://example.org/contact',modes:['academic']});
+  }
   if (name === 'subpath') {
     config.identity.name = 'Taylor Quinn';
     config.identity.handle = 'TQ Notebook';
     config.identity.initials = 'TQ';
     config.theme.academic = '#6b3db8';
+    cpSync(join(content,'public/assets/einstein-1921.jpg'),join(content,'public/assets/casual-portrait.jpg'));
+    config.modes.casual.photo = '/assets/casual-portrait.jpg';
+    delete config.modes.casual.photoCredit;
+    config.modes.casual.email = 'casual-fixture@example.invalid';
+    config.modes.academic.sidebar = true;
+    config.modes.casual.sidebar = true;
+    writeFileSync(join(content,'public/assets/feature-banner.svg'),'<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="400" viewBox="0 0 1600 400"><rect width="1600" height="400" fill="#dde8ed"/><text x="80" y="220" font-size="56" fill="#17344a">Fixture feature image</text></svg>');
+    config.banner={image:'/assets/feature-banner.svg',alt:'Fixture publication overview',width:1600,height:400,caption:'Fixture featured paper',href:'/publications/#einstein1905relativity',modes:['academic']};
+    config.identity.address = 'Fixture research office';
+    config.modes.casual.address = '';
     writeFileSync(join(content, 'content/now.yaml'), stringify({
       updated: '2026-10-16',
-      workingOn: [{projectId:'special-relativity',description:'Academic fixture work',modes:['academic']}],
-      exploring: [{title:'Casual fixture topic',description:'A casual experiment',links:[{label:'Example resource',href:'/projects/special-relativity/'}],modes:['casual']}],
+      workingOn: [{projectId:'special-relativity',description:'Academic fixture work',itemsTitle:'Current milestones',items:[{title:'Academic detail',description:'Academic nested description',href:'/projects/special-relativity/'}],modes:['academic']}],
+      exploring: [{title:'Casual fixture topic',description:'A casual experiment',items:[{title:'Casual detail',href:'/projects/special-relativity/'},{title:'Concise detail'}],links:[{label:'Example resource',href:'/projects/special-relativity/'}],modes:['casual']}],
     }));
     for (const path of ['projects/light-quanta.md', 'posts/reading-einstein.md']) {
       const file = join(content, 'content', path);
@@ -52,7 +78,9 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
     config.modes.casual.sectionTitles.now = 'On the workbench';
     const profileFile = join(content, 'content/profile.yaml');
     const profile = parse(readFileSync(profileFile, 'utf8'));
+    config.modes.casual.sections.push('about');
     profile.casualAbout = 'A concise personal introduction.';
+    profile.academicBackground = 'Supervised by [Fixture mentor](https://example.org/mentor/).';
     writeFileSync(profileFile, stringify(profile));
   }
   writeFileSync(file, stringify(config));
@@ -71,11 +99,30 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
     } else if(home.includes('id="publications"')||home.includes('id="einstein1905relativity"')||home.includes('/#publications')) throw new Error('An empty publication selection produced a section or navigation link');
   }
   if (name === 'root') {
+    if(academic.includes('class="feature-banner"') || casual.includes('class="feature-banner"')) throw new Error('Unconfigured banner reserved a homepage element');
+    const intro=academic.split('</section>')[0];
+    for(const text of ['Fixture public address','Fixture contact note','Fixture secondary link']) if(!intro.includes(text)) throw new Error('Omitting Contact lost introductory contact details');
+    if(academic.includes('id="contact"') || [...academic.matchAll(/data-nav-mode="academic"[^>]*>([\s\S]*?)<\/(?:nav|div)>/g)].some(match=>match[1].includes('/#contact'))) throw new Error('Removed Contact section or navigation was rendered');
+    if (!casual.includes('class="casual-preview"') || !casual.includes('/assets/project-cover.jpg')) throw new Error('Project preview fallback was lost without a mode portrait');
     if (academic.includes('id="now"') || academic.includes('/#now') || casual.includes('id="now"')) throw new Error('Empty now content produced a section or navigation link');
   } else {
+    if(!academic.includes('class="feature-banner"') || !academic.includes('src="/portfolio/assets/feature-banner.svg"') || !academic.includes('Fixture featured paper') || !academic.includes('href="/portfolio/publications/#einstein1905relativity"') || casual.includes('class="feature-banner"')) throw new Error('Feature banner lost its base or mode scope');
+    if(readFileSync(join(out,'projects/special-relativity/index.html'),'utf8').includes('class="feature-banner"')) throw new Error('Homepage banner leaked into a detail page');
+    for(const home of [academic,casual]) if(!home.includes('class="profile-sidebar"') || !home.includes('home-with-sidebar')) throw new Error('Configured profile sidebar was not rendered');
+    if(!academic.includes('<a href="https://example.org/mentor/">Fixture mentor</a>')) throw new Error('Inline supervisor link was not rendered');
+    if (!academic.includes('Fixture research office') || casual.includes('Fixture research office')) throw new Error('Mode-specific address hiding failed');
+    if (!academic.includes('mailto:subpath@example.org') || academic.includes('mailto:casual-fixture@example.invalid')) throw new Error('Casual email override leaked into Academic');
+    if (!casual.includes('mailto:casual-fixture@example.invalid') || casual.includes('mailto:subpath@example.org')) throw new Error('Casual email override was not applied');
+    if (!academic.includes('src="/portfolio/assets/einstein-1921.jpg"') || academic.includes('src="/portfolio/assets/casual-portrait.jpg"')) throw new Error('Mode portrait leaked into Academic');
+    if (!casual.includes('src="/portfolio/assets/casual-portrait.jpg"') || casual.includes('src="/portfolio/assets/einstein-1921.jpg"')) throw new Error('Casual portrait override or deployment base was lost');
+    if (!casual.includes('hero-casual hero-with-portrait') || !casual.includes('class="hero-aside"') || casual.includes('class="casual-preview"')) throw new Error('Explicit Casual avatar did not take priority over a project cover');
+    if (casual.includes('<figcaption>')) throw new Error('Default portrait credit was applied to a mode override');
     if (!academic.includes('Academic fixture work') || academic.includes('Casual fixture topic')) throw new Error('Academic now content was not scoped');
     if (!casual.includes('Casual fixture topic') || casual.includes('Academic fixture work') || !casual.includes('On the workbench')) throw new Error('Casual now content was not scoped');
     if (!casual.includes('/portfolio/projects/special-relativity/?mode=casual')) throw new Error('Now link lost its base or mode');
+    if (!academic.includes('Current milestones') || !academic.includes('Academic nested description') || academic.includes('Casual detail')) throw new Error('Working-on details or heading were not scoped');
+    if (!casual.includes('Concise detail') || casual.includes('Academic detail') || casual.includes('now-items-heading')) throw new Error('Exploring details lost their scope or gained an implicit heading');
+    if (!/href="\/portfolio\/projects\/special-relativity\/\?mode=casual"[^>]*>Casual detail/.test(casual)) throw new Error('Nested detail link lost its base or mode');
     if (academic.includes('Up next') || casual.includes('Up next')) throw new Error('Empty now group was rendered');
     if (!academic.includes('datetime="2026-10-16"')) throw new Error('Editorial update date was lost');
     for (const home of [academic, casual]) if (home.includes('/portfolio/projects/light-quanta/') || home.includes('/portfolio/featured-posts/2026/reading-einstein/')) throw new Error('home:false content leaked onto a homepage');

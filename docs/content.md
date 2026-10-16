@@ -14,8 +14,9 @@ Quick links: [Homepage curation](#homepage-curation) · [Current work and plans]
 | `identity` | Name, initials and role; optional handle, institution, location, email, address, contact note, photo, photo credit and CV path |
 | `socials` | Links with a label, URL, optional Font Awesome icon and optional mode visibility |
 | `theme` | Academic and Casual accent colors in six-digit hex form |
+| `banner` | Optional homepage feature image, caption, link and mode visibility |
 | `hero` | Enable the optional illustration, set its label and intensity |
-| `modes` | Ordered sections, optional desktop navigation, section headings and `showToolkit` for each mode |
+| `modes` | Ordered sections, optional desktop navigation, section headings, `showToolkit` and an optional responsive `sidebar` for each mode |
 | `sectionLabels` | Optional navigation labels, keyed by section ID |
 | `projectCategories` | Category IDs mapped to display names |
 | `blog` | Optional external blog integration: original URL, JSON Feed URL and content-relative snapshot file |
@@ -36,7 +37,7 @@ modes:
   casual:
     sections: [projects, interests, writing, about, contact]
     sectionTitles:
-      projects: Selected work
+      projects: Featured work
 ```
 
 Homepage content is chosen in each record’s `home` metadata. Site configuration controls the section layout and navigation; it contains no project selection or hero IDs. `hero.enabled` controls the optional sampling illustration.
@@ -55,7 +56,44 @@ socials:
 
 Free icons accept `brands:<name>` or `solid:<name>`. The fonts are bundled locally; a hosted icon kit is not required.
 
-Set `socials[].primary: true` to include an archive, portfolio or other link in the Academic introduction. GitHub and LinkedIn remain introductory links by default for existing content. Email, handle and blog are optional; omitted data creates no placeholder links. The Casual title falls back to the person's name. A portrait can include `photoCredit: {label, href}`, and is used in Casual when no featured project image is configured. `site.footerText` can replace the default copyright line for a historical or curated example.
+When a separate Contact section is enabled, set `socials[].primary: true` to include an archive, portfolio or other link in the Academic introduction. If `contact` is omitted from a mode’s `sections`, the introduction automatically shows all of that mode’s social links, contact note and resolved address alongside its email, so a separate Contact block is optional. Remove `contact` from explicit navigation as well, if configured. GitHub and LinkedIn remain introductory links by default for existing content. Email, handle and blog are optional; omitted data creates no placeholder links. `modes.<mode>.email` overrides `identity.email` in that homepage's introductory and Contact links; without an override the identity address is used. Use `socials[].modes` to choose which modes show a social link. `modes.<mode>.address` overrides the homepage Contact address; set it to an empty string (`address: ""`) to hide the default office address in that mode. Omission inherits `identity.address`. The Casual title falls back to the person's name. The default portrait is `identity.photo`, with optional `identity.photoCredit: {label, href}`. Set `modes.academic.photo` or `modes.casual.photo` to override it for that mode, using an absolute site path or an HTTPS image URL (for example a GitHub avatar). An override applies to that mode’s introduction and About portrait. An explicit `modes.casual.photo` takes priority over any featured project in the opening visual and uses the same circular avatar layout, size and position as Academic at each breakpoint. If no override is set, the identity portrait and credit are used; an overridden photo uses only that mode’s optional `photoCredit`, so the default image’s credit is not attached to a different picture. Without an explicit mode photo, Casual uses a featured project cover when available, then the default portrait or illustration fallback. Academic and explicit Casual introduction avatars share the same right-hand anchor and circular crop (192 px on desktop, 160 px on tablets, 96 px on phones). About avatars also use circular crops; choose a photograph with the face near the centre and space around the head. The Casual introduction retains the full portrait. `site.footerText` can replace the default copyright line for a historical or curated example.
+
+## Optional homepage feature image
+
+Omit `banner` to show no image or empty space above the homepage. When a publication or project is ready, add a top-level block such as:
+
+```yaml
+banner:
+  image: /assets/img/paper-overview.webp
+  alt: Overview of the rendering method and its result
+  width: 1600
+  height: 400
+  caption: Paper title · Venue, year
+  href: /publications/#paper-key
+  modes: [academic]
+```
+
+`image`, `alt`, `width` and `height` are required; use the actual image dimensions to reserve the correct aspect ratio. `caption` and `href` are optional. The image is shown in full without cropping; a wide source image around 3:1 or 4:1 works well. A configured link makes the image and caption one keyboard-accessible link. Local paths receive the deployment base and current mode context. `modes` defaults to both modes. The banner appears below the persistent navigation and above the homepage columns; it does not appear on detail or archive pages. This presentation setting is independent of per-record `home` collection metadata.
+
+The bundled Einstein example enables an Academic-only paper teaser using a credited reproduction of Figure 1 from his 1911 paper. See `examples/einstein/ASSETS.md` for the image source and reuse terms.
+
+## Responsive profile sidebar
+
+Set `modes.<mode>.sidebar: true` to enable a left profile column on that homepage at viewport widths of **1280 CSS pixels and above**. The schema defaults to `false` for compatibility; the bundled Einstein starter explicitly enables it in both modes. Enable it separately for Academic and Casual:
+
+```yaml
+modes:
+  academic:
+    sidebar: true
+    sections: [research, now, projects, cv, writing]
+  casual:
+    sidebar: true
+    sections: [now, projects, interests, writing]
+```
+
+The sidebar collects that mode’s portrait, email, CV link (Academic), social links, blog link (Casual), contact note and resolved address. Mode visibility and photo/email/address overrides work exactly as in the compact introduction. The name (or Casual handle) sits below the portrait, and the main introduction is headed “About me”. The main column retains the introduction and content sections. The top navigation remains visible while scrolling, and the sidebar stays below it. On screens tall enough for a persistent profile, the sidebar stays in view as the page scrolls.
+
+Below 1280px, the sidebar is hidden and the existing introduction, portrait and contact-link layout is retained, with the name or Casual handle as the main heading. Both modes keep matching portrait anchors and sizes. Omit a separate `contact` section when the introduction/sidebar already contains all your contact information. Sidebar behavior is limited to homepages; detail and archive pages retain their normal layout.
 
 ## Content files
 
@@ -72,9 +110,9 @@ Set `socials[].primary: true` to include an archive, portfolio or other link in 
 | `content/repositories.yaml` | Repository names in `owner/repository` form |
 | `public/` | Assets copied with their existing paths |
 
-The Academic hero uses `identity.role` and factual summaries. The Casual role line uses `profile.casualHeadline`, or “Projects and interests” when omitted. The legacy `headline` field is not displayed. Optional toolkit rows use `label` and an `items` list; they appear in Academic, Casual and CV views. Set a mode’s `showToolkit: false` to omit toolkit rows from that homepage while retaining them on the full CV. `profile.academicBackground` optionally replaces the longer `background` in the Academic introduction; an empty string hides that paragraph. Omission preserves the original background.
+The Academic hero uses `identity.role` and factual summaries. The Casual role line uses `profile.casualHeadline`, or “Projects and interests” when omitted. The legacy `headline` field is not displayed. Optional toolkit rows use `label` and an `items` list; they appear in Academic, Casual and CV views. Set a mode’s `showToolkit: false` to omit toolkit rows from that homepage while retaining them on the full CV. `profile.academicBackground` optionally replaces the longer `background` in the Academic introduction; an empty string hides that paragraph. Omission preserves the original background. This paragraph supports inline Markdown links and emphasis, for example `Supervised by [Dr Example](https://example.org/mentor/)`.
 
-Set `profile.casualAbout` to a short plain-text personal introduction to use it in the Casual About section instead of the complete biography and toolkit. The full biography and toolkit remain available on the CV page. Omitting it preserves the existing About layout.
+Set `profile.casualAbout` to a short plain-text personal introduction to use it in the Casual About section instead of the complete biography and toolkit. The full biography and toolkit remain available on the CV page. Omitting it preserves the existing About layout. To keep the entire personal introduction at the top, consolidate it in `casualSummary` and omit `about` from that mode’s `sections` (and explicit `navigation`, if configured).
 
 CV records use `title`, `institution`, quoted `start`/`end` dates and `description`, with optional `url` and `location`. Keep known date precision. Full CV timelines display months when available. `basics` accepts `label`, `summary`, optional `phone`, `url` and `address`.
 
@@ -87,18 +125,34 @@ updated: '2026-10-16'
 workingOn:
   - projectId: my-project
     description: Building a small renderer to try out a new idea.
+    itemsTitle: Current milestones
+    items:
+      - title: First rendered frame
+        description: Establish a minimal render loop.
     modes: [academic, casual]
 exploring:
   - title: GPU profiling
     description: Learning how to identify expensive passes in a frame.
+    itemsTitle: Study topics
+    items:
+      - title: Memory access patterns
+      - title: Synchronization costs
     modes: [academic]
 upNext:
   - title: A playable prototype
     description: Try turning the latest experiment into a browser demo.
+    itemsTitle: Planned work items
+    items:
+      - title: A small playable scene
+        description: Test the core interaction with a few placeholder assets.
+      - title: Browser build
+        description: Package the scene so it can be shared with a link.
     modes: [casual]
 ```
 
 Each item needs a `description` and either a `title` or a valid `projectId`. Project references reuse the project's title and detail-page URL; an explicit `title` or `href` overrides either. Items default to both modes. A referenced project must support every mode listed on the item. Ordinary title links use `href`; an optional `links` list of `{label, href}` adds multiple resources, such as course assignments. Both use the same site-base and Casual context handling as other content links.
+
+All three groups share the same entry structure. An optional `items` list adds one level of details beneath any entry in `workingOn`, `exploring` or `upNext`. Each detail requires a non-empty `title`; `description` and `href` are optional (when supplied, descriptions must be non-empty and links must be safe local paths or external URLs). Detail links inherit the current mode and deployment base. Use the optional `itemsTitle` to label the list, for example **Current milestones**, **Study topics** or **Planned work items**; omitting it renders the list without an extra heading. Entries without `items` retain the brief layout. Groups containing detail lists span the section width, with two-column lists on larger screens and one column on phones. Nested lists are limited to one level.
 
 The optional `updated` date is an explicit editorial date (`YYYY-MM-DD`), never the build date. The groups display as **Working on**, **Exploring** and **Up next**. Empty groups are omitted. A missing file or a mode without any items produces no section or navigation link. Use mode-specific `sectionTitles.now`, for example **Current focus** and **On my workbench**, to change the section heading. These are brief public updates; tentative plans do not need deadlines.
 
@@ -146,11 +200,11 @@ This project is first in Academic and third in Casual when other projects have o
 | Placement field | Default | Rule |
 | --- | --- | --- |
 | `home.<mode>.order` | `100` | Numeric values sort in ascending order |
-| `home.casual.hero` | `false` | Marks the project used in the Casual opening preview |
+| `home.casual.hero` | `false` | Marks the preferred project for the Casual opening preview when no mode photo overrides it |
 
 Equal homepage orders retain the underlying content order: catalog order for projects, newest dates first for news/writing, and newest years first for publications. The Academic and Casual orders are independent. Homepage filtering happens before limits: news shows up to three items and writing shows up to four combined local/blog items. An eligible record can therefore be beyond the visible limit.
 
-Only projects can set `hero: true`, and only in Casual. At most one project may do so; conflicting heroes fail validation. Hero selection is independent of card order. Without an explicit hero, the first eligible project is used. A missing project cover uses the existing portrait/illustration fallback. The site-level `hero.enabled` setting controls the optional illustration; Academic retains its profile introduction and portrait.
+Only projects can set `hero: true`, and only in Casual. At most one project may do so; conflicting heroes fail validation. Project hero selection is independent of card order. An explicit `modes.casual.photo` overrides the opening visual with an avatar; project cards and their order are unaffected. Without a mode photo or an explicit project hero, the first eligible project is used. A missing project cover uses the existing portrait/illustration fallback. The site-level `hero.enabled` setting controls the optional illustration; Academic retains its profile introduction and portrait.
 
 ### Publications on homepages
 
@@ -226,7 +280,7 @@ Use the shared [`home` rules](#homepage-curation) for homepage visibility, mode-
 
 Optional `overview: {purpose, contribution, outcome}` gives a project detail page a compact opening summary, labeled **Purpose**, **My contribution** and **Outcome**. Supply all three as plain text; use the Markdown body for evidence, images and technical detail. This replaces the repeated description under the page title; the description remains in cards, search and page metadata. Projects without an overview keep their existing layout.
 
-Homepage writing defaults to **Selected writing**; override `sectionTitles.writing` or `sectionLabels.writing` to suit your editorial selection. Use `sectionTitles.news: Milestones` for infrequent announcements without changing existing URLs or section IDs.
+Homepage writing defaults to **Featured writing**; override `sectionTitles.writing` or `sectionLabels.writing` to suit your editorial selection. Use `sectionTitles.news: Milestones` for infrequent announcements without changing existing URLs or section IDs.
 
 Projects without an image render as text cards at their natural height. The all-projects page remains a shared catalog. Category fragments such as `/projects/#work` initialize the filter.
 

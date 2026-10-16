@@ -48,3 +48,5 @@ for(const name of ['image','link_open']) {
   };
 }
 export const renderMarkdown = (body:string) => md.render(body);
+
+export const renderInlineMarkdown = (body:string) => md.renderInline(body);

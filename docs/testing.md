@@ -26,14 +26,25 @@ Keep that site's migration audit and content-specific checks in its own reposito
 ## Browser checks
 
 Use a production build so that search has its generated index. Check both Academic
-and Casual modes in light and dark themes at 320, 390, 768, 1024 and 1280 CSS pixels.
+and Casual modes in light and dark themes at 320, 390, 768, 1024, 1279, 1280 and 1440 CSS pixels.
 Use real devices and Safari when those platforms are part of the intended audience.
 
 - Open and close the mobile menu with pointer and keyboard; check Escape, focus
   return, outside clicks, section-link activation, and crossing the desktop breakpoint.
+- Scroll on desktop and phone widths: navigation must remain visible, anchor
+  destinations must clear it, and the mobile menu must open below it even after scrolling.
 - Open search, follow a result, and confirm mode/query context on detail pages.
+- For an optional feature image, verify mode visibility, original aspect ratio,
+  caption/link and deployment-base handling. No banner element should exist when omitted.
 - Filter projects, reset the filter, and check the counts and visible entries.
 - Check that project images retain their proportions and complete contents.
+- Check portrait crops at desktop and phone widths; the head should remain visible
+  and the avatar should not overlap the name, role or affiliation.
+- With a configured sidebar, check 1279px and 1280px: the name/handle moves below the portrait and the main heading becomes “About me” only at the wide breakpoint. Exactly one profile and
+  contact-link set should be visible and keyboard-accessible. Verify both modes
+  retain their own email, photo and address visibility; check a short desktop viewport.
+- Scroll down and activate Back to top with pointer and keyboard. Confirm that it
+  returns to the page top, hands focus back to the header, and respects reduced motion.
 - Check heading permalinks with keyboard and pointer; copied URLs must preserve
   the deployment base, mode/query and fragment.
 - Check wide tables, code blocks and Mermaid diagrams. Overflow should stay inside

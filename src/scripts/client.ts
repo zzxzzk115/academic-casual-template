@@ -5,7 +5,25 @@ document.querySelectorAll<HTMLAnchorElement>('[data-mode-link]').forEach(a=>{if(
 document.querySelectorAll<HTMLElement>('[data-nav-mode]').forEach(nav=>nav.hidden=nav.dataset.navMode!==mode);
 if(mode==='casual')document.querySelectorAll<HTMLAnchorElement>('a[href]').forEach(a=>{const url=new URL(a.href);if(url.origin===location.origin&&url.pathname.startsWith(base)&&!url.pathname.includes('/assets/')&&!url.pathname.includes('/blog/')&&!/\.(bib|xml|txt|pdf)$/.test(url.pathname)&&!a.dataset.modeLink&&!a.hasAttribute('data-mode-fixed')){if(url.pathname===base)url.pathname=`${base}casual/`;else if(!url.pathname.includes('/casual/'))url.searchParams.set('mode','casual');a.href=url.href;}});
 document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle],[data-search],[data-menu]').forEach(b=>b.hidden=false);
+const siteHeader=document.querySelector<HTMLElement>('.site-header');
+if(siteHeader){
+  const updateHeaderHeight=()=>document.documentElement.style.setProperty('--header-height',`${Math.ceil(siteHeader.getBoundingClientRect().height)}px`);
+  updateHeaderHeight();
+  new ResizeObserver(updateHeaderHeight).observe(siteHeader);
+}
 const toast=(message:string)=>{const box=document.querySelector<HTMLElement>('.toast')!;box.textContent=message;box.classList.add('visible');setTimeout(()=>box.classList.remove('visible'),2200);};
+const backToTop=document.querySelector<HTMLButtonElement>('[data-back-to-top]');
+if(backToTop){
+  const updateBackToTop=()=>{backToTop.hidden=window.scrollY<=Math.min(600,window.innerHeight);};
+  window.addEventListener('scroll',updateBackToTop,{passive:true});
+  window.addEventListener('resize',updateBackToTop);
+  window.addEventListener('pageshow',updateBackToTop);
+  updateBackToTop();
+  backToTop.addEventListener('click',()=>{
+    document.querySelector<HTMLAnchorElement>('.site-header .brand')?.focus({preventScroll:true});
+    window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+  });
+}
 document.querySelector('[data-theme-toggle]')?.addEventListener('click',()=>{const theme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('color-theme',theme);}catch{}document.querySelectorAll<HTMLIFrameElement>('.giscus-frame').forEach(f=>f.contentWindow?.postMessage({giscus:{setConfig:{theme}}},'https://giscus.app'));});
 const menu=document.querySelector<HTMLButtonElement>('[data-menu]')!,mobile=document.querySelector<HTMLElement>('.mobile-nav')!;
 const setMenuOpen=(open:boolean)=>{mobile.hidden=!open;menu.setAttribute('aria-expanded',String(open));menu.setAttribute('aria-label',open?'Close navigation':'Open navigation');};

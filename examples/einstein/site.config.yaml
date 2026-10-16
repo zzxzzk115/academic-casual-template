@@ -18,12 +18,20 @@ identity:
     label: Ferdinand Schmutzer, 1921 · Public domain
     href: https://commons.wikimedia.org/wiki/File:Einstein_1921_by_F_Schmutzer.jpg
   contactNote: A historical profile for this template. References and image credits are collected in the source notes.
+banner:
+  image: /assets/gravitation-light-1911.svg
+  alt: A teaser for Einstein's 1911 paper on gravitation and light, with two systems separated by height h in a gravitational field.
+  width: 1600
+  height: 480
+  caption: 'Einstein, 1911 · On the influence of gravitation on the propagation of light. Figure 1 reproduced by RWMA (CC0).'
+  href: https://doi.org/10.1002/andp.19113401005
+  modes: [academic]
 socials:
   - label: Nobel Prize
     href: https://www.nobelprize.org/prizes/physics/1921/einstein/facts/
     icon: solid:medal
     primary: true
-  - label: Sources & photograph
+  - label: Sources & images
     href: /featured-posts/2026/sources/
     icon: solid:book-open
     primary: true
@@ -31,7 +39,6 @@ sectionLabels:
   projects: Research topics
   cv: Biography
   writing: Reading
-  contact: Sources
 projectCategories:
   relativity: Relativity
   quantum: Quantum theory
@@ -45,19 +52,23 @@ hero:
   intensity: 1
 modes:
   academic:
-    sections: [research, publications, projects, cv, writing, contact]
-    navigation: [research, publications, cv, contact]
+    sidebar: true
+    sections: [research, publications, projects, cv, writing]
+    navigation: [research, publications, cv, writing]
     sectionTitles:
       research: Research
-      projects: Selected work
+      projects: Featured work
       cv: Biography
       writing: Reading notes
-      contact: Sources
   casual:
-    sections: [interests, about, projects, writing, contact]
-    navigation: [interests, about, writing, contact]
+    sidebar: true
+    photo: /assets/einstein-1921.jpg
+    photoCredit:
+      label: Ferdinand Schmutzer, 1921 · Public domain
+      href: https://commons.wikimedia.org/wiki/File:Einstein_1921_by_F_Schmutzer.jpg
+    sections: [interests, projects, writing]
+    navigation: [interests, projects, writing]
     sectionTitles:
       interests: Beyond physics
-      projects: Selected work
+      projects: Featured work
       writing: Reading notes
-      contact: Sources

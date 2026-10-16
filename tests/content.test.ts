@@ -6,7 +6,7 @@ import {resolve,join,sep} from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {parse,stringify} from 'yaml';
 import matter from 'gray-matter';
-import {safeFile,configSchema,entrySchema,nowSchema,homeEntries,nowGroups,homeProjects,homeHero} from '../src/lib/content';
+import {safeFile,configSchema,entrySchema,nowSchema,href,homeEntries,nowGroups,homeProjects,homeHero} from '../src/lib/content';
 
 function editRecord(file:string,patch:Record<string,unknown>){
   const parsed=matter(readFileSync(file,'utf8'));
@@ -26,6 +26,36 @@ test('configuration rejects unsafe colors, wrong versions, and unknown section I
   assert.throws(()=>configSchema.parse({...original,theme:{...original.theme,academic:'red;display:none'}}));
   assert.throws(()=>configSchema.parse({...original,modes:{...original.modes,academic:{sections:['unregistered']}}}));
 });
+test('mode profile overrides are optional and independent',()=>{
+  const original=parse(readFileSync('examples/einstein/site.config.yaml','utf8'));
+  const configured=configSchema.parse({...original,modes:{...original.modes,academic:{...original.modes.academic,sidebar:undefined},casual:{...original.modes.casual,sidebar:true,email:'casual@example.org',address:'',photo:'https://example.org/alternate-avatar.png'}}});
+  assert.equal(configured.identity.photo,original.identity.photo);
+  assert.equal(configured.modes.academic.sidebar,false);
+  assert.equal(configured.modes.casual.sidebar,true);
+  assert.equal(configured.modes.academic.photo,undefined);
+  assert.equal(configured.modes.academic.email,undefined);
+  assert.equal(configured.modes.academic.address,undefined);
+  assert.equal(configured.modes.casual.address,'');
+  assert.equal(configured.identity.email,original.identity.email);
+  assert.equal(configured.modes.casual.email,'casual@example.org');
+  assert.throws(()=>configSchema.parse({...original,modes:{...original.modes,casual:{...original.modes.casual,email:'invalid-email'}}}));
+  assert.equal(configured.modes.casual.photo,'https://example.org/alternate-avatar.png');
+  assert.throws(()=>configSchema.parse({...original,modes:{...original.modes,casual:{...original.modes.casual,photo:''}}}));
+});
+test('optional homepage banners validate dimensions, links and mode visibility',()=>{
+  const original=parse(readFileSync('examples/einstein/site.config.yaml','utf8'));
+  assert.deepEqual(configSchema.parse(original).banner?.modes,['academic']);
+  assert.equal(configSchema.parse({...original,banner:undefined}).banner,undefined);
+  const banner={image:'/assets/feature.svg',alt:'A rendering overview',width:1600,height:400};
+  assert.deepEqual(configSchema.parse({...original,banner}).banner?.modes,['academic','casual']);
+  assert.deepEqual(configSchema.parse({...original,banner:{...banner,modes:['academic']}}).banner?.modes,['academic']);
+  for(const patch of [{width:0},{height:-1},{alt:''},{modes:[]},{href:'javascript:alert(1)'}]) assert.throws(()=>configSchema.parse({...original,banner:{...banner,...patch}}));
+});
+test('mode-aware links preserve query strings and publication fragments',()=>{
+  assert.equal(href('/publications/#paper','casual'),'/publications/?mode=casual#paper');
+  assert.equal(href('/projects/demo/?view=1#method','casual'),'/projects/demo/?view=1&mode=casual#method');
+  assert.equal(href('/assets/paper.pdf#page=2','casual'),'/assets/paper.pdf#page=2');
+});
 test('YAML timestamp objects normalize without losing the instant',()=>{
   const entry={id:'note',title:'A note',description:'A real timestamp',legacyPath:'/notes/a/',date:new Date('2025-04-11T01:35:00Z')};
   assert.equal(entrySchema.parse(entry).date,'2025-04-11T01:35:00.000Z');
@@ -42,7 +72,7 @@ test('historical profiles do not require an email, handle or blog',()=>{
 
 test('mode navigation and display labels belong to site configuration',()=>{
   const original=parse(readFileSync('examples/einstein/site.config.yaml','utf8'));
-  const configured=configSchema.parse({...original,projectCategories:{work:'Field studies'},sectionLabels:{interests:'Outside work'},modes:{...original.modes,casual:{...original.modes.casual,navigation:['projects','contact'],sectionTitles:{projects:'Selected work'}}}});
+  const configured=configSchema.parse({...original,projectCategories:{work:'Field studies'},sectionLabels:{interests:'Outside work'},modes:{...original.modes,casual:{...original.modes.casual,navigation:['projects','interests'],sectionTitles:{projects:'Selected work'}}}});
   assert.equal(configured.projectCategories.work,'Field studies');
   assert.equal(configured.modes.casual.sectionTitles.projects,'Selected work');
   assert.throws(()=>configSchema.parse({...original,modes:{...original.modes,casual:{sections:['projects'],navigation:['contact']}}}));
@@ -83,6 +113,19 @@ test('optional now content validates dates, links and item identity',()=>{
   assert.throws(()=>nowSchema.parse({exploring:[{title:'Unsafe',description:'A topic',href:'javascript:alert(1)'}]}));
   const parsed=nowSchema.parse({updated:'2026-10-16',upNext:[{projectId:'special-relativity',description:'An experiment',modes:['academic']}]});
   assert.equal(parsed.upNext[0].projectId,'special-relativity');
+  assert.deepEqual(parsed.upNext[0].items,[]);
+  const detail={title:'Visibility',description:'Test GPU culling',href:'/projects/special-relativity/'};
+  const entry={title:'Rendering studies',description:'Small demos',itemsTitle:'Study topics',items:[detail,{title:'A concise item'}]};
+  for(const group of ['workingOn','exploring','upNext'] as const){
+    const item=nowSchema.parse({[group]:[entry]})[group][0];
+    assert.equal(item.itemsTitle,'Study topics');
+    assert.deepEqual(item.items,[detail,{title:'A concise item'}]);
+  }
+  assert.equal(nowSchema.parse({upNext:[{title:'Topic',description:'Details',items:[{title:'Untitled list'}]}]}).upNext[0].itemsTitle,undefined);
+  for(const invalid of [{title:''},{title:'Visibility',description:''},{title:'Unsafe',href:'javascript:alert(1)'}]){
+    assert.throws(()=>nowSchema.parse({exploring:[{...entry,items:[invalid]}]}));
+  }
+  assert.throws(()=>nowSchema.parse({workingOn:[{...entry,itemsTitle:''}]}));
 });
 test('hero selection falls back to the first home project',()=>{
   assert.equal(homeHero('casual')?.id,homeProjects('casual')[0]?.id);
@@ -98,7 +141,7 @@ test('home hero selection is independent of homepage ordering',()=>{
     assert.equal(result.status,0,result.stderr);
   }finally{rmSync(fixture,{recursive:true,force:true});}
 });
-for(const scenario of ['duplicate home heroes','unavailable home mode','non-project hero','academic hero','obsolete project selector','obsolete featured flag','obsolete paper flag','missing asset','unknown now project','unavailable now project','duplicate path'])test(`build validation catches ${scenario}`,()=>{
+for(const scenario of ['duplicate home heroes','unavailable home mode','non-project hero','academic hero','obsolete project selector','obsolete featured flag','obsolete paper flag','missing asset','missing mode portrait','missing banner image','unknown now project','unavailable now project','duplicate path'])test(`build validation catches ${scenario}`,()=>{
   const fixture=mkdtempSync(join(tmpdir(),'academic-casual-'));
   try{
     cpSync('examples/einstein',fixture,{recursive:true});
@@ -118,6 +161,10 @@ for(const scenario of ['duplicate home heroes','unavailable home mode','non-proj
       writeFileSync(join(fixture,'content/publications.bib'),'@article{old,title={Old},author={Author},year={2020},selected={true}}');
     }else if(scenario==='missing asset'){
       const file=join(fixture,'site.config.yaml'),config=parse(readFileSync(file,'utf8'));config.identity.photo='/assets/missing.jpg';writeFileSync(file,stringify(config));
+    }else if(scenario==='missing mode portrait'){
+      const file=join(fixture,'site.config.yaml'),config=parse(readFileSync(file,'utf8'));config.modes.casual.photo='/assets/missing-mode-portrait.png';writeFileSync(file,stringify(config));
+    }else if(scenario==='missing banner image'){
+      const file=join(fixture,'site.config.yaml'),config=parse(readFileSync(file,'utf8'));config.banner={image:'/assets/missing-banner.svg',alt:'A feature image',width:1600,height:400};writeFileSync(file,stringify(config));
     }else if(scenario==='unknown now project'){
       writeFileSync(join(fixture,'content/now.yaml'),stringify({workingOn:[{projectId:'missing',description:'A missing project'}]}));
     }else if(scenario==='unavailable now project'){
