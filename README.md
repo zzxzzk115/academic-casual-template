@@ -16,11 +16,9 @@ The bundled example is a sourced historical profile of **Albert Einstein**: rese
 
 The demo presents Einstein’s research, selected papers, biography and interests. The 1921 portrait is a historical photograph, not generated artwork. Switch presentation mode and color theme independently, or try the research filters and local search.
 
-| Academic · light | Casual · dark |
-| --- | --- |
-| [![Academic demo in the light theme](docs/images/demo-academic.jpg)](https://zzxzzk115.github.io/academic-casual-template/) | [![Casual demo in the dark theme](docs/images/demo-casual.jpg)](https://zzxzzk115.github.io/academic-casual-template/casual/) |
+<a href="https://commons.wikimedia.org/wiki/File:Einstein_1921_by_F_Schmutzer.jpg"><img src="examples/einstein/public/assets/einstein-1921.jpg" alt="Albert Einstein in Vienna, photographed by Ferdinand Schmutzer in 1921" width="220"></a>
 
-Screenshots are captured from the live Einstein demo. Presentation mode and color theme are independent settings.
+Photograph used in the example: Ferdinand Schmutzer, 1921. [Source and public-domain status](https://commons.wikimedia.org/wiki/File:Einstein_1921_by_F_Schmutzer.jpg). No generated illustrations are used.
 
 ## Quick start
 

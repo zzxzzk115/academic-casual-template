@@ -11,7 +11,7 @@ Validated locally on Windows with Node 24.12.0 and pnpm 10.34.5, 16 October 2026
 
 Browser checks cover Academic/Casual links, light/dark themes, desktop/mobile navigation, project filters, search and shared detail context. Main content is pre-rendered; optional WebGL leaves a static fallback under reduced motion or when unavailable. Self-hosted Font Awesome icons retain accessible link/control text.
 
-The public demo was checked under `/academic-casual-template/`: both homepages, search results and project-detail mode context, desktop themes, and 390 px mobile filtering without horizontal overflow. README screenshots show the live Academic/light and Casual/dark views.
+The public demo was checked under `/academic-casual-template/`: both homepages, search results and project-detail mode context, desktop themes, and 390 px mobile filtering without horizontal overflow. The historical photograph and its credit load correctly in both modes; obsolete developer-example screenshots have been removed.
 
 Migration tooling preserves original slugs and comments mapping, handles JSONC resumes and date precision, and verifies legacy paths/assets through the content repository's own manifest. The framework CI does not require a personal repository.
 
