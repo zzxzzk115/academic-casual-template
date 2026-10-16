@@ -20,6 +20,10 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
   const file = join(content, 'site.config.yaml'), config = parse(readFileSync(file, 'utf8'));
   config.site.base = base;
   config.identity.email = email;
+  cpSync(join(content,'public/assets/einstein-1921.jpg'),join(content,'public/assets/project-cover.jpg'));
+  const coverFile=join(content,'content/projects/special-relativity.md');
+  const covered=matter(readFileSync(coverFile,'utf8'));
+  writeFileSync(coverFile,matter.stringify(covered.content,{...covered.data,image:'/assets/project-cover.jpg'}));
   for (const mode of ['academic', 'casual']) {
     config.modes[mode].sections.unshift('now');
     config.modes[mode].navigation.unshift('now');
@@ -73,10 +77,12 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
     } else if(home.includes('id="publications"')||home.includes('id="einstein1905relativity"')||home.includes('/#publications')) throw new Error('An empty publication selection produced a section or navigation link');
   }
   if (name === 'root') {
+    if (!casual.includes('class="casual-preview"') || !casual.includes('/assets/project-cover.jpg')) throw new Error('Project preview fallback was lost without a mode portrait');
     if (academic.includes('id="now"') || academic.includes('/#now') || casual.includes('id="now"')) throw new Error('Empty now content produced a section or navigation link');
   } else {
     if (!academic.includes('src="/portfolio/assets/einstein-1921.jpg"') || academic.includes('src="/portfolio/assets/casual-portrait.jpg"')) throw new Error('Mode portrait leaked into Academic');
     if (!casual.includes('src="/portfolio/assets/casual-portrait.jpg"') || casual.includes('src="/portfolio/assets/einstein-1921.jpg"')) throw new Error('Casual portrait override or deployment base was lost');
+    if (!casual.includes('casual-photo casual-avatar') || casual.includes('class="casual-preview"')) throw new Error('Explicit Casual avatar did not take priority over a project cover');
     if (casual.includes('<figcaption>')) throw new Error('Default portrait credit was applied to a mode override');
     if (!academic.includes('Academic fixture work') || academic.includes('Casual fixture topic')) throw new Error('Academic now content was not scoped');
     if (!casual.includes('Casual fixture topic') || casual.includes('Academic fixture work') || !casual.includes('On the workbench')) throw new Error('Casual now content was not scoped');
