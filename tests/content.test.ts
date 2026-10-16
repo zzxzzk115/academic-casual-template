@@ -141,7 +141,7 @@ test('home hero selection is independent of homepage ordering',()=>{
     assert.equal(result.status,0,result.stderr);
   }finally{rmSync(fixture,{recursive:true,force:true});}
 });
-for(const scenario of ['duplicate home heroes','unavailable home mode','non-project hero','academic hero','obsolete project selector','obsolete featured flag','obsolete paper flag','missing asset','missing mode portrait','missing banner image','unknown now project','unavailable now project','duplicate path'])test(`build validation catches ${scenario}`,()=>{
+for(const scenario of ['duplicate home heroes','unavailable home mode','non-project hero','academic hero','obsolete project selector','obsolete featured flag','obsolete paper flag','missing asset','missing mode portrait','missing banner image','missing favicon','unknown now project','unavailable now project','duplicate path'])test(`build validation catches ${scenario}`,()=>{
   const fixture=mkdtempSync(join(tmpdir(),'academic-casual-'));
   try{
     cpSync('examples/einstein',fixture,{recursive:true});
@@ -163,6 +163,8 @@ for(const scenario of ['duplicate home heroes','unavailable home mode','non-proj
       const file=join(fixture,'site.config.yaml'),config=parse(readFileSync(file,'utf8'));config.identity.photo='/assets/missing.jpg';writeFileSync(file,stringify(config));
     }else if(scenario==='missing mode portrait'){
       const file=join(fixture,'site.config.yaml'),config=parse(readFileSync(file,'utf8'));config.modes.casual.photo='/assets/missing-mode-portrait.png';writeFileSync(file,stringify(config));
+    }else if(scenario==='missing favicon'){
+      const file=join(fixture,'site.config.yaml'),config=parse(readFileSync(file,'utf8'));config.site.favicon='/assets/missing-favicon.svg';writeFileSync(file,stringify(config));
     }else if(scenario==='missing banner image'){
       const file=join(fixture,'site.config.yaml'),config=parse(readFileSync(file,'utf8'));config.banner={image:'/assets/missing-banner.svg',alt:'A feature image',width:1600,height:400};writeFileSync(file,stringify(config));
     }else if(scenario==='unknown now project'){

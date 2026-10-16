@@ -10,7 +10,7 @@ Quick links: [Homepage curation](#homepage-curation) · [Current work and plans]
 
 | Field | Purpose |
 | --- | --- |
-| `site` | Title, description, origin URL, base path, language and optional copyright start year |
+| `site` | Title, description, origin URL, base path, language, optional favicon and copyright start year |
 | `identity` | Name, initials and role; optional handle, institution, location, email, address, contact note, photo, photo credit and CV path |
 | `socials` | Links with a label, URL, optional Font Awesome icon and optional mode visibility |
 | `theme` | Academic and Casual accent colors in six-digit hex form |
@@ -23,6 +23,8 @@ Quick links: [Homepage curation](#homepage-curation) · [Current work and plans]
 | `comments` | Optional Giscus repository/category IDs, with pathname mapping |
 
 `site.url` is the origin URL, such as `https://example.github.io`. Set `site.base` to `/` for a root site, or `/portfolio/` for a project site. It must start and end with `/`. Templates prefix local paths automatically. Do not include the base in content paths.
+
+Set `site.favicon` to a local public asset path (for example `/favicon.svg`) or an HTTPS image URL to use your own browser-tab icon on every page and in both modes. Local paths receive `site.base` automatically, and missing local files fail build validation. Omit it to retain the generated initials icon. SVG, ICO and PNG files can be served from `public/`; the browser detects the image format.
 
 ```yaml
 sectionLabels:

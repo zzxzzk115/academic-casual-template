@@ -133,7 +133,7 @@ export function validateContent() {
     if (!project) throw new Error(`Unknown now project: ${item.projectId}`);
     if (item.modes.some(mode => !project.modes.includes(mode))) throw new Error(`Now project ${item.projectId} is unavailable in a requested mode`);
   }
-  const resources = [config.banner?.image,config.identity.photo,...modes.map(mode=>config.modes[mode].photo),config.identity.cv,...projects.map(p=>p.image),...publications.flatMap(p=>[p.pdf,p.preview])].filter(Boolean) as string[];
+  const resources = [config.site.favicon,config.banner?.image,config.identity.photo,...modes.map(mode=>config.modes[mode].photo),config.identity.cv,...projects.map(p=>p.image),...publications.flatMap(p=>[p.pdf,p.preview])].filter(Boolean) as string[];
   for (const resource of resources) if (resource.startsWith('/') && !existsSync(safeFile(contentRoot, `public${resource}`))) throw new Error(`Missing resource: ${resource}`);
   for (const pub of publications) if (!pub.title || !pub.author || !pub.year) throw new Error(`Incomplete publication: ${pub.id}`);
 }
