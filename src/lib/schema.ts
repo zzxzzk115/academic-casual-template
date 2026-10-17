@@ -10,6 +10,7 @@ const languageTag = z.string().min(1).refine(value => {
 const cvDownloadSchema = z.object({label:z.string().min(1),href:localOrExternal,lang:languageTag.optional()}).strict();
 export const latexSchema = z.object({
   engine:z.enum(['xelatex','lualatex','pdflatex']).default('xelatex'),
+  inputs:z.array(z.string().regex(/^(?:[\w.-]+\/)*[\w.-]+$/).refine(v=>!v.split('/').some(part=>part==='..'||part==='.'),'Use a content-relative input file or directory')).default([]),
   documents:z.array(z.object({
     source:z.string().regex(/^(?:[\w.-]+\/)*\w[\w.-]*\.tex$/).refine(v=>!v.split('/').includes('..'),'Use a content-relative .tex path'),
     output:z.string().regex(/^\/[\w/-]+\.pdf$/),

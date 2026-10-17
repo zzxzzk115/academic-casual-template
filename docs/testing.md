@@ -58,3 +58,6 @@ Store local screenshots, Lighthouse output and other generated reports in ignore
 ## Optional LaTeX documents
 
 Run `pnpm latex --content tests/fixtures/latex` with TeX Live available to exercise the real English/Chinese smoke documents; CI runs the same sources through the composite action and uploads the resulting PDFs. Ordinary unit tests do not require TeX. For configured CVs, inspect every generated page for clipping, missing glyphs and awkward page breaks. Confirm each language's download link on the Academic homepage and CV page, the unchanged single-link fallback, and correct deployment-base handling. Break one source to confirm that compilation fails before PDF publication and deployment.
+
+
+LaTeX cache tests cover source/class/style/bibliography/font/image changes, added and removed inputs, engine/toolchain changes, stable keys across checkouts, ignored build products, declared shared inputs and incomplete/corrupt caches. After a successful CI build, rerun the same PR job to verify that **Compile PDFs** is skipped while publication still succeeds. Use action input `cache: 'false'` when testing a mandatory cold compilation.
