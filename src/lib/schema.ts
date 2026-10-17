@@ -4,6 +4,10 @@ export const modes = ['academic', 'casual'] as const;
 export type Mode = typeof modes[number];
 const sectionIds = ['research', 'now', 'news', 'publications', 'projects', 'cv', 'writing', 'interests', 'about', 'contact'] as const;
 const localOrExternal = z.string().min(1).refine(v => v.startsWith('/') || /^(https?:|mailto:)/.test(v), 'Use an absolute site path or URL');
+const socialUrl = z.union([localOrExternal, z.url().refine(value => {
+  const url = new URL(value);
+  return url.protocol === 'tencent:' && url.hostname === 'AddContact' && url.pathname === '/' && /^\d+$/.test(url.searchParams.get('uin') || '');
+}, 'Use a QQ AddContact URL with a numeric uin')]);
 const languageTag = z.string().min(1).refine(value => {
   try { return Intl.getCanonicalLocales(value).length === 1; } catch { return false; }
 }, 'Use a language tag such as en, zh-Hans, pt-BR or ar');
@@ -34,7 +38,7 @@ export const configSchema = z.object({
   schemaVersion: z.literal(1),
   site: z.object({ title: z.string().min(1), description: z.string().min(1), url: z.url(), favicon: localOrExternal.optional(), base: z.string().default('/'), language: z.string().default('en'), availableLanguages: z.array(z.string()).default(['en']), copyrightStartYear: z.number().int().min(1900).max(new Date().getUTCFullYear()).optional(), footerText: z.string().optional() }),
   identity: z.object({ name: z.string().min(1), handle: z.string().min(1).optional(), initials: z.string().min(1), role: z.string().min(1), institution: z.string().default(''), location: z.string().default(''), address: z.string().optional(), contactNote: z.string().optional(), email: z.email().optional(), photo: z.string().optional(), photoCredit: z.object({label:z.string(),href:localOrExternal}).optional(), cv: z.union([localOrExternal,z.array(cvDownloadSchema).min(1)]).optional() }),
-  socials: z.array(z.object({ label: z.string(), href: localOrExternal, icon: z.string().regex(/^(brands|solid):[a-z0-9-]+$/).optional(), primary:z.boolean().default(false), modes: z.array(z.enum(modes)).default(['academic','casual']) })),
+  socials: z.array(z.object({ label: z.string(), href: socialUrl, icon: z.string().regex(/^(brands|solid):[a-z0-9-]+$/).optional(), primary:z.boolean().default(false), modes: z.array(z.enum(modes)).default(['academic','casual']) })),
   externalLinks: z.array(z.object({
     label: z.string().min(1),
     href: z.url().refine(value=>['https:','http:'].includes(new URL(value).protocol),'Use an absolute HTTP(S) URL'),

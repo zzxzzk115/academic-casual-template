@@ -61,7 +61,7 @@ Homepage content is chosen in each record’s `home` metadata. Site configuratio
 
 Available sections are `research`, `now`, `news`, `publications`, `projects`, `cv`, `writing`, `interests`, `about` and `contact`. Sections and navigation entries must be unique; desktop navigation can only point to enabled sections. Omitting `navigation` uses the standard desktop subset, including `now` when present. Mobile navigation lists all enabled sections. Empty `now`, `news`, `publications` and `projects` sections and their navigation links are hidden.
 
-Social links default to both modes. For a Casual-only game platform:
+Social links default to both modes. Social URLs also accept QQ client contact links (`tencent://AddContact/?uin=123456789`); these open the installed QQ client. Include the number in the label if visitors should also be able to copy it manually. Font Awesome brand icons include `brands:bilibili` and `brands:qq`. For a Casual-only game platform:
 
 ```yaml
 socials:
