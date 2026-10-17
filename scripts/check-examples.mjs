@@ -99,6 +99,11 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
   const academic = readFileSync(join(out, 'index.html'), 'utf8');
   const casual = readFileSync(join(out, 'casual/index.html'), 'utf8');
   const projectArchive=readFileSync(join(out,'projects/index.html'),'utf8');
+  const featuredSection=casual.match(/<section id="projects"[\s\S]*?<\/section>/)?.[0];
+  const featuredCount=name==='root'?3:2;
+  if(!featuredSection?.includes('data-gallery-label="featured research topics"')||!featuredSection.includes(`All featured <span>${featuredCount}</span>`))throw new Error('Homepage filters confused featured entries with the full catalog');
+  if(!featuredSection.includes(`href="${base}projects/?mode=casual">All research topics · 3 `))throw new Error('Full catalog link lost its total count, base or Casual context');
+  if(!projectArchive.includes('All research topics <span>3</span>')||projectArchive.includes('All featured'))throw new Error('The full catalog inherited featured-only filter labels');
   if(!projectArchive.includes(`style="object-fit:${name==='root'?'cover':'contain'}"`))throw new Error('Configured project image fill was lost');
   const detailPage=readFileSync(join(out,'projects/special-relativity/index.html'),'utf8');
   if(name==='root'){

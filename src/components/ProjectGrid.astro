@@ -1,13 +1,14 @@
 ---
 import { config, href, type Entry, type Mode } from '../lib/content';
 import Icon from './Icon.astro';
-interface Props { entries:Entry[]; mode?:Mode; filters?:boolean; }
-const {entries,mode='academic',filters=false}=Astro.props;
+interface Props { entries:Entry[]; mode?:Mode; filters?:boolean; featured?:boolean; }
+const {entries,mode='academic',filters=false,featured=false}=Astro.props;
 const categories=[...new Set(entries.map(p=>p.category))];
 const labels=config.projectCategories;
+const collectionLabel=`${featured?'featured ':''}${(config.sectionLabels.projects||'Projects').toLowerCase()}`;
 ---
-<div class="project-gallery" data-gallery>
-  {filters && <div class="filters" role="group" aria-label="Filter projects"><button class="active" data-filter="all" aria-pressed="true">All {(config.sectionLabels.projects||'Projects').toLowerCase()} <span>{entries.length.toString().padStart(2,'0')}</span></button>{categories.map(c=><button id={c} data-filter={c} aria-pressed="false">{labels[c]||c} <span>{entries.filter(p=>p.category===c).length}</span></button>)}</div>}
+<div class="project-gallery" data-gallery data-gallery-label={collectionLabel}>
+  {filters && <div class="filters" role="group" aria-label={`Filter ${collectionLabel}`}><button class="active" data-filter="all" aria-pressed="true">All {featured?'featured':(config.sectionLabels.projects||'Projects').toLowerCase()} <span>{entries.length}</span></button>{categories.map(c=><button id={c} data-filter={c} aria-pressed="false">{labels[c]||c} <span>{entries.filter(p=>p.category===c).length}</span></button>)}</div>}
   <div class="project-grid">
     {entries.map((p,i)=><article class:list={['project', { 'project-wide':i===0 && entries.length>2&&!!p.image,'project-text':!p.image }]} data-category={p.category}>
       {p.image&&<a class="project-image" href={href(p.legacyPath,mode)} aria-label={`Explore ${p.title}`}>

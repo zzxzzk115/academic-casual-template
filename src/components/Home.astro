@@ -10,7 +10,7 @@ import Now from './Now.astro';
 import HeadingAnchor from './HeadingAnchor.astro';
 import ProfileLinks from './ProfileLinks.astro';
 import {renderMarkdown,renderInlineMarkdown} from '../lib/markdown';
-import {config,profile,biography,posts,news,href,dateLabel,loadBlog,sectionLabels,homeEntries,homeProjects,homeSections,homeHero,homePublications,homePlacement,type Mode} from '../lib/content';
+import {config,profile,biography,projects,posts,news,href,dateLabel,loadBlog,sectionLabels,homeEntries,homeProjects,homeSections,homeHero,homePublications,homePlacement,type Mode} from '../lib/content';
 const {mode='academic'}=Astro.props as {mode:Mode};
 const isCasual=mode==='casual';
 const email=config.modes[mode].email ?? config.identity.email;
@@ -26,7 +26,7 @@ const visibleSocials=config.socials.filter(s=>s.modes.includes(mode));
 const selected=homeProjects(mode);
 const featured=homeHero(mode);
 const academicBackground=profile.academicBackground ?? profile.background;
-const defaultTitles:Record<string,string>={projects:isCasual?'Projects':'Featured projects',research:'Research interests',writing:'Featured posts'};
+const defaultTitles:Record<string,string>={projects:'Featured projects',research:'Research interests',writing:'Featured posts'};
 const sectionTitle=(section:(typeof config.modes.academic.sections)[number])=>config.modes[mode].sectionTitles[section]||config.sectionLabels[section]||defaultTitles[section]||sectionLabels[section];
 const blog=await loadBlog();
 const writing=[...homeEntries(posts,mode).map(p=>({title:p.title,url:p.legacyPath,summary:p.description,date:p.date,source:'Note',order:homePlacement(p.home,mode)!.order})),...blog.map(p=>({title:p.title,url:p.url,summary:p.summary,date:p.date_published,source:'Blog',order:100}))].sort((a,b)=>a.order-b.order||(b.date||'').localeCompare(a.date||'')).slice(0,4);
@@ -54,10 +54,10 @@ const writing=[...homeEntries(posts,mode).map(p=>({title:p.title,url:p.legacyPat
     {usesPortraitLayout?<aside class="hero-aside">{photo&&<figure class="hero-photo"><img class="portrait" src={href(photo)} width="192" height="192" alt={config.identity.name} fetchpriority="high"/>{photoCredit&&<figcaption><a href={photoCredit.href}>{photoCredit.label}</a></figcaption>}</figure>}{!isCasual&&config.hero.enabled&&<div class="small-field"><Field/></div>}</aside>:(!featured?.image&&photo)?<figure class="casual-photo"><img src={href(photo)} alt={config.identity.name} width="360" height="473" fetchpriority="high"/>{photoCredit&&<figcaption><a href={photoCredit.href}>{photoCredit.label}</a></figcaption>}</figure>:(featured?.image||config.hero.enabled)&&<div class="casual-preview">{featured?.image?<a href={href(featured.legacyPath,mode)}><div class="preview-bar"><span class="window-dots"><i></i><i></i><i></i></span><span>{featured.title}</span><Icon name="arrow-up-right"/></div><img src={href(featured.image)} alt={featured.imageAlt||featured.title} width="640" height="480" fetchpriority="high"/><p>{featured.tags.join(' · ')}</p></a>:<Field/>}</div>}
   </section>
   {homeSections(mode).map(section=> <section id={section} class:list={['home-section',`section-${section}`]}>
-    <div class="section-heading"><h2 class="has-heading-anchor">{sectionTitle(section)}<HeadingAnchor target={section} label={sectionTitle(section)}/></h2>{section==='projects'&&<a href={href('/projects/',mode)}>All {(config.sectionLabels.projects||'Projects').toLowerCase()} <Icon name="arrow-up-right"/></a>}{section==='publications'&&<a href={href('/publications/')}>Bibliography <Icon name="arrow-up-right"/></a>}{section==='writing'&&config.blog&&<a href={href(config.blog.href)}>Blog <Icon name="arrow-up-right"/></a>}{section==='cv'&&<a href={href('/cv/')}>Full CV <Icon name="arrow-up-right"/></a>}</div>
+    <div class="section-heading"><h2 class="has-heading-anchor">{sectionTitle(section)}<HeadingAnchor target={section} label={sectionTitle(section)}/></h2>{section==='projects'&&<a href={href('/projects/',mode)}>All {(config.sectionLabels.projects||'Projects').toLowerCase()} · {projects.length} <Icon name="arrow-up-right"/></a>}{section==='publications'&&<a href={href('/publications/')}>Bibliography <Icon name="arrow-up-right"/></a>}{section==='writing'&&config.blog&&<a href={href(config.blog.href)}>Blog <Icon name="arrow-up-right"/></a>}{section==='cv'&&<a href={href('/cv/')}>Full CV <Icon name="arrow-up-right"/></a>}</div>
     {section==='research'&&<><div class="research-grid">{profile.research.map(r=><article><h3>{r.title}</h3><p>{r.description}</p></article>)}</div>{config.modes[mode].showToolkit&&profile.toolkit.length>0&&<div class="home-toolkit"><h3>Tools & platforms</h3><Toolkit/></div>}</>}
     {section==='now'&&<Now mode={mode}/>}
-    {section==='projects'&&<ProjectGrid entries={selected} mode={mode} filters={isCasual}/>}
+    {section==='projects'&&<ProjectGrid entries={selected} mode={mode} filters={isCasual} featured/>}
     {section==='publications'&&<Publications entries={homePublications(mode)}/>}
     {section==='news'&&<div class="news-list">{homeEntries(news,mode).slice(0,3).map(n=><article><time datetime={n.date}>{dateLabel(n.date)}</time><div><a href={href(n.legacyPath,mode)}>{n.title}</a><p>{n.description}</p></div></article>)}</div>}
     {section==='cv'&&<Timeline/>}

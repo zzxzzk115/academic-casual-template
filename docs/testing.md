@@ -36,7 +36,9 @@ Use real devices and Safari when those platforms are part of the intended audien
 - Open search, follow a result, and confirm mode/query context on detail pages.
 - For an optional feature image, verify mode visibility, original aspect ratio,
   caption/link and deployment-base handling. No banner element should exist when omitted.
-- Filter projects, reset the filter, and check the counts and visible entries.
+- Filter featured projects and reset with All featured; counts must describe only
+  the homepage selection. Follow the section's full-catalog link, confirm its total
+  count and Casual context, then check that All projects resets the full catalog.
 - Check that project images retain their proportions and complete contents.
 - Check portrait crops at desktop and phone widths; the head should remain visible
   and the avatar should not overlap the name, role or affiliation.
