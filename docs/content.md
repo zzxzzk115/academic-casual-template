@@ -13,6 +13,7 @@ Quick links: [Homepage curation](#homepage-curation) · [Current work and plans]
 | `site` | Title, description, origin URL, base path, language, optional favicon and copyright start year |
 | `identity` | Name, initials and role; optional handle, institution, location, email, address, contact note, photo, photo credit and CV path |
 | `socials` | Links with a label, URL, optional Font Awesome icon and optional mode visibility |
+| `externalLinks` | Optional links appended to desktop/mobile navigation, with an external-site indicator and optional mode visibility |
 | `theme` | Academic and Casual accent colors in six-digit hex form |
 | `banner` | Optional homepage feature image, caption, link and mode visibility |
 | `toc` | Enable automatic detail-page tables of contents (default `true`); per-record `toc` overrides it |
@@ -27,6 +28,16 @@ Quick links: [Homepage curation](#homepage-curation) · [Current work and plans]
 Giscus follows the site's light/dark theme, including changes made while comments are loading. Without a saved manual choice, the site follows changes to the operating system's colour scheme. A manual choice is retained across pages and synchronized between open tabs on the same origin; the existing discussion and comment draft remain in place when the theme changes.
 
 `site.url` is the origin URL, such as `https://example.github.io`. Set `site.base` to `/` for a root site, or `/portfolio/` for a project site. It must start and end with `/`. Templates prefix local paths automatically. Do not include the base in content paths.
+
+Use `externalLinks` for independently hosted destinations such as a blog. Each link requires a `label` and absolute HTTP(S) `href`; optional `icon` uses the existing Font Awesome syntax, and `modes` defaults to both Academic and Casual. Links retain their exact URL when switching presentation mode and open in the same tab. The external-site icon and accessible description are added automatically, including in the mobile menu. Omit the list to keep navigation unchanged.
+
+```yaml
+externalLinks:
+  - label: Blog
+    href: https://example.github.io/blog/
+    icon: solid:book-open
+    modes: [academic, casual]
+```
 
 Set `site.favicon` to a local public asset path (for example `/favicon.svg`) or an HTTPS image URL to use your own browser-tab icon on every page and in both modes. Local paths receive `site.base` automatically, and missing local files fail build validation. Omit it to retain the generated initials icon. SVG, ICO and PNG files can be served from `public/`; the browser detects the image format.
 

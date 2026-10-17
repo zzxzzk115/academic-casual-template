@@ -5,6 +5,7 @@ import '../styles/icons.css';
 import '../styles/global.css';
 import Icon from '../components/Icon.astro';
 import FeatureBanner from '../components/FeatureBanner.astro';
+import ExternalNavigation from '../components/ExternalNavigation.astro';
 import {config,repositories,href,sectionLabels,homeSections,type Mode} from '../lib/content';
 interface Props {title?:string;description?:string;mode?:Mode;home?:boolean;image?:string;}
 const {title,description=config.site.description,mode='academic',home=false,image}=Astro.props;
@@ -34,7 +35,7 @@ const copyrightYears=config.site.copyrightStartYear&&config.site.copyrightStartY
     <div class="site-navigation">
     <header class="site-header">
       <a class="brand" href={href(mode==='casual'?'/casual/':'/')}><span class="monogram">{config.identity.initials}<i></i></span><span class="brand-name">{config.identity.name}{config.identity.handle&&config.identity.handle!==config.identity.name&&<small>{config.identity.handle}</small>}</span></a>
-      {(['academic','casual'] as const).map(navMode=><nav class="desktop-nav" aria-label="Main navigation" data-nav-mode={navMode} hidden={navMode!==mode}>{(config.modes[navMode].navigation??homeSections(navMode).filter(s=>['now','research','publications','projects','writing','contact'].includes(s))).filter(s=>homeSections(navMode).includes(s)).map(s=><a href={`${href(navMode==='casual'?'/casual/':'/')}#${s}`} data-section-link={s}>{sectionLabels[s]}</a>)}</nav>)}
+      {(['academic','casual'] as const).map(navMode=><nav class="desktop-nav" aria-label="Main navigation" data-nav-mode={navMode} hidden={navMode!==mode}>{(config.modes[navMode].navigation??homeSections(navMode).filter(s=>['now','research','publications','projects','writing','contact'].includes(s))).filter(s=>homeSections(navMode).includes(s)).map(s=><a href={`${href(navMode==='casual'?'/casual/':'/')}#${s}`} data-section-link={s}>{sectionLabels[s]}</a>)}<ExternalNavigation mode={navMode}/></nav>)}
       <div class="header-actions">
         <div class="mode-switch" aria-label="Presentation mode"><a href={academicTarget} data-mode-link="academic" aria-current={mode==='academic'?'page':undefined}>Academic</a><a href={casualTarget} data-mode-link="casual" aria-current={mode==='casual'?'page':undefined}>Casual</a></div>
         <button class="icon-button" aria-label="Search website" data-search hidden><Icon name="search"/></button>
@@ -42,7 +43,7 @@ const copyrightYears=config.site.copyrightStartYear&&config.site.copyrightStartY
         <button class="icon-button menu-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-navigation" data-menu hidden><Icon name="list" class="menu-open"/><Icon name="x-lg" class="menu-close"/></button>
       </div>
     </header>
-    <nav id="mobile-navigation" class="mobile-nav" aria-label="Mobile navigation" hidden>{(['academic','casual'] as const).map(navMode=><div data-nav-mode={navMode} hidden={navMode!==mode}>{(config.modes[navMode].navigation??homeSections(navMode)).filter(s=>homeSections(navMode).includes(s)).map(s=><a href={`${href(navMode==='casual'?'/casual/':'/')}#${s}`}>{sectionLabels[s]}</a>)}</div>)}</nav>
+    <nav id="mobile-navigation" class="mobile-nav" aria-label="Mobile navigation" hidden>{(['academic','casual'] as const).map(navMode=><div data-nav-mode={navMode} hidden={navMode!==mode}>{(config.modes[navMode].navigation??homeSections(navMode)).filter(s=>homeSections(navMode).includes(s)).map(s=><a href={`${href(navMode==='casual'?'/casual/':'/')}#${s}`}>{sectionLabels[s]}</a>)}<ExternalNavigation mode={navMode}/></div>)}</nav>
     </div>
     {home&&<FeatureBanner mode={mode}/>}
     <main id="main" data-pagefind-body><slot/></main>
