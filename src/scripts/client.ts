@@ -1,3 +1,4 @@
+import {watchGiscusTheme} from './giscus-theme';
 const base=document.body.dataset.base || '/';
 const mode=new URLSearchParams(location.search).get('mode')==='casual'||document.body.dataset.mode==='casual'?'casual':'academic';
 document.documentElement.dataset.mode=mode;
@@ -24,7 +25,12 @@ if(backToTop){
     window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
   });
 }
-document.querySelector('[data-theme-toggle]')?.addEventListener('click',()=>{const theme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('color-theme',theme);}catch{}document.querySelectorAll<HTMLIFrameElement>('.giscus-frame').forEach(f=>f.contentWindow?.postMessage({giscus:{setConfig:{theme}}},'https://giscus.app'));});
+watchGiscusTheme();
+document.querySelector('[data-theme-toggle]')?.addEventListener('click',()=>{const theme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('color-theme',theme);}catch{}});
+const systemTheme=matchMedia('(prefers-color-scheme: dark)');
+const followSystemTheme=()=>{try{if(localStorage.getItem('color-theme'))return;}catch{}document.documentElement.dataset.theme=systemTheme.matches?'dark':'light';};
+systemTheme.addEventListener('change',followSystemTheme);
+window.addEventListener('storage',event=>{if(event.key==='color-theme'||event.key===null){if(event.newValue==='light'||event.newValue==='dark')document.documentElement.dataset.theme=event.newValue;else followSystemTheme();}});
 const menu=document.querySelector<HTMLButtonElement>('[data-menu]')!,mobile=document.querySelector<HTMLElement>('.mobile-nav')!;
 const setMenuOpen=(open:boolean)=>{mobile.hidden=!open;menu.setAttribute('aria-expanded',String(open));menu.setAttribute('aria-label',open?'Close navigation':'Open navigation');};
 menu?.addEventListener('click',()=>setMenuOpen(Boolean(mobile.hidden)));
@@ -34,6 +40,12 @@ document.addEventListener('click',e=>{if(!mobile.hidden&&e.target instanceof Nod
 matchMedia('(max-width:1000px)').addEventListener('change',()=>setMenuOpen(false));
 document.querySelectorAll<HTMLElement>('[data-gallery]').forEach(gallery=>{const buttons=[...gallery.querySelectorAll<HTMLButtonElement>('[data-filter]')];const apply=(button:HTMLButtonElement)=>{buttons.forEach(b=>{b.classList.remove('active');b.setAttribute('aria-pressed','false');});button.classList.add('active');button.setAttribute('aria-pressed','true');let count=0;gallery.querySelectorAll<HTMLElement>('[data-category]').forEach(card=>{card.hidden=button.dataset.filter!=='all'&&card.dataset.category!==button.dataset.filter;if(!card.hidden)count++;});gallery.querySelector('[data-filter-status]')!.textContent=`Showing ${count} ${gallery.dataset.galleryLabel}`;};buttons.forEach(button=>button.addEventListener('click',()=>apply(button)));const fromHash=buttons.find(button=>button.dataset.filter===location.hash.slice(1));if(fromHash)apply(fromHash);});
 document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach(b=>b.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(b.dataset.copy!);toast('BibTeX copied.');}catch{toast('Copy unavailable. Use the .bib download instead.');}}));
+document.querySelectorAll<HTMLAnchorElement>('[data-copy-contact]').forEach(anchor=>anchor.addEventListener('click',async event=>{
+  if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+  event.preventDefault();
+  try{await navigator.clipboard.writeText(anchor.dataset.copyContact!);toast(`${anchor.dataset.contactLabel} ID copied.`);}
+  catch{location.assign(anchor.href);}
+}));
 async function copyHeadingLink(anchor:HTMLAnchorElement,event:MouseEvent){
   if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
   event.preventDefault();

@@ -13,6 +13,7 @@ Quick links: [Homepage curation](#homepage-curation) · [Current work and plans]
 | `site` | Title, description, origin URL, base path, language, optional favicon and copyright start year |
 | `identity` | Name, initials and role; optional handle, institution, location, email, address, contact note, photo, photo credit and CV path |
 | `socials` | Links with a label, URL, optional Font Awesome icon and optional mode visibility |
+| `externalLinks` | Optional links appended to desktop/mobile navigation, with an external-site indicator and optional mode visibility |
 | `theme` | Academic and Casual accent colors in six-digit hex form |
 | `banner` | Optional homepage feature image, caption, link and mode visibility |
 | `toc` | Enable automatic detail-page tables of contents (default `true`); per-record `toc` overrides it |
@@ -24,7 +25,19 @@ Quick links: [Homepage curation](#homepage-curation) · [Current work and plans]
 | `blog` | Optional external blog integration: original URL, JSON Feed URL and content-relative snapshot file |
 | `comments` | Optional Giscus repository/category IDs, with pathname mapping |
 
+Giscus follows the site's light/dark theme, including changes made while comments are loading. Without a saved manual choice, the site follows changes to the operating system's colour scheme. A manual choice is retained across pages and synchronized between open tabs on the same origin; the existing discussion and comment draft remain in place when the theme changes.
+
 `site.url` is the origin URL, such as `https://example.github.io`. Set `site.base` to `/` for a root site, or `/portfolio/` for a project site. It must start and end with `/`. Templates prefix local paths automatically. Do not include the base in content paths.
+
+Use `externalLinks` for independently hosted destinations such as a blog. Each link requires a `label` and absolute HTTP(S) `href`; optional `icon` uses the existing Font Awesome syntax, and `modes` defaults to both Academic and Casual. Links retain their exact URL when switching presentation mode and open in the same tab. The external-site icon and accessible description are added automatically, including in the mobile menu. Omit the list to keep navigation unchanged.
+
+```yaml
+externalLinks:
+  - label: Blog
+    href: https://example.github.io/blog/
+    icon: solid:book-open
+    modes: [academic, casual]
+```
 
 Set `site.favicon` to a local public asset path (for example `/favicon.svg`) or an HTTPS image URL to use your own browser-tab icon on every page and in both modes. Local paths receive `site.base` automatically, and missing local files fail build validation. Omit it to retain the generated initials icon. SVG, ICO and PNG files can be served from `public/`; the browser detects the image format.
 
@@ -48,7 +61,7 @@ Homepage content is chosen in each record’s `home` metadata. Site configuratio
 
 Available sections are `research`, `now`, `news`, `publications`, `projects`, `cv`, `writing`, `interests`, `about` and `contact`. Sections and navigation entries must be unique; desktop navigation can only point to enabled sections. Omitting `navigation` uses the standard desktop subset, including `now` when present. Mobile navigation lists all enabled sections. Empty `now`, `news`, `publications` and `projects` sections and their navigation links are hidden.
 
-Social links default to both modes. For a Casual-only game platform:
+Social links default to both modes. Social URLs also accept QQ client contact links (`tencent://AddContact/?uin=123456789`); these open the installed QQ client. Include the number in the label if visitors should also be able to copy it manually. Font Awesome brand icons include `brands:bilibili` and `brands:qq`. For a Casual-only game platform:
 
 ```yaml
 socials:
@@ -57,6 +70,8 @@ socials:
     icon: brands:itch-io
     modes: [casual]
 ```
+
+For a contact ID without a profile URL, add `copy: your-id` to a social entry. Clicking copies that value and announces success; `href` remains required as a fallback page where visitors can find the ID if JavaScript or clipboard access is unavailable. Only the label is displayed. WeChat uses `icon: brands:weixin`.
 
 Free icons accept `brands:<name>` or `solid:<name>`. The fonts are bundled locally; a hosted icon kit is not required.
 

@@ -33,6 +33,31 @@ test('CV downloads support independent language, region and script tags',()=>{
   assert.equal(configSchema.parse({...original,identity:{...original.identity,cv}}).identity.cv?.length,languages.length);
   for(const lang of ['', 'en_US','not a language','zh--CN'])assert.throws(()=>configSchema.parse({...original,identity:{...original.identity,cv:[{label:'CV',href:'/cv.pdf',lang}]}}));
 });
+test('external navigation links require HTTP URLs and support independent mode visibility',()=>{
+  const original=parse(readFileSync('examples/einstein/site.config.yaml','utf8'));
+  assert.deepEqual(configSchema.parse(original).externalLinks,[]);
+  const links=[{label:'Blog',href:'https://example.org/blog/',icon:'solid:book-open'},{label:'Games',href:'https://example.org/games/',modes:['casual']}];
+  const configured=configSchema.parse({...original,externalLinks:links}).externalLinks;
+  assert.deepEqual(configured[0].modes,['academic','casual']);
+  assert.deepEqual(configured[1].modes,['casual']);
+  for(const href of ['/blog/','//example.org','javascript:alert(1)','data:text/html,test','mailto:me@example.org'])assert.throws(()=>configSchema.parse({...original,externalLinks:[{label:'Blog',href}]}));
+  for(const patch of [{label:''},{icon:'<svg>'},{modes:[]},{modes:['unknown']}])assert.throws(()=>configSchema.parse({...original,externalLinks:[{...links[0],...patch}]}));
+});
+test('QQ social links preserve the client contact URL and mode visibility',()=>{
+  const original=parse(readFileSync('examples/einstein/site.config.yaml','utf8'));
+  const link={label:'QQ',href:'tencent://AddContact/?fromId=45&uin=123456789',icon:'brands:qq',modes:['casual']};
+  const configured=configSchema.parse({...original,socials:[link]}).socials[0];
+  assert.equal(href(configured.href,'casual'),link.href);
+  assert.deepEqual(configured.modes,['casual']);
+  for(const href of ['tencent://AddContact/','tencent://AddContact/?uin=invalid','tencent://OtherAction/?uin=123','javascript:alert(1)','data:text/html,test'])assert.throws(()=>configSchema.parse({...original,socials:[{...link,href}]}));
+});
+test('copyable social contacts keep a fallback URL and reject empty IDs',()=>{
+  const original=parse(readFileSync('examples/einstein/site.config.yaml','utf8'));
+  const link={label:'WeChat',href:'https://example.org/contact/#wechat',copy:'example-id',icon:'brands:weixin',modes:['casual']};
+  assert.equal(configSchema.parse({...original,socials:[link]}).socials[0].copy,'example-id');
+  assert.throws(()=>configSchema.parse({...original,socials:[{...link,copy:''}]}));
+  assert.throws(()=>configSchema.parse({...original,socials:[{...link,href:undefined}]}));
+});
 test('mode profile overrides are optional and independent',()=>{
   const original=parse(readFileSync('examples/einstein/site.config.yaml','utf8'));
   const configured=configSchema.parse({...original,modes:{...original.modes,academic:{...original.modes.academic,sidebar:undefined},casual:{...original.modes.casual,sidebar:true,email:'casual@example.org',address:'',photo:'https://example.org/alternate-avatar.png'}}});

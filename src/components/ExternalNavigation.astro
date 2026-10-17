@@ -1,0 +1,7 @@
+---
+import Icon from './Icon.astro';
+import {config,type Mode} from '../lib/content';
+interface Props {mode:Mode;}
+const {mode}=Astro.props;
+---
+{config.externalLinks.filter(link=>link.modes.includes(mode)).map(link=><a class="external-nav-link" href={link.href} data-mode-fixed>{link.icon&&<Icon name={link.icon}/>}<span>{link.label}</span><Icon name="arrow-up-right"/><span class="sr-only"> (external site)</span></a>)}
