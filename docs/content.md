@@ -347,7 +347,7 @@ Optional `overview: {purpose, contribution, outcome}` gives a project detail pag
 
 Use established technical names from the original paper or official documentation (for example, Tiled Shading and Clustered Shading). Distinguish APIs from libraries, software fallbacks from hardware acceleration, and fitted approximations from complete algorithms or colour-management pipelines. Describe completed, experimental and planned work separately. Retain original titles in external article links and bibliographic records; a summary can explain them without silently renaming the source.
 
-Homepage writing defaults to **Featured writing**; override `sectionTitles.writing` or `sectionLabels.writing` to suit your editorial selection. Use `sectionTitles.news: Milestones` for infrequent announcements without changing existing URLs or section IDs.
+The homepage posts section defaults to **Featured posts**, with **Posts** as its navigation label; override `sectionTitles.writing` or `sectionLabels.writing` to suit your editorial selection. Use `sectionTitles.news: Milestones` for infrequent announcements without changing existing URLs or section IDs.
 
 Projects without an image render as text cards at their natural height. The all-projects page remains a shared catalog. Category fragments such as `/projects/#work` initialize the filter.
 

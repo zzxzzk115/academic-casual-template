@@ -93,7 +93,7 @@ export function href(path: string, mode?: Mode): string {
 }
 export const dateLabel = (date?: string) => date ? new Intl.DateTimeFormat('en-GB', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'Europe/London' }).format(new Date(date)) : '';
 export const yearLabel = (date: string) => new Date(date).getUTCFullYear().toString();
-export const sectionLabels: Record<string,string> = { research:'Research', now:'Now', news:'News', publications:'Publications', projects:'Projects', cv:'Experience', writing:'Writing', interests:'Interests', about:'About', contact:'Contact', ...config.sectionLabels };
+export const sectionLabels: Record<string,string> = { research:'Research', now:'Now', news:'News', publications:'Publications', projects:'Projects', cv:'Experience', writing:'Posts', interests:'Interests', about:'About', contact:'Contact', ...config.sectionLabels };
 
 export const routes: Route[] = [
   { path:'/projects/', title:config.sectionLabels.projects||'Projects', kind:'projects', description:'Selected work and research.' },
