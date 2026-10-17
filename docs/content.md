@@ -206,7 +206,15 @@ All three groups share the same entry structure. An optional `items` list adds o
 
 The optional `updated` date is an explicit editorial date (`YYYY-MM-DD`), never the build date. The groups display as **Working on**, **Exploring** and **Up next**. Empty groups are omitted. A missing file or a mode without any items produces no section or navigation link. Use mode-specific `sectionTitles.now`, for example **Current focus** and **On my workbench**, to change the section heading. These are brief public updates; tentative plans do not need deadlines.
 
-Project card images preserve their source aspect ratio and show the complete image. Prefer a real application capture or an SVG diagram; avoid adding decorative window frames to the asset.
+Project card images default to `imageFit: cover`, filling the thumbnail frame without stretching and cropping excess content. Set `imageFit: contain` to show the complete image inside the same frame; mismatched aspect ratios may leave space around it. The frame stays approximately 1.7:1, or 1.5:1 for the leading wide Casual card.
+
+```yaml
+image: /assets/img/project.webp
+imageAlt: The application running a representative scene
+imageFit: contain # cover (default) or contain
+```
+
+This setting affects project cards on both homepages and the project archive. Detail-body images and the optional homepage banner retain their existing presentation. Prefer a real application capture or an SVG diagram, and avoid decorative window frames or padding baked into the source image.
 
 ## Homepage curation
 
@@ -324,7 +332,7 @@ links:
 ---
 ```
 
-Required fields are `id`, `title`, `description` and `legacyPath`. The path name retains migration terminology but is also the canonical route for new content. IDs are stable and unique across projects, posts and news. Public paths must end in `/` and remain unique. Optional fields also include `image`, `imageAlt`, `categories`, `date`, `comments` and `home`. Posts and news should include a quoted ISO timestamp.
+Required fields are `id`, `title`, `description` and `legacyPath`. The path name retains migration terminology but is also the canonical route for new content. IDs are stable and unique across projects, posts and news. Public paths must end in `/` and remain unique. Optional fields also include `image`, `imageAlt`, `imageFit`, `categories`, `date`, `comments` and `home`. Posts and news should include a quoted ISO timestamp.
 
 Use the shared [`home` rules](#homepage-curation) for homepage visibility, mode-specific order and the Casual hero.
 

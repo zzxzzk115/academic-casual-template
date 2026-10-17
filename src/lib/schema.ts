@@ -56,7 +56,9 @@ export type Home = z.infer<typeof homeSchema>;
 export const entrySchema = z.object({
   id: z.string().regex(/^[a-z0-9_-]+$/), title: z.string().min(1), description: z.string().min(1),
   legacyPath: z.string().regex(/^\/[\w/-]+\/$/),
-  image: z.string().optional(), imageAlt: z.string().optional(), category: z.string().default('work'), categories: z.array(z.string()).default([]), tags: z.array(z.string()).default([]),
+  image: z.string().optional(), imageAlt: z.string().optional(),
+  imageFit:z.enum(['cover','contain']).default('cover'),
+  category: z.string().default('work'), categories: z.array(z.string()).default([]), tags: z.array(z.string()).default([]),
   modes: z.array(z.enum(modes)).default(['academic', 'casual']), order: z.number().default(100),
   date: z.preprocess(v=>v instanceof Date?v.toISOString():v,z.string().optional()), comments: z.boolean().default(false),
   home: homeSchema,
