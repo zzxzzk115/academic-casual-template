@@ -1,9 +1,12 @@
 import MarkdownIt from 'markdown-it';
+import type Token from 'markdown-it/lib/token.mjs';
 import { createHighlighter } from 'shiki';
 import { href } from './content';
 const highlighter = await createHighlighter({ themes:['github-light','github-dark'], langs:['cpp','csharp','cmake','bash','json','lua','python','typescript','javascript','yaml','glsl','xml'] });
 const md = new MarkdownIt({ html:true, linkify:true, typographer:true });
 const escape = md.utils.escapeHtml;
+export type MarkdownHeading = {id:string;label:string;depth:number};
+const headingLabel = (inline:Token):string => (inline.children||[]).filter((token)=>['text','code_inline','image'].includes(token.type)).map((token)=>token.content).join('')||inline.content;
 md.renderer.rules.table_open = (tokens,index,options,_env,self) =>
   `<div class="table-scroll" role="region" aria-label="Scrollable table" tabindex="0">${self.renderToken(tokens,index,options)}`;
 md.renderer.rules.table_close = (tokens,index,options,_env,self) =>
@@ -28,6 +31,7 @@ md.core.ruler.push('heading_anchors',state=>{
     while(used.has(id)||(reserved.has(id)&&id!==explicit?.[1]))id=`${base}-${suffix++}`;
     used.add(id);
     if(explicit){inline.content=text.replace(explicit[0],'');for(const child of inline.children||[])if(child.type==='text')child.content=child.content.replace(/\s*\{#[\w-]+\}\s*$/,'');}
+    (state.env.headings??=[]).push({id,label:headingLabel(inline),depth:Number(token.tag.slice(1))});
     token.attrSet('id',id);
     token.attrJoin('class','has-heading-anchor');
   }
@@ -35,7 +39,7 @@ md.core.ruler.push('heading_anchors',state=>{
 md.renderer.rules.heading_close = (tokens,index,options,_env,self) => {
   const id=tokens[index-2].attrGet('id')!;
   const inline=tokens[index-1];
-  const label=(inline.children||[]).filter(token=>['text','code_inline','image'].includes(token.type)).map(token=>token.content).join('')||inline.content;
+  const label=headingLabel(inline);
   return ` <a class="heading-anchor" href="#${encodeURIComponent(id)}" data-copy-heading data-pagefind-ignore aria-label="${escape(`Copy link to ${label}`)}" title="Copy link"><span aria-hidden="true">#</span></a>${self.renderToken(tokens,index,options)}`;
 };
 for(const name of ['image','link_open']) {
@@ -47,6 +51,11 @@ for(const name of ['image','link_open']) {
     return original?original(tokens,index,options,env,self):self.renderToken(tokens,index,options);
   };
 }
-export const renderMarkdown = (body:string) => md.render(body);
+export function renderMarkdownDocument(body:string){
+  const env:{headings:MarkdownHeading[]}={headings:[]};
+  const html=md.render(body,env);
+  return {html,headings:env.headings.filter(h=>h.depth===2||h.depth===3)};
+}
+export const renderMarkdown = (body:string) => renderMarkdownDocument(body).html;
 
 export const renderInlineMarkdown = (body:string) => md.renderInline(body);

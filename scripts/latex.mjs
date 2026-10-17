@@ -1,8 +1,8 @@
-import {appendFileSync,copyFileSync,existsSync,mkdirSync,readFileSync,realpathSync,rmSync,statSync} from 'node:fs';
+import {appendFileSync,copyFileSync,existsSync,mkdirSync,readFileSync,realpathSync,readdirSync,rmSync,statSync} from 'node:fs';
 import {basename,dirname,isAbsolute,join,relative,resolve,sep} from 'node:path';
 import {spawnSync} from 'node:child_process';
-import {randomUUID} from 'node:crypto';
-import {pathToFileURL} from 'node:url';
+import {randomUUID,createHash} from 'node:crypto';
+import {pathToFileURL,fileURLToPath} from 'node:url';
 import {parse} from 'yaml';
 import {latexSchema} from '../src/lib/schema.ts';
 
@@ -26,21 +26,59 @@ export function readLatexPlan(directory){
     return {...doc,sourcePath:source,compiled:contained(root,join(dirname(doc.source),'.latex-build',`${basename(doc.source,'.tex')}.pdf`)),destination:contained(root,`public${doc.output}`)};
   });
   if(new Set(documents.map(doc=>doc.sourcePath)).size!==documents.length)throw new Error('Duplicate resolved LaTeX source');
-  return {root,engine:settings.engine,documents};
+  const inputs=settings.inputs.map(input=>{const path=contained(root,input);if(!existsSync(path))throw new Error(`Missing LaTeX input: ${input}`);return path;});
+  return {root,engine:settings.engine,documents,inputs};
+}
+// Hash project inputs, not checkout locations, timestamps or previous build outputs.
+export function latexCacheKey(plan,toolchain){
+  if(!plan)return '';
+  const files=new Map(),outputs=new Set(plan.documents.map(doc=>doc.destination));
+  const visit=(path,ancestors=new Set())=>{
+    const rel=relative(plan.root,path).split(sep).join('/');
+    const actual=realpathSync(path),within=relative(plan.root,actual);
+    if(within==='..'||within.startsWith(`..${sep}`)||isAbsolute(within))throw new Error(`Symlink escapes LaTeX inputs: ${rel}`);
+    if(statSync(path).isDirectory()){
+      if(ancestors.has(actual))throw new Error(`Cyclic LaTeX input directory: ${rel}`);
+      const next=new Set(ancestors).add(actual);
+      for(const entry of readdirSync(path).sort())if(!['.git','.latex-build','node_modules'].includes(entry))visit(join(path,entry),next);
+    }else if(statSync(path).isFile()&&!outputs.has(path))files.set(rel,readFileSync(path));
+    else if(!statSync(path).isFile())throw new Error(`Unsupported LaTeX input: ${rel}`);
+  };
+  for(const path of new Set([...plan.documents.map(doc=>dirname(doc.sourcePath)),...plan.inputs]))visit(path);
+  const hash=createHash('sha256');
+  const add=(label,bytes)=>{hash.update(JSON.stringify([label,bytes.length]));hash.update(bytes);};
+  add('plan',Buffer.from(JSON.stringify({engine:plan.engine,documents:plan.documents.map(({source,output})=>({source,output}))})));
+  const tooling=toolchain??['../.github/actions/compile-latex/action.yml','./latex.mjs'].map(path=>readFileSync(fileURLToPath(new URL(path,import.meta.url))));
+  for(const [index,bytes]of tooling.entries())add(`toolchain/${index}`,Buffer.from(bytes));
+  for(const [path,bytes]of [...files].sort(([a],[b])=>a<b?-1:a>b?1:0))add(path,bytes);
+  return hash.digest('hex');
+}
+function writeOutputs(outputFile,fields){
+  if(outputFile)for(const [key,value]of Object.entries(fields)){const delimiter=`latex_${randomUUID().replaceAll('-','')}`;appendFileSync(outputFile,`${key}<<${delimiter}\n${value}\n${delimiter}\n`);}
 }
 export function prepareLatex(plan,outputFile){
   if(outputFile){
-    const fields={enabled:String(!!plan),engine:plan?.engine??'',sources:plan?.documents.map(doc=>doc.source).join('\n')??''};
-    for(const [key,value]of Object.entries(fields)){const delimiter=`latex_${randomUUID().replaceAll('-','')}`;appendFileSync(outputFile,`${key}<<${delimiter}\n${value}\n${delimiter}\n`);}
+    writeOutputs(outputFile,{enabled:String(!!plan),engine:plan?.engine??'',sources:plan?.documents.map(doc=>doc.source).join('\n')??'','cache-key':latexCacheKey(plan),'cache-paths':plan?.documents.map(doc=>doc.compiled).join('\n')??''});
   }
   for(const doc of plan?.documents??[])rmSync(doc.compiled,{force:true});
+}
+function validPdf(file){
+  if(!existsSync(file))return false;
+  const bytes=readFileSync(file);
+  return bytes.length>=100&&bytes.subarray(0,5).toString()==='%PDF-'&&/%%EOF\s*$/.test(bytes.subarray(-1024).toString('latin1'));
+}
+export function checkLatexCache(plan,outputFile){
+  const valid=!!plan&&plan.documents.every(doc=>validPdf(doc.compiled));
+  if(!valid)for(const doc of plan?.documents??[])rmSync(doc.compiled,{force:true});
+  writeOutputs(outputFile,{valid:String(valid)});
+  console.log(valid?'Reusing validated cached LaTeX PDFs':'LaTeX PDFs need compilation');
+  return valid;
 }
 export function publishLatex(plan){
   if(!plan)return;
   for(const doc of plan.documents){
     if(!existsSync(doc.compiled))throw new Error(`Missing compiled PDF: ${doc.source}; compile before publishing`);
-    const pdf=readFileSync(doc.compiled);
-    if(pdf.length<100||pdf.subarray(0,5).toString()!=='%PDF-')throw new Error(`Invalid compiled PDF: ${doc.source}`);
+    if(!validPdf(doc.compiled))throw new Error(`Invalid compiled PDF: ${doc.source}`);
   }
   for(const doc of plan.documents){mkdirSync(dirname(doc.destination),{recursive:true});copyFileSync(doc.compiled,doc.destination);console.log(`${doc.source} -> ${doc.output}`);}
 }
@@ -56,11 +94,12 @@ export function buildLatex(plan){
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href){
   const args=process.argv.slice(2),command=args[0]&&!args[0].startsWith('--')?args.shift():'build';
-  if(!['build','prepare','publish'].includes(command))throw new Error('Use latex.mjs build|prepare|publish --content <directory>');
+  if(!['build','prepare','publish','check-cache'].includes(command))throw new Error('Use latex.mjs build|prepare|publish|check-cache --content <directory>');
   let directory=resolve('examples/einstein');
   if(args.length){if(args.length!==2||args[0]!=='--content')throw new Error('Use --content <directory>');directory=args[1];}
   const plan=readLatexPlan(directory);
   if(command==='prepare')prepareLatex(plan,process.env.GITHUB_OUTPUT);
+  else if(command==='check-cache')checkLatexCache(plan,process.env.GITHUB_OUTPUT);
   else if(command==='publish')publishLatex(plan);
   else buildLatex(plan);
 }

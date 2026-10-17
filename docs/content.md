@@ -15,6 +15,7 @@ Quick links: [Homepage curation](#homepage-curation) · [Current work and plans]
 | `socials` | Links with a label, URL, optional Font Awesome icon and optional mode visibility |
 | `theme` | Academic and Casual accent colors in six-digit hex form |
 | `banner` | Optional homepage feature image, caption, link and mode visibility |
+| `toc` | Enable automatic detail-page tables of contents (default `true`); per-record `toc` overrides it |
 | `latex` | Optional LaTeX engine and source-to-PDF output mappings |
 | `hero` | Enable the optional illustration, set its label and intensity |
 | `modes` | Ordered sections, optional desktop navigation, section headings, `showToolkit` and an optional responsive `sidebar` for each mode |
@@ -98,13 +99,19 @@ After dependency installation, add this step **before** the site build in a cont
     content-directory: content
 ```
 
-The action skips TeX entirely when `latex` is omitted. Configured sites use the pinned LaTeX Action release and TeX Live 2025, build each root file in its own source directory, and publish PDFs only after all configured documents compile and validate. It uses `latexmk`, disables shell escape and does not load `.latexmkrc`. Compile errors stop deployment; an old public PDF is not used to conceal a failed build. Use UTF-8 sources and fonts available in TeX Live; `ctex` with `fontset=fandol` supports Chinese without committing proprietary fonts.
+CI caches the configured PDFs as one bundle using SHA-256 over the engine and source/output mappings, every file beneath each source directory, any additional `latex.inputs`, and the compilation script/action (including the pinned TeX image and compiler options). Only the compiled PDFs are cached. Generated `.latex-build` directories, Git internals, `node_modules` and configured public PDF outputs are excluded from the input hash. The key is independent of checkout paths and timestamps. Unrelated website edits do not invalidate a CV kept in its own source directory. Keep LaTeX sources in a dedicated directory rather than the content root.
+
+Declare files or directories outside the source directories when the documents read them, for example `latex.inputs: [latex/shared, public/assets/cv-figures]`. These paths are relative to the content checkout; missing paths, directory cycles and symlinks outside the checkout fail preparation. Include shared classes, bibliography data, images and bundled fonts. Network inputs and mutable external files are not supported by this cache contract; use the pinned TeX distribution and repository-managed inputs.
+
+An exact cache hit is validated before publication and skips the TeX container entirely. A miss, partial restore or invalid PDF triggers compilation. There are no prefix fallback keys that could select an older source version. GitHub controls cache scope and retention, so a first run, another PR scope or cache eviction may still require compilation. Set composite-action input `cache: 'false'` to force a fresh build. The action exposes `cache-hit` and `compiled` outputs for workflow checks. When any input in the bundle changes, all configured PDFs are rebuilt together.
+
+The action skips TeX entirely when `latex` is omitted. Configured sites use the pinned LaTeX Action release and TeX Live 2025, build each root file in its own source directory on a cache miss, and publish PDFs only after all configured documents are present and validate. It uses `latexmk`, disables shell escape and does not load `.latexmkrc`. Compile errors stop deployment; an old public PDF is not used to conceal a failed build. Use UTF-8 sources and fonts available in TeX Live; `ctex` with `fontset=fandol` supports Chinese without committing proprietary fonts.
 
 Choose typography in each document rather than in the template: `ctex`/`xeCJK` for Chinese, appropriate CJK packages and fonts for Japanese/Korean, and `babel` or `polyglossia` with suitable fonts for other scripts and RTL layout. Use XeLaTeX or LuaLaTeX for Unicode-heavy documents; pdfLaTeX is for documents designed for that engine. A language tag alone does not install fonts or shape text. Keep font licenses with any bundled fonts, check for missing glyphs and unintended substitutions, and embed document fonts in PDFs so readers need no local font installation. The current CI smoke tests cover English and Chinese; other languages require their own compile and visual checks.
 
 The action needs a Linux runner with Docker, Node 24 and the template's installed dependencies. It does not push generated files back to Git or require Overleaf credentials.
 
-For local compilation with `latexmk` and the configured TeX engine installed, run `pnpm latex --content <content-directory>` from the template checkout, then the normal site build. Intermediates stay in `.latex-build/` beside each root file. Ignore those directories in the content repository. A site may keep generated PDF snapshots for local preview without TeX; CI still rebuilds and replaces them from source on every run. Static development/build commands do not implicitly install or invoke TeX.
+For local compilation with `latexmk` and the configured TeX engine installed, run `pnpm latex --content <content-directory>` from the template checkout, then the normal site build. Intermediates stay in `.latex-build/` beside each root file. Ignore those directories in the content repository. A site may keep generated PDF snapshots for local preview without TeX; CI replaces them with validated PDFs compiled from the same source inputs, reusing an exact cache match when available. Static development/build commands do not implicitly install or invoke TeX.
 
 The template CI also compiles minimal English and Chinese documents as a smoke test. The Einstein starter has no invented CV or configured LaTeX build and continues to work without TeX.
 
@@ -206,7 +213,15 @@ All three groups share the same entry structure. An optional `items` list adds o
 
 The optional `updated` date is an explicit editorial date (`YYYY-MM-DD`), never the build date. The groups display as **Working on**, **Exploring** and **Up next**. Empty groups are omitted. A missing file or a mode without any items produces no section or navigation link. Use mode-specific `sectionTitles.now`, for example **Current focus** and **On my workbench**, to change the section heading. These are brief public updates; tentative plans do not need deadlines.
 
-Project card images preserve their source aspect ratio and show the complete image. Prefer a real application capture or an SVG diagram; avoid adding decorative window frames to the asset.
+Project card images default to `imageFit: cover`, filling the thumbnail frame without stretching and cropping excess content. Set `imageFit: contain` to show the complete image inside the same frame; mismatched aspect ratios may leave space around it. The frame stays approximately 1.7:1, or 1.5:1 for the leading wide Casual card.
+
+```yaml
+image: /assets/img/project.webp
+imageAlt: The application running a representative scene
+imageFit: contain # cover (default) or contain
+```
+
+This setting affects project cards on both homepages and the project archive. Detail-body images and the optional homepage banner retain their existing presentation. Prefer a real application capture or an SVG diagram, and avoid decorative window frames or padding baked into the source image.
 
 ## Homepage curation
 
@@ -324,11 +339,13 @@ links:
 ---
 ```
 
-Required fields are `id`, `title`, `description` and `legacyPath`. The path name retains migration terminology but is also the canonical route for new content. IDs are stable and unique across projects, posts and news. Public paths must end in `/` and remain unique. Optional fields also include `image`, `imageAlt`, `categories`, `date`, `comments` and `home`. Posts and news should include a quoted ISO timestamp.
+Required fields are `id`, `title`, `description` and `legacyPath`. The path name retains migration terminology but is also the canonical route for new content. IDs are stable and unique across projects, posts and news. Public paths must end in `/` and remain unique. Optional fields also include `image`, `imageAlt`, `imageFit`, `categories`, `date`, `comments` and `home`. Posts and news should include a quoted ISO timestamp.
 
 Use the shared [`home` rules](#homepage-curation) for homepage visibility, mode-specific order and the Casual hero.
 
 Optional `overview: {purpose, contribution, outcome}` gives a project detail page a compact opening summary, labeled **Purpose**, **My contribution** and **Outcome**. Supply all three as plain text; use the Markdown body for evidence, images and technical detail. This replaces the repeated description under the page title; the description remains in cards, search and page metadata. Projects without an overview keep their existing layout.
+
+Use established technical names from the original paper or official documentation (for example, Tiled Shading and Clustered Shading). Distinguish APIs from libraries, software fallbacks from hardware acceleration, and fitted approximations from complete algorithms or colour-management pipelines. Describe completed, experimental and planned work separately. Retain original titles in external article links and bibliographic records; a summary can explain them without silently renaming the source.
 
 Homepage writing defaults to **Featured writing**; override `sectionTitles.writing` or `sectionLabels.writing` to suit your editorial selection. Use `sectionTitles.news: Milestones` for infrequent announcements without changing existing URLs or section IDs.
 
@@ -337,6 +354,12 @@ Projects without an image render as text cards at their natural height. The all-
 Markdown supports code highlighting, tables, Mermaid fences, raw HTML and custom anchors (`## Method {#method}`). Raw HTML is for trusted content authors. Major content remains readable without JavaScript; diagrams retain their source, and interactive filtering/search/copying progressively enhance the page.
 
 All Markdown headings (`#` through `######`) have a `#` permalink control in the left margin, revealed on hover or keyboard focus and always visible on touch devices. The heading is underlined on hover or focus. Click its text or the `#` control to copy the current page URL, including its deployment base, query parameters and heading fragment; existing links inside a heading retain their own destinations. Selecting heading text does not trigger copying. Existing authored `{#id}` anchors and English slugs are retained; repeated generated slugs receive numeric suffixes. Headings with no English slug use a Unicode slug or `section` fallback. Homepage section headings and detail-page titles also provide copy-link controls. Without JavaScript, controls act as ordinary fragment links; if clipboard access is unavailable, clicking navigates to the fragment so the address-bar URL can be copied.
+
+### Detail-page table of contents
+
+Project and article pages automatically show **On this page** when the Markdown body contains at least two level-two or level-three headings (`##` / `###`). The table of contents uses the same generated or authored `{#id}` anchors as heading permalinks, including repeated titles and Unicode text. It skips fenced code and does not add the page title, summaries or comments. Heading labels retain their text without interactive inline markup.
+
+Set top-level `toc: false` in `site.config.yaml` to disable it site-wide; a Markdown record may override the default with frontmatter `toc: true` or `toc: false`. At widths of 1200px or more, it occupies a sticky right column. Below that width it becomes a collapsible panel before the body, initially closed when JavaScript is available. Links work without JavaScript (the panel then starts expanded), preserve the current mode/query string, and respect the sticky navigation offset. Pages with fewer than two eligible headings reserve no TOC space.
 
 ## Publications
 

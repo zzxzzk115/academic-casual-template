@@ -88,3 +88,11 @@ if(mermaids.length){
   mermaids.forEach(el=>observer.observe(el));
 }
 document.querySelectorAll<HTMLElement>('[data-comments]').forEach(el=>{const observer=new IntersectionObserver(entries=>{if(!entries.some(e=>e.isIntersecting))return;observer.disconnect();const script=document.createElement('script');script.src='https://giscus.app/client.js';script.async=true;script.crossOrigin='anonymous';for(const key of ['repo','repoId','category','categoryId'])script.setAttribute(`data-${key.replace(/[A-Z]/g,c=>'-'+c.toLowerCase())}`,el.dataset[key]!);Object.entries({mapping:'pathname',strict:'0',reactionsEnabled:'1',emitMetadata:'0',inputPosition:'bottom',theme:document.documentElement.dataset.theme||'light',lang:'en',loading:'lazy'}).forEach(([k,v])=>script.setAttribute(`data-${k.replace(/[A-Z]/g,c=>'-'+c.toLowerCase())}`,v));el.append(script);},{rootMargin:'200px'});observer.observe(el);});
+
+const toc=document.querySelector<HTMLDetailsElement>('[data-toc]');
+if(toc){
+  const roomy=matchMedia('(min-width:1200px)');
+  const updateToc=()=>{toc.open=roomy.matches;};
+  updateToc();
+  roomy.addEventListener('change',updateToc);
+}

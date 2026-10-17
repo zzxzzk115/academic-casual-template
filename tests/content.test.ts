@@ -58,6 +58,12 @@ test('optional homepage banners validate dimensions, links and mode visibility',
   assert.deepEqual(configSchema.parse({...original,banner:{...banner,modes:['academic']}}).banner?.modes,['academic']);
   for(const patch of [{width:0},{height:-1},{alt:''},{modes:[]},{href:'javascript:alert(1)'}]) assert.throws(()=>configSchema.parse({...original,banner:{...banner,...patch}}));
 });
+test('project thumbnail fill is optional and supports cover or contain',()=>{
+  const entry={id:'demo',title:'Demo',description:'An application',legacyPath:'/projects/demo/'};
+  assert.equal(entrySchema.parse(entry).imageFit,'cover');
+  assert.equal(entrySchema.parse({...entry,imageFit:'contain'}).imageFit,'contain');
+  assert.throws(()=>entrySchema.parse({...entry,imageFit:'stretch'}));
+});
 test('mode-aware links preserve query strings and publication fragments',()=>{
   assert.equal(href('/publications/#paper','casual'),'/publications/?mode=casual#paper');
   assert.equal(href('/projects/demo/?view=1#method','casual'),'/projects/demo/?view=1&mode=casual#method');
@@ -207,4 +213,16 @@ test('publications use the shared home metadata and retain every archive record'
     assert.deepEqual(parsed.casual,['chosen']);
     assert.doesNotMatch(parsed.copy,/home\s*=/);
   }finally{rmSync(fixture,{recursive:true,force:true});}
+});
+
+
+test('TOC defaults on site-wide and supports per-record overrides',()=>{
+  const original=parse(readFileSync('examples/einstein/site.config.yaml','utf8'));
+  assert.equal(configSchema.parse(original).toc,true);
+  assert.equal(configSchema.parse({...original,toc:false}).toc,false);
+  const entry={id:'demo',title:'Demo',description:'An application',legacyPath:'/projects/demo/'};
+  assert.equal(entrySchema.parse(entry).toc,undefined);
+  assert.equal(entrySchema.parse({...entry,toc:false}).toc,false);
+  assert.equal(entrySchema.parse({...entry,toc:true}).toc,true);
+  assert.throws(()=>entrySchema.parse({...entry,toc:'yes'}));
 });

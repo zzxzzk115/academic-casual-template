@@ -4,6 +4,16 @@ inputs:
   content-directory:
     description: Content checkout path relative to the workflow workspace
     required: true
+  cache:
+    description: Reuse PDFs when all declared inputs and the toolchain are unchanged; false forces compilation
+    default: 'true'
+outputs:
+  cache-hit:
+    description: Whether validated PDFs were reused without compilation
+    value: ${{ steps.cached.outputs.valid || 'false' }}
+  compiled:
+    description: Whether the TeX compiler ran
+    value: ${{ steps.compile.outcome == 'success' }}
 runs:
   using: composite
   steps:
@@ -14,8 +24,23 @@ runs:
         CONTENT_DIRECTORY: ${{ inputs.content-directory }}
         LATEX_SCRIPT: ${{ github.action_path }}/../../../scripts/latex.mjs
       run: node "$LATEX_SCRIPT" prepare --content "$CONTENT_DIRECTORY"
-    - name: Compile PDFs
+    - name: Restore LaTeX PDFs
+      if: steps.plan.outputs.enabled == 'true' && inputs.cache != 'false'
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      with:
+        path: ${{ steps.plan.outputs.cache-paths }}
+        key: latex-pdf-${{ runner.os }}-${{ runner.arch }}-${{ steps.plan.outputs.cache-key }}
+    - name: Validate restored PDFs
+      id: cached
       if: steps.plan.outputs.enabled == 'true'
+      shell: bash
+      env:
+        CONTENT_DIRECTORY: ${{ inputs.content-directory }}
+        LATEX_SCRIPT: ${{ github.action_path }}/../../../scripts/latex.mjs
+      run: node "$LATEX_SCRIPT" check-cache --content "$CONTENT_DIRECTORY"
+    - name: Compile PDFs
+      id: compile
+      if: steps.plan.outputs.enabled == 'true' && steps.cached.outputs.valid != 'true'
       uses: xu-cheng/latex-action@6549dc21effb2730855a1281407ecfcececc6c1b # 4.1.0
       with:
         docker_image: ghcr.io/xu-cheng/texlive-historic-alpine@sha256:73a48f4fc1d3ee7357c8ea5d274af161541c0981432da33339eed7ac1f8e083d # TeX Live 2025

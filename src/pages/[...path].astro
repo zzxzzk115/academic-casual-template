@@ -6,10 +6,13 @@ import ProjectGrid from '../components/ProjectGrid.astro';
 import Publications from '../components/Publications.astro';
 import Timeline from '../components/Timeline.astro';
 import {routes,projects,repositories,config,cv,cvDownloads,biography,href,dateLabel,type Route} from '../lib/content';
-import {renderMarkdown} from '../lib/markdown';
+import {renderMarkdown,renderMarkdownDocument} from '../lib/markdown';
+import TableOfContents from '../components/TableOfContents.astro';
 export function getStaticPaths(){return routes.map(route=>({params:{path:route.path.slice(1,-1)},props:{route}}));}
 const {route}=Astro.props as {route:Route};
 const entry=route.entry;
+const document=entry?renderMarkdownDocument(entry.body):undefined;
+const showToc=!!entry&&['project','post'].includes(entry.kind)&&(entry.toc??config.toc)&&!!document&&document.headings.length>=2;
 ---
 <Layout title={route.title} description={route.description || config.site.description} image={entry?.image}>
   <div class="detail-container">
@@ -23,7 +26,7 @@ const entry=route.entry;
     {route.kind==='list'&&<div class="writing-list">{route.entries?.map(e=><article><time datetime={e.date}>{dateLabel(e.date)}</time><h2><a href={href(e.legacyPath)} data-mode-preserve>{e.title} <Icon name="arrow-up-right"/></a></h2><p>{e.description}</p></article>)}</div>}
     {route.kind==='repositories'&&<div class="repo-list">{repositories.map((repo,i)=><a href={`https://github.com/${repo}`}><span>{(i+1).toString().padStart(2,'0')}</span><strong>{repo}</strong><span><Icon name="github"/> GitHub <Icon name="arrow-up-right"/></span></a>)}</div>}
     {entry?.kind==='project'&&entry.overview&&<dl class="project-overview">{[['Purpose',entry.overview.purpose],['My contribution',entry.overview.contribution],['Outcome',entry.overview.outcome]].map(([label,text])=><div><dt>{label}</dt><dd>{text}</dd></div>)}</dl>}
-    {entry&&<article class="prose" set:html={renderMarkdown(entry.body)}/>}
+    {entry&&<div class:list={{'entry-with-toc':showToc}}>{showToc&&<TableOfContents headings={document!.headings}/>}<article class="prose" set:html={document!.html}/></div>}
     {entry?.comments&&config.comments&&<section class="comments-section"><h2>Conversation</h2><div class="giscus" data-comments data-repo={config.comments.repo} data-repo-id={config.comments.repoId} data-category={config.comments.category} data-category-id={config.comments.categoryId}></div></section>}
   </div>
 </Layout>

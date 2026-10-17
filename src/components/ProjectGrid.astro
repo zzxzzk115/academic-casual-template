@@ -11,7 +11,7 @@ const labels=config.projectCategories;
   <div class="project-grid">
     {entries.map((p,i)=><article class:list={['project', { 'project-wide':i===0 && entries.length>2&&!!p.image,'project-text':!p.image }]} data-category={p.category}>
       {p.image&&<a class="project-image" href={href(p.legacyPath,mode)} aria-label={`Explore ${p.title}`}>
-        <img src={href(p.image)} alt={p.imageAlt||p.title} loading="lazy" decoding="async" width="960" height="600" />
+        <img style={`object-fit:${p.imageFit}`} src={href(p.image)} alt={p.imageAlt||p.title} loading="lazy" decoding="async" width="960" height="600" />
         <span class="project-arrow" aria-hidden="true" data-pagefind-ignore><Icon name="arrow-up-right"/></span>
       </a>}
       <div class="project-copy">

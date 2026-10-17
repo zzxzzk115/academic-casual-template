@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {renderMarkdown,renderInlineMarkdown} from '../src/lib/markdown';
+import {renderMarkdown,renderInlineMarkdown,renderMarkdownDocument} from '../src/lib/markdown';
 
 test('Markdown tables retain semantic headers, links and identifiers inside a keyboard-accessible scroll region',()=>{
   const output=renderMarkdown('| Branch | Role |\n| --- | --- |\n| [`dev-VRI`](https://example.org/dev-VRI) | Current graphics framework. |');
@@ -56,4 +56,12 @@ test('inline biography Markdown renders links without nesting paragraphs',()=>{
   assert.match(output,/<a href="https:\/\/example.org\/mentor\/">Dr Example<\/a>/);
   assert.match(output,/<strong>colleagues<\/strong>/);
   assert.doesNotMatch(output,/<\/?p(?: |>|\/)/);
+});
+
+
+test('TOC headings share rendered anchors and plain labels without code-block false positives',()=>{
+  const document=renderMarkdownDocument('# Page\n\n## **Intro** & `API` {#start}\n\n### [Details](https://example.org/)\n\n## Details\n\n## 你好\n\n#### Too deep\n\n```md\n## Not a heading\n```');
+  assert.deepEqual(document.headings,[{id:'start',label:'Intro & API',depth:2},{id:'detailshttpsexampleorg',label:'Details',depth:3},{id:'details',label:'Details',depth:2},{id:'你好',label:'你好',depth:2}]);
+  for(const heading of document.headings)assert.ok(document.html.includes(`id="${heading.id}"`));
+  assert.deepEqual(renderMarkdownDocument('Plain text.').headings,[]);
 });

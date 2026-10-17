@@ -13,9 +13,12 @@ const git=(...args)=>execFileSync('git',['-C',root,...args],{maxBuffer:32*1024*1
 const source=path=>git('show',`${manifest.sourceCommit}:${path}`).toString('utf8');
 const paths=git('ls-tree','-r','--name-only',manifest.sourceCommit).toString('utf8').trim().split('\n');
 const replacements=manifest.textReplacements||{};
-const canonical=text=>{
+const reviewedText=text=>{
   for(const [from,to]of Object.entries(replacements))text=text.replaceAll(from,to);
-  return text.replace(/\[!\[[^\]]*\]\(https:\/\/gh-card\.dev\/[^)]+\)\]\(([^)]+)\)/g,'[View repository ↗]($1)')
+  return text;
+};
+const canonical=text=>{
+  return reviewedText(text).replace(/\[!\[[^\]]*\]\(https:\/\/gh-card\.dev\/[^)]+\)\]\(([^)]+)\)/g,'[View repository ↗]($1)')
     .replace(/\s+(title|loading)="[^"]*"/g,'').replace(/!\[([^\]]*)\]\([^)]+\)/g,'![$1](image)')
     .replace(/\s+/g,' ').trim();
 };
@@ -64,7 +67,7 @@ const cv=parse(readFileSync(join(root,'content/cv.yaml'),'utf8'));
 const normalizedDate=value=>value==='Present'?value:/^\d{4}-\d{2}-\d{2}$/.test(value)&&new Date(value+'T00:00:00Z').toISOString().slice(0,10)===value?value:value.slice(0,7);
 const cvRecords=[];
 for(const kind of ['education','work'])for(const [i,original]of originalResume[kind].entries()){
-  const current=cv[kind][i];const checks={institution:current.institution===(original.institution||original.name),start:current.start===normalizedDate(original.startDate),end:current.end===normalizedDate(original.endDate),location:!original.location||current.location===original.location,url:!original.url||current.url===original.url,description:(!original.summary||current.description.includes(original.summary))&&(!original.score||current.description.includes(original.score))&&(original.courses||[]).every(c=>current.description.includes(c))};
+  const current=cv[kind][i];const checks={institution:current.institution===(original.institution||original.name),start:current.start===normalizedDate(original.startDate),end:current.end===normalizedDate(original.endDate),location:!original.location||current.location===original.location,url:!original.url||current.url===original.url,description:(!original.summary||current.description.includes(reviewedText(original.summary)))&&(!original.score||current.description.includes(reviewedText(original.score)))&&(original.courses||[]).every(c=>current.description.includes(reviewedText(c)))};
   if(Object.values(checks).some(v=>!v))failures.push(`Incomplete CV record: ${kind}/${i}`);
   cvRecords.push({kind,index:i,checks});
 }

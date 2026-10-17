@@ -10,6 +10,7 @@ const languageTag = z.string().min(1).refine(value => {
 const cvDownloadSchema = z.object({label:z.string().min(1),href:localOrExternal,lang:languageTag.optional()}).strict();
 export const latexSchema = z.object({
   engine:z.enum(['xelatex','lualatex','pdflatex']).default('xelatex'),
+  inputs:z.array(z.string().regex(/^(?:[\w.-]+\/)*[\w.-]+$/).refine(v=>!v.split('/').some(part=>part==='..'||part==='.'),'Use a content-relative input file or directory')).default([]),
   documents:z.array(z.object({
     source:z.string().regex(/^(?:[\w.-]+\/)*\w[\w.-]*\.tex$/).refine(v=>!v.split('/').includes('..'),'Use a content-relative .tex path'),
     output:z.string().regex(/^\/[\w/-]+\.pdf$/),
@@ -41,6 +42,7 @@ export const configSchema = z.object({
   projectCategories: z.record(z.string().regex(/^[a-z0-9_-]+$/), z.string().min(1)).default({work:'Research',library:'Libraries',fun:'Tools & apps',indie:'Games',retro:'Retro & emulation'}),
   blog: z.object({ href: localOrExternal, feedUrl: z.url().optional(), snapshot: z.string().optional() }).optional(),
   banner: z.object({image:z.string().min(1),alt:z.string().min(1),width:z.number().int().positive(),height:z.number().int().positive(),caption:z.string().min(1).optional(),href:localOrExternal.optional(),modes:z.array(z.enum(modes)).min(1).default(['academic','casual'])}).optional(),
+  toc: z.boolean().default(true),
   latex:latexSchema.optional(),
   comments: z.object({ repo: z.string(), repoId: z.string(), category: z.string(), categoryId: z.string(), mapping: z.literal('pathname') }).optional(),
 });
@@ -56,10 +58,13 @@ export type Home = z.infer<typeof homeSchema>;
 export const entrySchema = z.object({
   id: z.string().regex(/^[a-z0-9_-]+$/), title: z.string().min(1), description: z.string().min(1),
   legacyPath: z.string().regex(/^\/[\w/-]+\/$/),
-  image: z.string().optional(), imageAlt: z.string().optional(), category: z.string().default('work'), categories: z.array(z.string()).default([]), tags: z.array(z.string()).default([]),
+  image: z.string().optional(), imageAlt: z.string().optional(),
+  imageFit:z.enum(['cover','contain']).default('cover'),
+  category: z.string().default('work'), categories: z.array(z.string()).default([]), tags: z.array(z.string()).default([]),
   modes: z.array(z.enum(modes)).default(['academic', 'casual']), order: z.number().default(100),
   date: z.preprocess(v=>v instanceof Date?v.toISOString():v,z.string().optional()), comments: z.boolean().default(false),
   home: homeSchema,
+  toc: z.boolean().optional(),
   overview: z.object({ purpose: z.string().min(1), contribution: z.string().min(1), outcome: z.string().min(1) }).optional(),
   status: z.string().optional(), links: z.array(z.object({label:z.string(),href:localOrExternal,icon:z.string().regex(/^(brands|solid):[a-z0-9-]+$/).optional()})).default([]),
 });
