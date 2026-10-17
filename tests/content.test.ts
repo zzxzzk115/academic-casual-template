@@ -51,6 +51,13 @@ test('QQ social links preserve the client contact URL and mode visibility',()=>{
   assert.deepEqual(configured.modes,['casual']);
   for(const href of ['tencent://AddContact/','tencent://AddContact/?uin=invalid','tencent://OtherAction/?uin=123','javascript:alert(1)','data:text/html,test'])assert.throws(()=>configSchema.parse({...original,socials:[{...link,href}]}));
 });
+test('copyable social contacts keep a fallback URL and reject empty IDs',()=>{
+  const original=parse(readFileSync('examples/einstein/site.config.yaml','utf8'));
+  const link={label:'WeChat',href:'https://example.org/contact/#wechat',copy:'example-id',icon:'brands:weixin',modes:['casual']};
+  assert.equal(configSchema.parse({...original,socials:[link]}).socials[0].copy,'example-id');
+  assert.throws(()=>configSchema.parse({...original,socials:[{...link,copy:''}]}));
+  assert.throws(()=>configSchema.parse({...original,socials:[{...link,href:undefined}]}));
+});
 test('mode profile overrides are optional and independent',()=>{
   const original=parse(readFileSync('examples/einstein/site.config.yaml','utf8'));
   const configured=configSchema.parse({...original,modes:{...original.modes,academic:{...original.modes.academic,sidebar:undefined},casual:{...original.modes.casual,sidebar:true,email:'casual@example.org',address:'',photo:'https://example.org/alternate-avatar.png'}}});

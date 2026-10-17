@@ -40,6 +40,12 @@ document.addEventListener('click',e=>{if(!mobile.hidden&&e.target instanceof Nod
 matchMedia('(max-width:1000px)').addEventListener('change',()=>setMenuOpen(false));
 document.querySelectorAll<HTMLElement>('[data-gallery]').forEach(gallery=>{const buttons=[...gallery.querySelectorAll<HTMLButtonElement>('[data-filter]')];const apply=(button:HTMLButtonElement)=>{buttons.forEach(b=>{b.classList.remove('active');b.setAttribute('aria-pressed','false');});button.classList.add('active');button.setAttribute('aria-pressed','true');let count=0;gallery.querySelectorAll<HTMLElement>('[data-category]').forEach(card=>{card.hidden=button.dataset.filter!=='all'&&card.dataset.category!==button.dataset.filter;if(!card.hidden)count++;});gallery.querySelector('[data-filter-status]')!.textContent=`Showing ${count} ${gallery.dataset.galleryLabel}`;};buttons.forEach(button=>button.addEventListener('click',()=>apply(button)));const fromHash=buttons.find(button=>button.dataset.filter===location.hash.slice(1));if(fromHash)apply(fromHash);});
 document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach(b=>b.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(b.dataset.copy!);toast('BibTeX copied.');}catch{toast('Copy unavailable. Use the .bib download instead.');}}));
+document.querySelectorAll<HTMLAnchorElement>('[data-copy-contact]').forEach(anchor=>anchor.addEventListener('click',async event=>{
+  if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+  event.preventDefault();
+  try{await navigator.clipboard.writeText(anchor.dataset.copyContact!);toast(`${anchor.dataset.contactLabel} ID copied.`);}
+  catch{location.assign(anchor.href);}
+}));
 async function copyHeadingLink(anchor:HTMLAnchorElement,event:MouseEvent){
   if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
   event.preventDefault();

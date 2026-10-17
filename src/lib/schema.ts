@@ -38,7 +38,7 @@ export const configSchema = z.object({
   schemaVersion: z.literal(1),
   site: z.object({ title: z.string().min(1), description: z.string().min(1), url: z.url(), favicon: localOrExternal.optional(), base: z.string().default('/'), language: z.string().default('en'), availableLanguages: z.array(z.string()).default(['en']), copyrightStartYear: z.number().int().min(1900).max(new Date().getUTCFullYear()).optional(), footerText: z.string().optional() }),
   identity: z.object({ name: z.string().min(1), handle: z.string().min(1).optional(), initials: z.string().min(1), role: z.string().min(1), institution: z.string().default(''), location: z.string().default(''), address: z.string().optional(), contactNote: z.string().optional(), email: z.email().optional(), photo: z.string().optional(), photoCredit: z.object({label:z.string(),href:localOrExternal}).optional(), cv: z.union([localOrExternal,z.array(cvDownloadSchema).min(1)]).optional() }),
-  socials: z.array(z.object({ label: z.string(), href: socialUrl, icon: z.string().regex(/^(brands|solid):[a-z0-9-]+$/).optional(), primary:z.boolean().default(false), modes: z.array(z.enum(modes)).default(['academic','casual']) })),
+  socials: z.array(z.object({ label: z.string(), href: socialUrl, copy: z.string().min(1).optional(), icon: z.string().regex(/^(brands|solid):[a-z0-9-]+$/).optional(), primary:z.boolean().default(false), modes: z.array(z.enum(modes)).default(['academic','casual']) })),
   externalLinks: z.array(z.object({
     label: z.string().min(1),
     href: z.url().refine(value=>['https:','http:'].includes(new URL(value).protocol),'Use an absolute HTTP(S) URL'),

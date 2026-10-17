@@ -12,6 +12,6 @@ const {mode,email,socials,class:className='hero-actions'}=Astro.props;
 <div class={className}>
   {email&&<a href={`mailto:${email}`}><Icon name="envelope"/> <span>{email}</span></a>}
   {mode==='academic'&&cvDownloads.map(doc=><a href={href(doc.href)} hreflang={doc.lang}><Icon name="download"/> <span lang={doc.lang} dir="auto">{doc.label}</span></a>)}
-  {socials.map(s=><a href={href(s.href)}><Icon name={s.icon||(s.label==='GitHub'?'github':s.label==='LinkedIn'?'linkedin':'link-45deg')}/> <span>{s.label}</span></a>)}
+  {socials.map(s=><a href={href(s.href)} data-copy-contact={s.copy} data-contact-label={s.copy?s.label:undefined} title={s.copy?`Copy ${s.label} ID`:undefined}><Icon name={s.icon||(s.label==='GitHub'?'github':s.label==='LinkedIn'?'linkedin':'link-45deg')}/> <span>{s.label}</span></a>)}
   {mode==='casual'&&config.blog&&<a href={href(config.blog.href)}><Icon name="journal-text"/> <span>Blog</span></a>}
 </div>
