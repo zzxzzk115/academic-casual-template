@@ -4,6 +4,19 @@ export const modes = ['academic', 'casual'] as const;
 export type Mode = typeof modes[number];
 const sectionIds = ['research', 'now', 'news', 'publications', 'projects', 'cv', 'writing', 'interests', 'about', 'contact'] as const;
 const localOrExternal = z.string().min(1).refine(v => v.startsWith('/') || /^(https?:|mailto:)/.test(v), 'Use an absolute site path or URL');
+const languageTag = z.string().min(1).refine(value => {
+  try { return Intl.getCanonicalLocales(value).length === 1; } catch { return false; }
+}, 'Use a language tag such as en, zh-Hans, pt-BR or ar');
+const cvDownloadSchema = z.object({label:z.string().min(1),href:localOrExternal,lang:languageTag.optional()}).strict();
+export const latexSchema = z.object({
+  engine:z.enum(['xelatex','lualatex','pdflatex']).default('xelatex'),
+  documents:z.array(z.object({
+    source:z.string().regex(/^(?:[\w.-]+\/)*\w[\w.-]*\.tex$/).refine(v=>!v.split('/').includes('..'),'Use a content-relative .tex path'),
+    output:z.string().regex(/^\/[\w/-]+\.pdf$/),
+  }).strict()).min(1),
+}).strict().superRefine((value,ctx)=>{
+  for(const field of ['source','output'] as const)if(new Set(value.documents.map(doc=>doc[field])).size!==value.documents.length)ctx.addIssue({code:'custom',message:`Duplicate LaTeX ${field}`});
+});
 const sectionList = z.array(z.enum(sectionIds)).refine(items => new Set(items).size === items.length, 'Sections must be unique');
 const modeConfig = z.object({
   sections: sectionList,
@@ -19,7 +32,7 @@ const modeConfig = z.object({
 export const configSchema = z.object({
   schemaVersion: z.literal(1),
   site: z.object({ title: z.string().min(1), description: z.string().min(1), url: z.url(), favicon: localOrExternal.optional(), base: z.string().default('/'), language: z.string().default('en'), availableLanguages: z.array(z.string()).default(['en']), copyrightStartYear: z.number().int().min(1900).max(new Date().getUTCFullYear()).optional(), footerText: z.string().optional() }),
-  identity: z.object({ name: z.string().min(1), handle: z.string().min(1).optional(), initials: z.string().min(1), role: z.string().min(1), institution: z.string().default(''), location: z.string().default(''), address: z.string().optional(), contactNote: z.string().optional(), email: z.email().optional(), photo: z.string().optional(), photoCredit: z.object({label:z.string(),href:localOrExternal}).optional(), cv: z.string().optional() }),
+  identity: z.object({ name: z.string().min(1), handle: z.string().min(1).optional(), initials: z.string().min(1), role: z.string().min(1), institution: z.string().default(''), location: z.string().default(''), address: z.string().optional(), contactNote: z.string().optional(), email: z.email().optional(), photo: z.string().optional(), photoCredit: z.object({label:z.string(),href:localOrExternal}).optional(), cv: z.union([localOrExternal,z.array(cvDownloadSchema).min(1)]).optional() }),
   socials: z.array(z.object({ label: z.string(), href: localOrExternal, icon: z.string().regex(/^(brands|solid):[a-z0-9-]+$/).optional(), primary:z.boolean().default(false), modes: z.array(z.enum(modes)).default(['academic','casual']) })),
   theme: z.object({ academic: z.string().regex(/^#[0-9a-f]{6}$/i), casual: z.string().regex(/^#[0-9a-f]{6}$/i) }),
   hero: z.object({ enabled: z.boolean().default(true), label: z.string(), intensity: z.number().min(0).max(2).default(1) }),
@@ -28,6 +41,7 @@ export const configSchema = z.object({
   projectCategories: z.record(z.string().regex(/^[a-z0-9_-]+$/), z.string().min(1)).default({work:'Research',library:'Libraries',fun:'Tools & apps',indie:'Games',retro:'Retro & emulation'}),
   blog: z.object({ href: localOrExternal, feedUrl: z.url().optional(), snapshot: z.string().optional() }).optional(),
   banner: z.object({image:z.string().min(1),alt:z.string().min(1),width:z.number().int().positive(),height:z.number().int().positive(),caption:z.string().min(1).optional(),href:localOrExternal.optional(),modes:z.array(z.enum(modes)).min(1).default(['academic','casual'])}).optional(),
+  latex:latexSchema.optional(),
   comments: z.object({ repo: z.string(), repoId: z.string(), category: z.string(), categoryId: z.string(), mapping: z.literal('pathname') }).optional(),
 });
 const homePlacementSchema = z.union([z.boolean(), z.object({

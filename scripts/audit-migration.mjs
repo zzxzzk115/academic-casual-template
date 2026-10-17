@@ -40,13 +40,15 @@ for(const [oldFolder,newFolder]of [['_projects','projects'],['_posts','posts'],[
 const biographyPreserved=canonical(matter(source('_pages/about.md')).content)===canonical(readFileSync(join(root,'content/about.md'),'utf8'));
 if(!biographyPreserved)failures.push('Biography differs from the original without a recorded replacement');
 const assetRows=git('ls-tree','-r','-z',manifest.sourceCommit,'--','assets').toString('utf8').split('\0').filter(Boolean);
-const assets={checked:assetRows.length,missing:[],changed:[],lineEndingsOnly:[],intentionalTextUpdates:[]};
+const assets={checked:assetRows.length,missing:[],changed:[],lineEndingsOnly:[],intentionalTextUpdates:[],intentionalRefreshes:[]};
 const blobHash=bytes=>createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex');
 for(const row of assetRows){
   const [metadata,path]=row.split('\t'),sha=metadata.split(' ').at(-1),current=join(root,'public',path);
   if(!existsSync(current)){assets.missing.push(path);continue;}
   const bytes=readFileSync(current);
   if(blobHash(bytes)===sha)continue;
+  const refresh=manifest.refreshedAssets?.find(asset=>asset.path===path&&asset.reason);
+  if(refresh){assets.intentionalRefreshes.push(refresh);continue;}
   const text=bytes.toString('utf8').replaceAll('\r\n','\n');
   if(blobHash(Buffer.from(text))===sha){assets.lineEndingsOnly.push(path);continue;}
   if(manifest.assetTextReplacements?.[path]){
@@ -66,7 +68,7 @@ for(const kind of ['education','work'])for(const [i,original]of originalResume[k
   if(Object.values(checks).some(v=>!v))failures.push(`Incomplete CV record: ${kind}/${i}`);
   cvRecords.push({kind,index:i,checks});
 }
-const contact={phone:cv.basics?.phone===originalResume.basics.phone,url:cv.basics?.url===originalResume.basics.url,label:cv.basics?.label===originalResume.basics.label,summary:cv.basics?.summary===originalResume.basics.summary,address:Object.values(originalResume.basics.location).every(part=>cv.basics?.address?.includes(part))};
+const contact={phone:cv.basics?.phone===originalResume.basics.phone||(!cv.basics?.phone&&!!manifest.cvContactRedactions?.phone),url:cv.basics?.url===originalResume.basics.url,label:cv.basics?.label===originalResume.basics.label,summary:cv.basics?.summary===originalResume.basics.summary,address:Object.values(originalResume.basics.location).every(part=>cv.basics?.address?.includes(part))};
 if(Object.values(contact).some(v=>!v))failures.push('Incomplete CV contact information');
 const oldPapers=bibtex.toJSON(source('_bibliography/papers.bib').replace(/^---\s*\n---\s*\n/,''));
 const newPapers=bibtex.toJSON(readFileSync(join(root,'content/publications.bib'),'utf8'));
@@ -76,7 +78,7 @@ const newRepos=parse(readFileSync(join(root,'content/repositories.yaml'),'utf8')
 const repositories={original:oldRepos.length,current:newRepos.length,missing:oldRepos.filter(r=>!newRepos.includes(r))};
 if(repositories.missing.length)failures.push('Original repository links are missing');
 const sourceFile=join(root,'.cache/content-audit/readme-sources.json');
-const report={reviewDate:manifest.reviewDate,sourceCommit:manifest.sourceCommit,records,biographyPreserved,assets,cvRecords,contact,papers,repositories,restored:manifest.restoredInformation||[],intentionalChanges:manifest.intentionalChanges||[],excludedTemplateContent:['_data/cv.yml (Einstein example)','_pages/about_einstein.md','commented people/teaching/books example pages'],githubSources:existsSync(sourceFile)?JSON.parse(readFileSync(sourceFile,'utf8')):[],failures};
+const report={reviewDate:manifest.reviewDate,sourceCommit:manifest.sourceCommit,records,biographyPreserved,assets,cvRecords,contact,contactRedactions:manifest.cvContactRedactions||{},papers,repositories,restored:manifest.restoredInformation||[],intentionalChanges:manifest.intentionalChanges||[],excludedTemplateContent:['_data/cv.yml (Einstein example)','_pages/about_einstein.md','commented people/teaching/books example pages'],githubSources:existsSync(sourceFile)?JSON.parse(readFileSync(sourceFile,'utf8')):[],failures};
 writeFileSync(join(root,'migration-audit.json'),JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify({records:records.length,assets:assets.checked,biographyPreserved,failures},null,2));
 if(failures.length)process.exitCode=1;

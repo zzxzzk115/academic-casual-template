@@ -16,7 +16,8 @@
     "test": "node --import tsx --test tests/*.test.ts tests/*.test.mjs",
     "verify": "node scripts/verify.mjs",
     "check:examples": "node scripts/check-examples.mjs",
-    "demo:build": "node scripts/build-demo.mjs"
+    "demo:build": "node scripts/build-demo.mjs",
+    "latex": "node scripts/latex.mjs"
   },
   "dependencies": {
     "@astrojs/vue": "7.1.0",

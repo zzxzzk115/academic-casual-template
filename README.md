@@ -99,3 +99,5 @@ pnpm check:examples
 The last command builds two independent fixtures at `/` and `/portfolio/`, checks links/resources, and checks that configured identities do not leak between builds. GitHub Actions runs these checks for pushes and pull requests. Successful runs on this upstream repository's `main` branch also deploy the Einstein Pages demo. Other repositories and pull requests only run validation.
 
 English UI is provided. `site.language` sets the document language; it does not translate interface copy. Markdown HTML is trusted build input. Third-party fonts and libraries retain their own licenses; Font Awesome Free assets and license are bundled locally.
+
+Optional LaTeX PDFs and multilingual CV downloads are documented in [the content guide](docs/content.md#cv-downloads-and-optional-latex-compilation). Sites without `latex` configuration retain the normal static build with no TeX dependency.

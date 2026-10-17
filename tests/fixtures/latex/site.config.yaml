@@ -1,0 +1,7 @@
+latex:
+  engine: xelatex
+  documents:
+    - source: en.tex
+      output: /assets/pdf/en.pdf
+    - source: zh.tex
+      output: /assets/pdf/zh.pdf

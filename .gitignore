@@ -5,3 +5,5 @@ dist/
 test-results/
 reports/
 *.log
+**/.latex-build/
+tests/fixtures/latex/public/

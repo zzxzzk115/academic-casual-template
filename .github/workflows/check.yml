@@ -18,8 +18,27 @@ jobs:
       - run: pnpm check
       - run: pnpm test
       - run: pnpm check:examples
+  test-latex:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/compile-latex
+        with:
+          content-directory: tests/fixtures/latex
+      - uses: actions/upload-artifact@v4
+        with:
+          name: latex-smoke-pdfs
+          path: tests/fixtures/latex/public/assets/pdf/*.pdf
   build-demo:
-    needs: test
+    needs: [test, test-latex]
     if: github.repository == 'zzxzzk115/academic-casual-template' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:

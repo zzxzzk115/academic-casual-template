@@ -15,3 +15,5 @@ node scripts/audit-migration.mjs <content-repository>
 The audit reads `migration-manifest.json` and the specified original Git commit. That commit must be available locally. It compares original records, the biography, CV fields, bibliography tags, repository links and Git asset blobs, then writes `migration-audit.json`. Reviewed text replacements and current-source refreshes must be explicitly recorded in the manifest. Unexplained differences fail the command.
 
 `legacyPaths` and `contentChecks` in the manifest also run during normal output verification. They protect prior routes, fragments and displayed information. Baseline auditing is independent of CI output checking and may need a deeper source checkout than a standard shallow clone.
+
+For a reviewed asset replacement, `migration-manifest.json` can list `refreshedAssets: [{path, reason}]`, using its original `assets/...` path. The audit reports those separately from unexplained binary changes. An explicit `cvContactRedactions.phone` reason permits the public CV phone field to be absent; omission without a recorded reason still fails the baseline comparison.

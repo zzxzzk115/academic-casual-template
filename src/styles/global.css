@@ -81,3 +81,4 @@ dialog{background:var(--paper);color:var(--ink);border:1px solid var(--line);bor
 @media(max-width:800px){:root{--header-height:75px}}@media(max-width:550px){:root{--header-height:69px}}@media(max-width:380px){:root{--header-height:106px}}
 
 .feature-banner{display:block;max-width:1440px;margin:0 auto;color:var(--ink)}.feature-banner figure{margin:0}.feature-banner img{width:100%;height:auto}.feature-banner figcaption{padding:10px 20px;background:var(--surface);font-size:.9375rem;line-height:1.6}.feature-banner:focus-visible{outline-offset:-4px}
+.cv-downloads{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px}

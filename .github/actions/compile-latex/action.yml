@@ -1,0 +1,34 @@
+name: Compile configured LaTeX documents
+description: Build optional site-configured PDFs before the static site build
+inputs:
+  content-directory:
+    description: Content checkout path relative to the workflow workspace
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Read LaTeX configuration
+      id: plan
+      shell: bash
+      env:
+        CONTENT_DIRECTORY: ${{ inputs.content-directory }}
+        LATEX_SCRIPT: ${{ github.action_path }}/../../../scripts/latex.mjs
+      run: node "$LATEX_SCRIPT" prepare --content "$CONTENT_DIRECTORY"
+    - name: Compile PDFs
+      if: steps.plan.outputs.enabled == 'true'
+      uses: xu-cheng/latex-action@6549dc21effb2730855a1281407ecfcececc6c1b # 4.1.0
+      with:
+        docker_image: ghcr.io/xu-cheng/texlive-historic-alpine@sha256:73a48f4fc1d3ee7357c8ea5d274af161541c0981432da33339eed7ac1f8e083d # TeX Live 2025
+        root_file: ${{ steps.plan.outputs.sources }}
+        working_directory: ${{ inputs.content-directory }}
+        work_in_root_file_dir: true
+        latexmk_use_xelatex: ${{ steps.plan.outputs.engine == 'xelatex' }}
+        latexmk_use_lualatex: ${{ steps.plan.outputs.engine == 'lualatex' }}
+        args: -norc -pdf -no-shell-escape -file-line-error -halt-on-error -interaction=nonstopmode -outdir=.latex-build
+    - name: Publish configured PDF paths
+      if: steps.plan.outputs.enabled == 'true'
+      shell: bash
+      env:
+        CONTENT_DIRECTORY: ${{ inputs.content-directory }}
+        LATEX_SCRIPT: ${{ github.action_path }}/../../../scripts/latex.mjs
+      run: node "$LATEX_SCRIPT" publish --content "$CONTENT_DIRECTORY"
