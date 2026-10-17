@@ -1,0 +1,8 @@
+---
+import type {MarkdownHeading} from '../lib/markdown';
+const {headings}=Astro.props as {headings:MarkdownHeading[]};
+---
+<details class="page-toc" data-toc open data-pagefind-ignore>
+  <summary>On this page</summary>
+  <nav aria-label="Table of contents"><ol>{headings.map(heading=><li data-depth={heading.depth}><a href={`#${encodeURIComponent(heading.id)}`}>{heading.label}</a></li>)}</ol></nav>
+</details>

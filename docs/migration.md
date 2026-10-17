@@ -17,3 +17,5 @@ The audit reads `migration-manifest.json` and the specified original Git commit.
 `legacyPaths` and `contentChecks` in the manifest also run during normal output verification. They protect prior routes, fragments and displayed information. Baseline auditing is independent of CI output checking and may need a deeper source checkout than a standard shallow clone.
 
 For a reviewed asset replacement, `migration-manifest.json` can list `refreshedAssets: [{path, reason}]`, using its original `assets/...` path. The audit reports those separately from unexplained binary changes. An explicit `cvContactRedactions.phone` reason permits the public CV phone field to be absent; omission without a recorded reason still fails the baseline comparison.
+
+Reviewed exact `textReplacements` also apply when checking legacy CV summaries, result classifications and course names against the current CV descriptions. Record each wording correction explicitly; institution names, dates, locations and URLs remain checked independently.

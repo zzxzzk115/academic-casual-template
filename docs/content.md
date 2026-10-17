@@ -15,6 +15,7 @@ Quick links: [Homepage curation](#homepage-curation) · [Current work and plans]
 | `socials` | Links with a label, URL, optional Font Awesome icon and optional mode visibility |
 | `theme` | Academic and Casual accent colors in six-digit hex form |
 | `banner` | Optional homepage feature image, caption, link and mode visibility |
+| `toc` | Enable automatic detail-page tables of contents (default `true`); per-record `toc` overrides it |
 | `latex` | Optional LaTeX engine and source-to-PDF output mappings |
 | `hero` | Enable the optional illustration, set its label and intensity |
 | `modes` | Ordered sections, optional desktop navigation, section headings, `showToolkit` and an optional responsive `sidebar` for each mode |
@@ -338,6 +339,8 @@ Use the shared [`home` rules](#homepage-curation) for homepage visibility, mode-
 
 Optional `overview: {purpose, contribution, outcome}` gives a project detail page a compact opening summary, labeled **Purpose**, **My contribution** and **Outcome**. Supply all three as plain text; use the Markdown body for evidence, images and technical detail. This replaces the repeated description under the page title; the description remains in cards, search and page metadata. Projects without an overview keep their existing layout.
 
+Use established technical names from the original paper or official documentation (for example, Tiled Shading and Clustered Shading). Distinguish APIs from libraries, software fallbacks from hardware acceleration, and fitted approximations from complete algorithms or colour-management pipelines. Describe completed, experimental and planned work separately. Retain original titles in external article links and bibliographic records; a summary can explain them without silently renaming the source.
+
 Homepage writing defaults to **Featured writing**; override `sectionTitles.writing` or `sectionLabels.writing` to suit your editorial selection. Use `sectionTitles.news: Milestones` for infrequent announcements without changing existing URLs or section IDs.
 
 Projects without an image render as text cards at their natural height. The all-projects page remains a shared catalog. Category fragments such as `/projects/#work` initialize the filter.
@@ -367,3 +370,10 @@ The homepage reads JSON Feed items with `id`, `url`, `title` and optional `summa
 The build checks configuration, references, duplicate IDs/routes, publication fields and primary assets. `scripts/verify.mjs <output> <content>` checks generated internal destinations, anchors, feeds and search assets. External destinations are listed, not network-validated. A migration manifest can add counts, legacy paths and visible-text checks.
 
 Mermaid diagrams wait for fonts before rendering and use SVG text with wrapped node labels. Diagrams retain their natural size inside a keyboard-accessible horizontal scroll region, so narrow screens can inspect the complete diagram without shrinking or clipping text.
+
+
+### Detail-page table of contents
+
+Project and article pages automatically show **On this page** when the Markdown body contains at least two level-two or level-three headings (`##` / `###`). The table of contents uses the same generated or authored `{#id}` anchors as heading permalinks, including repeated titles and Unicode text. It skips fenced code and does not add the page title, summaries or comments. Heading labels retain their text without interactive inline markup.
+
+Set top-level `toc: false` in `site.config.yaml` to disable it site-wide; a Markdown record may override the default with frontmatter `toc: true` or `toc: false`. At widths of 1200px or more, it occupies a sticky right column. Below that width it becomes a collapsible panel before the body, initially closed when JavaScript is available. Links work without JavaScript (the panel then starts expanded), preserve the current mode/query string, and respect the sticky navigation offset. Pages with fewer than two eligible headings reserve no TOC space.

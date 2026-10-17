@@ -23,7 +23,7 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
   cpSync(join(content,'public/assets/einstein-1921.jpg'),join(content,'public/assets/project-cover.jpg'));
   const coverFile=join(content,'content/projects/special-relativity.md');
   const covered=matter(readFileSync(coverFile,'utf8'));
-  writeFileSync(coverFile,matter.stringify(covered.content,{...covered.data,image:'/assets/project-cover.jpg',imageFit:name==='root'?'cover':'contain'}));
+  writeFileSync(coverFile,matter.stringify(covered.content+'\n## Context\n\nOverview.\n\n### Details {#stable-details}\n\nMore detail.\n',{...covered.data,toc:name==='root',image:'/assets/project-cover.jpg',imageFit:name==='root'?'cover':'contain'}));
   for (const mode of ['academic', 'casual']) {
     config.modes[mode].sections.unshift('now');
     config.modes[mode].navigation.unshift('now');
@@ -100,6 +100,10 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
   const casual = readFileSync(join(out, 'casual/index.html'), 'utf8');
   const projectArchive=readFileSync(join(out,'projects/index.html'),'utf8');
   if(!projectArchive.includes(`style="object-fit:${name==='root'?'cover':'contain'}"`))throw new Error('Configured project image fill was lost');
+  const detailPage=readFileSync(join(out,'projects/special-relativity/index.html'),'utf8');
+  if(name==='root'){
+    if(!detailPage.includes('aria-label="Table of contents"')||!detailPage.includes('href="#stable-details"'))throw new Error('TOC or authored anchor lost in a project detail page');
+  }else if(detailPage.includes('data-toc'))throw new Error('A disabled record still rendered a TOC');
   const publicationArchive=readFileSync(join(out,'publications/index.html'),'utf8');
   for(const id of ['einstein1905relativity','einstein1905brownian']) if(!publicationArchive.includes(`id="${id}"`)) throw new Error('A homepage-hidden paper disappeared from the full bibliography');
   if(!readFileSync(join(out,'publications.bib'),'utf8').includes('einstein1905brownian')) throw new Error('A homepage-hidden paper disappeared from the BibTeX download');

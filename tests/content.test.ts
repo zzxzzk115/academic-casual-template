@@ -214,3 +214,15 @@ test('publications use the shared home metadata and retain every archive record'
     assert.doesNotMatch(parsed.copy,/home\s*=/);
   }finally{rmSync(fixture,{recursive:true,force:true});}
 });
+
+
+test('TOC defaults on site-wide and supports per-record overrides',()=>{
+  const original=parse(readFileSync('examples/einstein/site.config.yaml','utf8'));
+  assert.equal(configSchema.parse(original).toc,true);
+  assert.equal(configSchema.parse({...original,toc:false}).toc,false);
+  const entry={id:'demo',title:'Demo',description:'An application',legacyPath:'/projects/demo/'};
+  assert.equal(entrySchema.parse(entry).toc,undefined);
+  assert.equal(entrySchema.parse({...entry,toc:false}).toc,false);
+  assert.equal(entrySchema.parse({...entry,toc:true}).toc,true);
+  assert.throws(()=>entrySchema.parse({...entry,toc:'yes'}));
+});
