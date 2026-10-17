@@ -52,9 +52,9 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
     config.identity.name = 'Taylor Quinn';
     config.identity.handle = 'TQ Notebook';
     config.identity.initials = 'TQ';
-    config.identity.cv = [{label:'CV · English',href:'/assets/pdf/CV.pdf',lang:'en'},{label:'CV · 中文',href:'/assets/pdf/CV-zh.pdf',lang:'zh-CN'}];
+    config.identity.cv = [{label:'CV · English',href:'/assets/pdf/CV.pdf',lang:'en'},{label:'CV · 中文',href:'/assets/pdf/CV-zh.pdf',lang:'zh-CN'},{label:'السيرة الذاتية',href:'/assets/pdf/CV-ar.pdf',lang:'ar'}];
     mkdirSync(join(content,'public/assets/pdf'),{recursive:true});
-    for(const name of ['CV.pdf','CV-zh.pdf'])writeFileSync(join(content,'public/assets/pdf',name),'%PDF-1.5\nFixture PDF');
+    for(const name of ['CV.pdf','CV-zh.pdf','CV-ar.pdf'])writeFileSync(join(content,'public/assets/pdf',name),'%PDF-1.5\nFixture PDF');
     config.site.favicon = '/assets/favicon.jpg';
     cpSync(join(content,'public/assets/einstein-1921.jpg'),join(content,'public/assets/favicon.jpg'));
     config.theme.academic = '#6b3db8';
@@ -117,8 +117,9 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
     if (academic.includes('id="now"') || academic.includes('/#now') || casual.includes('id="now"')) throw new Error('Empty now content produced a section or navigation link');
   } else {
     const cvPage=readFileSync(join(out,'cv/index.html'),'utf8');
-    for(const html of [academic,cvPage])for(const [name,lang]of [['CV.pdf','en'],['CV-zh.pdf','zh-CN']])if(!html.includes(`href="/portfolio/assets/pdf/${name}" hreflang="${lang}"`))throw new Error('Bilingual CV links lost their base or language');
-    if(casual.includes('CV · English')||casual.includes('CV · 中文'))throw new Error('Academic CV downloads leaked onto Casual');
+    for(const html of [academic,cvPage])for(const [name,lang]of [['CV.pdf','en'],['CV-zh.pdf','zh-CN'],['CV-ar.pdf','ar']])if(!html.includes(`href="/portfolio/assets/pdf/${name}" hreflang="${lang}"`))throw new Error('Multilingual CV links lost their base or language');
+    for(const html of [academic,cvPage])if(!html.includes('<span lang="ar" dir="auto">السيرة الذاتية</span>'))throw new Error('RTL CV labels lost their language or automatic direction');
+    if(casual.includes('السيرة الذاتية')||casual.includes('CV · English')||casual.includes('CV · 中文'))throw new Error('Academic CV downloads leaked onto Casual');
     for(const html of [academic,casual,readFileSync(join(out,'projects/special-relativity/index.html'),'utf8')]) if(!html.includes('rel="icon" href="/portfolio/assets/favicon.jpg"')) throw new Error('Configured favicon lost its base or page/mode scope');
     if(!academic.includes('class="feature-banner"') || !academic.includes('src="/portfolio/assets/feature-banner.svg"') || !academic.includes('Fixture featured paper') || !academic.includes('href="/portfolio/publications/#einstein1905relativity"') || casual.includes('class="feature-banner"')) throw new Error('Feature banner lost its base or mode scope');
     if(readFileSync(join(out,'projects/special-relativity/index.html'),'utf8').includes('class="feature-banner"')) throw new Error('Homepage banner leaked into a detail page');

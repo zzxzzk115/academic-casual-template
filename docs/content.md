@@ -83,6 +83,8 @@ latex:
       output: /assets/pdf/CV-zh.pdf
 ```
 
+The list has no fixed language slots or limit: add another `{label, href, lang}` entry for each translation. `label` is author-provided text, and optional `lang` accepts language, region and script tags supported by `Intl.getCanonicalLocales`, such as `de`, `pt-BR`, `sr-Latn`, `zh-Hant-TW`, `ja` or `ar`. Labels carry their language and automatic text direction, including right-to-left labels. This describes downloadable documents; it does not automatically translate the website or its navigation.
+
 Downloads appear in the Academic profile and on the CV page, with optional `hreflang` attributes. Casual keeps its existing personal links. PDF languages are independent of the website interface language. Omitting `identity.cv` renders no download links; the existing single string retains its CV / Download CV labels.
 
 `latex` is opt-in. Its documents can be CVs or other PDFs. `engine` is `xelatex` (default), `lualatex` or `pdflatex`; all documents in one site use that engine. Sources are `.tex` paths relative to the content checkout, and outputs are absolute public `.pdf` paths without the deployment base. Use ASCII filenames with letters, numbers, underscores, hyphens and directories. Duplicate sources/outputs, missing sources and paths or symlinks that escape the checkout fail before compilation. Source files and supporting `.cls`/`.sty` files belong outside `public/`; only the configured PDFs are copied into the published site.
@@ -96,7 +98,11 @@ After dependency installation, add this step **before** the site build in a cont
     content-directory: content
 ```
 
-The action skips TeX entirely when `latex` is omitted. Configured sites use the pinned LaTeX Action release and TeX Live 2025, build each root file in its own source directory, and publish PDFs only after all configured documents compile and validate. It uses `latexmk`, disables shell escape and does not load `.latexmkrc`. Compile errors stop deployment; an old public PDF is not used to conceal a failed build. Use UTF-8 sources and fonts available in TeX Live; `ctex` with `fontset=fandol` supports Chinese without committing proprietary fonts. The action needs a Linux runner with Docker, Node 24 and the template's installed dependencies. It does not push generated files back to Git or require Overleaf credentials.
+The action skips TeX entirely when `latex` is omitted. Configured sites use the pinned LaTeX Action release and TeX Live 2025, build each root file in its own source directory, and publish PDFs only after all configured documents compile and validate. It uses `latexmk`, disables shell escape and does not load `.latexmkrc`. Compile errors stop deployment; an old public PDF is not used to conceal a failed build. Use UTF-8 sources and fonts available in TeX Live; `ctex` with `fontset=fandol` supports Chinese without committing proprietary fonts.
+
+Choose typography in each document rather than in the template: `ctex`/`xeCJK` for Chinese, appropriate CJK packages and fonts for Japanese/Korean, and `babel` or `polyglossia` with suitable fonts for other scripts and RTL layout. Use XeLaTeX or LuaLaTeX for Unicode-heavy documents; pdfLaTeX is for documents designed for that engine. A language tag alone does not install fonts or shape text. Keep font licenses with any bundled fonts, check for missing glyphs and unintended substitutions, and embed document fonts in PDFs so readers need no local font installation. The current CI smoke tests cover English and Chinese; other languages require their own compile and visual checks.
+
+The action needs a Linux runner with Docker, Node 24 and the template's installed dependencies. It does not push generated files back to Git or require Overleaf credentials.
 
 For local compilation with `latexmk` and the configured TeX engine installed, run `pnpm latex --content <content-directory>` from the template checkout, then the normal site build. Intermediates stay in `.latex-build/` beside each root file. Ignore those directories in the content repository. A site may keep generated PDF snapshots for local preview without TeX; CI still rebuilds and replaces them from source on every run. Static development/build commands do not implicitly install or invoke TeX.
 

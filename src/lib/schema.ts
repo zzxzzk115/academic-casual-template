@@ -4,7 +4,10 @@ export const modes = ['academic', 'casual'] as const;
 export type Mode = typeof modes[number];
 const sectionIds = ['research', 'now', 'news', 'publications', 'projects', 'cv', 'writing', 'interests', 'about', 'contact'] as const;
 const localOrExternal = z.string().min(1).refine(v => v.startsWith('/') || /^(https?:|mailto:)/.test(v), 'Use an absolute site path or URL');
-const cvDownloadSchema = z.object({label:z.string().min(1),href:localOrExternal,lang:z.string().regex(/^[a-z]{2,3}(?:-[A-Za-z0-9]+)*$/).optional()}).strict();
+const languageTag = z.string().min(1).refine(value => {
+  try { return Intl.getCanonicalLocales(value).length === 1; } catch { return false; }
+}, 'Use a language tag such as en, zh-Hans, pt-BR or ar');
+const cvDownloadSchema = z.object({label:z.string().min(1),href:localOrExternal,lang:languageTag.optional()}).strict();
 export const latexSchema = z.object({
   engine:z.enum(['xelatex','lualatex','pdflatex']).default('xelatex'),
   documents:z.array(z.object({

@@ -26,6 +26,13 @@ test('configuration rejects unsafe colors, wrong versions, and unknown section I
   assert.throws(()=>configSchema.parse({...original,theme:{...original.theme,academic:'red;display:none'}}));
   assert.throws(()=>configSchema.parse({...original,modes:{...original.modes,academic:{sections:['unregistered']}}}));
 });
+test('CV downloads support independent language, region and script tags',()=>{
+  const original=parse(readFileSync('examples/einstein/site.config.yaml','utf8'));
+  const languages=['en','zh-Hans','zh-Hant-TW','pt-BR','sr-Latn','ar','ja','ko','de','hi'];
+  const cv=languages.map(lang=>({label:lang,lang,href:`/assets/pdf/CV-${lang}.pdf`}));
+  assert.equal(configSchema.parse({...original,identity:{...original.identity,cv}}).identity.cv?.length,languages.length);
+  for(const lang of ['', 'en_US','not a language','zh--CN'])assert.throws(()=>configSchema.parse({...original,identity:{...original.identity,cv:[{label:'CV',href:'/cv.pdf',lang}]}}));
+});
 test('mode profile overrides are optional and independent',()=>{
   const original=parse(readFileSync('examples/einstein/site.config.yaml','utf8'));
   const configured=configSchema.parse({...original,modes:{...original.modes,academic:{...original.modes.academic,sidebar:undefined},casual:{...original.modes.casual,sidebar:true,email:'casual@example.org',address:'',photo:'https://example.org/alternate-avatar.png'}}});
