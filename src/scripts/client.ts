@@ -1,3 +1,4 @@
+import {watchGiscusTheme} from './giscus-theme';
 const base=document.body.dataset.base || '/';
 const mode=new URLSearchParams(location.search).get('mode')==='casual'||document.body.dataset.mode==='casual'?'casual':'academic';
 document.documentElement.dataset.mode=mode;
@@ -24,7 +25,12 @@ if(backToTop){
     window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
   });
 }
-document.querySelector('[data-theme-toggle]')?.addEventListener('click',()=>{const theme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('color-theme',theme);}catch{}document.querySelectorAll<HTMLIFrameElement>('.giscus-frame').forEach(f=>f.contentWindow?.postMessage({giscus:{setConfig:{theme}}},'https://giscus.app'));});
+watchGiscusTheme();
+document.querySelector('[data-theme-toggle]')?.addEventListener('click',()=>{const theme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('color-theme',theme);}catch{}});
+const systemTheme=matchMedia('(prefers-color-scheme: dark)');
+const followSystemTheme=()=>{try{if(localStorage.getItem('color-theme'))return;}catch{}document.documentElement.dataset.theme=systemTheme.matches?'dark':'light';};
+systemTheme.addEventListener('change',followSystemTheme);
+window.addEventListener('storage',event=>{if(event.key==='color-theme'||event.key===null){if(event.newValue==='light'||event.newValue==='dark')document.documentElement.dataset.theme=event.newValue;else followSystemTheme();}});
 const menu=document.querySelector<HTMLButtonElement>('[data-menu]')!,mobile=document.querySelector<HTMLElement>('.mobile-nav')!;
 const setMenuOpen=(open:boolean)=>{mobile.hidden=!open;menu.setAttribute('aria-expanded',String(open));menu.setAttribute('aria-label',open?'Close navigation':'Open navigation');};
 menu?.addEventListener('click',()=>setMenuOpen(Boolean(mobile.hidden)));

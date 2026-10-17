@@ -24,6 +24,8 @@ Quick links: [Homepage curation](#homepage-curation) · [Current work and plans]
 | `blog` | Optional external blog integration: original URL, JSON Feed URL and content-relative snapshot file |
 | `comments` | Optional Giscus repository/category IDs, with pathname mapping |
 
+Giscus follows the site's light/dark theme, including changes made while comments are loading. Without a saved manual choice, the site follows changes to the operating system's colour scheme. A manual choice is retained across pages and synchronized between open tabs on the same origin; the existing discussion and comment draft remain in place when the theme changes.
+
 `site.url` is the origin URL, such as `https://example.github.io`. Set `site.base` to `/` for a root site, or `/portfolio/` for a project site. It must start and end with `/`. Templates prefix local paths automatically. Do not include the base in content paths.
 
 Set `site.favicon` to a local public asset path (for example `/favicon.svg`) or an HTTPS image URL to use your own browser-tab icon on every page and in both modes. Local paths receive `site.base` automatically, and missing local files fail build validation. Omit it to retain the generated initials icon. SVG, ICO and PNG files can be served from `public/`; the browser detects the image format.
