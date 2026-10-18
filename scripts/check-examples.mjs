@@ -158,6 +158,11 @@ for (const [name, base, email] of [['root', '/', 'root-fixture@example.invalid']
     if (!readFileSync(join(out, 'projects/index.html'), 'utf8').includes('/portfolio/projects/light-quanta/')) throw new Error('Hidden project disappeared from its catalog');
     if (!readFileSync(join(out, 'featured-posts/index.html'), 'utf8').includes('reading-einstein')) throw new Error('Hidden post disappeared from its archive');
     if (!readFileSync(join(out, 'feed.xml'), 'utf8').includes('reading-einstein')) throw new Error('Hidden post disappeared from RSS');
+    const feed = readFileSync(join(out, 'feed.xml'), 'utf8');
+    if (!feed.includes(`<?xml-stylesheet type="text/xsl" href="${base}feed.xsl"?>`) ||
+        !feed.includes(`href="${new URL(`${base}feed.xml`, config.site.url).href}" rel="self"`)) throw new Error('RSS preview lost its deployment base');
+    const feedStyle = readFileSync(join(out, 'feed.xsl'), 'utf8');
+    if (!feedStyle.includes(config.theme.academic) || feedStyle.includes('__FEED_ACCENT__')) throw new Error('RSS preview lost the configured accent');
     if (!casual.includes('A concise personal introduction.') || academic.includes('A concise personal introduction.')) throw new Error('Casual introduction was not scoped');
     if (!readFileSync(join(out, 'projects/light-quanta/index.html'), 'utf8').includes('data-pagefind-body')) throw new Error('Hidden detail page is no longer searchable');
   }

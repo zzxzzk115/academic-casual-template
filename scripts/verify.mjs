@@ -43,7 +43,7 @@ for(const file of html){
     checked++;
   }
 }
-for(const file of ['feed.xml','sitemap.xml','publications.bib','pagefind/pagefind.js'])if(!existsSync(join(out,file)))errors.push(`Missing output: ${file}`);
+for(const file of ['feed.xml','feed.xsl','sitemap.xml','publications.bib','pagefind/pagefind.js'])if(!existsSync(join(out,file)))errors.push(`Missing output: ${file}`);
 const manifest=join(content,'migration-manifest.json');
 if(existsSync(manifest)){
   const migration=JSON.parse(readFileSync(manifest,'utf8'));
