@@ -394,6 +394,20 @@ Each citation key becomes an anchor on `/publications/`. The site provides a Bib
 
 The homepage reads JSON Feed items with `id`, `url`, `title` and optional `summary`/`date_published`. It links to original articles without copying their bodies. A failed fetch uses `blog.snapshot`; if that snapshot is configured it must be a valid local file. `SITE_OFFLINE=1` forces it for repeatable builds. The historical example omits blog integration; sites can add it independently.
 
+## RSS feed
+
+`/feed.xml` contains the site's own posts, including those with `home: false`.
+External Blog items keep their independent subscription feeds. The homepage's
+RSS links and discovery metadata retain the existing `/feed.xml` URL.
+
+The feed includes a same-origin `/feed.xsl` stylesheet for a readable browser
+preview, with article links, dates, summaries and a selectable subscription
+address. It adapts to narrow screens and the system's light/dark preference.
+The title, description, language and accent use `site` and `theme.academic`
+configuration, and both XML and stylesheet URLs respect `site.base`.
+No extra feed configuration or dependencies are required. Feed readers receive
+standard RSS 2.0 XML; browsers without XSLT support may show the XML directly.
+
 ## Validation
 
 The build checks configuration, references, duplicate IDs/routes, publication fields and primary assets. `scripts/verify.mjs <output> <content>` checks generated internal destinations, anchors, feeds and search assets. External destinations are listed, not network-validated. A migration manifest can add counts, legacy paths and visible-text checks.
