@@ -15,7 +15,11 @@ export function initContent(destination, { templateRoot, repository, revision })
     throw new Error('Initialization requires a template repository and a full commit SHA');
   }
   mkdirSync(target, { recursive: true });
-  cpSync(source, target, { recursive: true, force: false, errorOnExist: true });
+  // Copy the starter's entries into the (empty) target. Copying the directory itself onto the existing target fails
+  // with EEXIST on Node 24.22+ when errorOnExist is set.
+  for (const entry of readdirSync(source)) {
+    cpSync(join(source, entry), join(target, entry), { recursive: true, force: false, errorOnExist: true });
+  }
   writeFileSync(join(target, 'template.lock.json'), JSON.stringify({ schemaVersion: 1, repository, revision }, null, 2) + '\n');
   writeFileSync(join(target, '.gitignore'), 'dist/\n.cache/\n.astro/\nnode_modules/\n**/.latex-build/\n');
   writeFileSync(join(target, 'README.md'), `# Site content
